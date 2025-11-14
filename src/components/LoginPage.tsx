@@ -63,9 +63,10 @@ const LoginPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>("signin");
   // identifier is used for sign-in (email or phone)
   const [identifier, setIdentifier] = useState(""); // email OR phone for sign-in
-  const [email, setEmail] = useState(""); // used for signup
+  const [email, setEmail] = useState(""); // used for signup fallback (kept for simplicity)
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [status, setStatus] = useState<AuthStatus | null>(null);
@@ -251,8 +252,9 @@ const LoginPage = () => {
     setSuccessMessage(null);
 
     if (activeTab === "signin") {
-      const ok = validateIdentifier(identifier);
-      if (!ok) return;
+      const okId = validateIdentifier(identifier);
+      const okPass = validatePassword(password);
+      if (!okId || !okPass) return;
     }
 
     // signup path validations
@@ -260,8 +262,8 @@ const LoginPage = () => {
       const okEmail = validateEmail(email);
       const okPassword = validatePassword(password);
       if (!okEmail || !okPassword) return;
-      if (!name.trim()) {
-        setError("Name is required");
+      if (!firstName.trim() || !lastName.trim()) {
+        setError("First name and last name are required");
         return;
       }
     }
@@ -270,11 +272,10 @@ const LoginPage = () => {
 
     try {
       if (activeTab === "signin") {
-        // detect email vs phone
-        const isEmail = identifier.includes("@");
-        const body = isEmail
-          ? { email: identifier.trim() }
-          : { phone: identifier.trim() };
+        // POST identifier + password directly to login API
+        const body = identifier.includes("@")
+          ? { email: identifier.trim(), password: password }
+          : { phone: identifier.trim(), password: password };
 
         const response = await fetch(loginEndpoint, {
           method: "POST",
@@ -289,23 +290,28 @@ const LoginPage = () => {
         }
 
         const data = (await response.json()) as AuthResponse;
-        setSuccessMessage(data.message ?? "Proceeding with sign-in/OTP");
-        // Keep status update generic; your server may start an OTP flow
+        setSuccessMessage(data.message ?? "Signed in");
         setStatus({
           authenticated: data.user ? true : false,
           user:
-            data.user ?? (isEmail ? { email: identifier.trim() } : undefined),
+            data.user ??
+            (identifier.includes("@")
+              ? { email: identifier.trim() }
+              : undefined),
           message: data.message,
         });
-        // Clear identifier if desired (optional)
-        // setIdentifier('');
       } else {
-        // register
+        // register: POST firstName + lastName + email + password
         const response = await fetch(registerEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ email, password, name: name.trim() }),
+          body: JSON.stringify({
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email,
+            password,
+          }),
         });
 
         if (!response.ok) {
@@ -317,13 +323,18 @@ const LoginPage = () => {
         setSuccessMessage(data.message ?? "Account created successfully");
         setStatus({
           authenticated: true,
-          user: data.user ?? { email, name: name.trim() || undefined },
+          user: data.user ?? {
+            email,
+            name: `${firstName.trim()} ${lastName.trim()}`,
+          },
           message: data.message,
         });
+
         // clear signup fields
         setEmail("");
         setPassword("");
-        setName("");
+        setFirstName("");
+        setLastName("");
       }
 
       // refresh session status (best-effort)
@@ -494,56 +505,121 @@ const LoginPage = () => {
           {activeTab !== "admin" ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               {activeTab === "signup" && (
-                <div className="space-y-2">
-                  <label
-                    htmlFor="name"
-                    className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70"
-                  >
-                    Full Name
-                  </label>
-                  <input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    type="text"
-                    placeholder="John Doe"
-                    className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition focus:border-white/40 focus:bg-white/10"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="firstName"
+                      className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70"
+                    >
+                      First Name
+                    </label>
+                    <input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      type="text"
+                      placeholder="John"
+                      className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition focus:border-white/40 focus:bg-white/10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="lastName"
+                      className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70"
+                    >
+                      Last Name
+                    </label>
+                    <input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      type="text"
+                      placeholder="Doe"
+                      className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition focus:border-white/40 focus:bg-white/10"
+                    />
+                  </div>
                 </div>
               )}
 
               {activeTab === "signin" ? (
-                <div className="space-y-2">
-                  <label
-                    htmlFor="identifier"
-                    className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70"
-                  >
-                    Email or Phone
-                  </label>
-                  <input
-                    id="identifier"
-                    required
-                    value={identifier}
-                    onChange={(e) => handleIdentifierChange(e.target.value)}
-                    onBlur={() => validateIdentifier(identifier)}
-                    type="text"
-                    placeholder="you@example.com or +911234567890"
-                    className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition focus:border-white/40 focus:bg-white/10"
-                    aria-invalid={!!identifierError}
-                    aria-describedby={
-                      identifierError ? "identifier-error" : undefined
-                    }
-                  />
-                  {identifierError && (
-                    <p
-                      id="identifier-error"
-                      className="text-xs text-red-400"
-                      role="alert"
+                <>
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="identifier"
+                      className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70"
                     >
-                      {identifierError}
-                    </p>
-                  )}
-                </div>
+                      Email or Phone
+                    </label>
+                    <input
+                      id="identifier"
+                      required
+                      value={identifier}
+                      onChange={(e) => handleIdentifierChange(e.target.value)}
+                      onBlur={() => validateIdentifier(identifier)}
+                      type="text"
+                      placeholder="you@example.com or +911234567890"
+                      className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition focus:border-white/40 focus:bg-white/10"
+                      aria-invalid={!!identifierError}
+                      aria-describedby={
+                        identifierError ? "identifier-error" : undefined
+                      }
+                    />
+                    {identifierError && (
+                      <p
+                        id="identifier-error"
+                        className="text-xs text-red-400"
+                        role="alert"
+                      >
+                        {identifierError}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="signin-password"
+                      className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70"
+                    >
+                      Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="signin-password"
+                        required
+                        value={password}
+                        onChange={(e) => handlePasswordChange(e.target.value)}
+                        onBlur={() => validatePassword(password)}
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 pr-12 text-sm text-white placeholder-white/30 outline-none transition focus:border-white/40 focus:bg-white/10"
+                        aria-invalid={!!passwordError}
+                        aria-describedby={
+                          passwordError ? "password-error" : undefined
+                        }
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/70 text-xs"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        {showPassword ? "Hide" : "Show"}
+                      </button>
+                    </div>
+                    {passwordError && (
+                      <p
+                        id="password-error"
+                        className="text-xs text-red-400"
+                        role="alert"
+                      >
+                        {passwordError}
+                      </p>
+                    )}
+                  </div>
+                </>
               ) : (
                 <>
                   <div className="space-y-2">
