@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/app/lib/supabase"
+import { supabase } from "@/lib/supabase"
+import { transporter } from "@/lib/email"; 
 
 export async function GET() {
   try {
