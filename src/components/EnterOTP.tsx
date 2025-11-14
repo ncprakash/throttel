@@ -99,7 +99,7 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
 
       if (res?.data?.ok || res?.status === 200) {
         setSuccess("Verification successful");
-        setTimeout(() => router.push("/dashboard"), 1500);
+        setTimeout(() => router.push("/profile"), 1500);
       } else {
         setError(res?.data?.message || "Verification failed");
       }

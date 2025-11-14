@@ -40,7 +40,7 @@ export default function SignInForm() {
         setError(res.error);
       } else {
         console.log(res);
-        router.push("/dashboard"); // redirect on success
+        router.push("/profile"); // redirect on success
       }
     } catch (err) {
       setError("An unexpected error occurred");

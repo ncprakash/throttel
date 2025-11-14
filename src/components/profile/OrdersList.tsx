@@ -1,7 +1,7 @@
 // components/OrdersList.tsx
 "use client";
 import React from "react";
-import Badge from "./Badge";
+
 
 export type Order = {
   order_id: string;

@@ -1,7 +1,7 @@
 
 import "./globals.css";
 
-
+import {Providers} from "./provider"
 
 export default function RootLayout({
   children,
@@ -13,7 +13,7 @@ export default function RootLayout({
       <body
         className={` antialiased`}
       >
-        {children}
+          <Providers>{children}</Providers>
       </body>
     </html>
   );

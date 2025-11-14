@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
 import ProfileHeader from "./ProfileHeader";
 import EditProfileForm from "./EditProfileForm";
 import OrdersList from "./OrdersList";
@@ -15,7 +14,6 @@ type User = {
   last_name?: string;
   email?: string;
   phone?: string;
-  // extend with other fields from your API as needed
 } | null;
 
 export default function ProfilePage() {
@@ -23,12 +21,10 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [wishlist, setWishlist] = useState<any[]>([]);
   const [addresses, setAddresses] = useState<any[]>([]);
-
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -42,7 +38,6 @@ export default function ProfilePage() {
       setLoading(true);
       setNotice(null);
 
-      // list of requests with friendly keys so we can report per-request failures
       const requests = {
         user: axios.get("/api/user"),
         orders: axios.get("/api/orders"),
@@ -51,31 +46,27 @@ export default function ProfilePage() {
       };
 
       try {
-        // use allSettled so one 404 doesn't reject the entire batch
         const entries = Object.entries(requests);
         const results = await Promise.allSettled(Object.values(requests));
 
         if (!mounted) return;
 
-        // map results back to keys
         const mapped: Record<string, any> = {};
         const errors: string[] = [];
 
         results.forEach((r, idx) => {
-          const key = entries[idx][0]; // 'user' | 'orders' | ...
+          const key = entries[idx][0];
           if (r.status === "fulfilled") {
             mapped[key] = r.value.data;
           } else {
-            // r.reason is likely an AxiosError
             const err = r.reason;
             const status = err?.response?.status;
             const url = err?.config?.url;
             errors.push(`${key} (${url}) -> ${status ?? "network error"}`);
-            mapped[key] = null; // fallback
+            mapped[key] = null;
           }
         });
 
-        // apply sensible fallbacks
         const userData = mapped.user ?? null;
         setUser(userData);
         setForm({
@@ -94,12 +85,10 @@ export default function ProfilePage() {
         setAddresses(mapped.addresses || []);
 
         if (errors.length) {
-          // show something useful to the user / dev
           setNotice(`Some data failed to load: ${errors.join(", ")}`);
           console.warn("Profile data load errors:", errors);
         }
       } catch (err) {
-        // This should rarely run because we used allSettled, but keep a fallback
         console.error("Unexpected error loading profile data", err);
         setNotice("Could not load remote data — demo UI only.");
       } finally {
@@ -121,7 +110,7 @@ export default function ProfilePage() {
       await axios.put(`/api/user/${user.user_id}`, payload);
       setUser((s) => (s ? { ...s, ...payload } : s));
       setEditing(false);
-      setNotice("Profile updated");
+      setNotice("Profile updated successfully");
     } catch (err) {
       console.error(err);
       setNotice("Save failed");
@@ -179,150 +168,189 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center p-8">
-        <div className="text-center text-white/80">Loading profile…</div>
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 shadow-2xl">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+            <p className="text-white/80 text-sm">Loading your profile...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-black to-black p-6 sm:p-10 mb-20">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="bg-white/4 rounded-3xl p-6 sm:p-8 shadow-lg">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <ProfileHeader user={user} onEdit={() => setEditing(true)} />
-                <div>
-                  <div className="text-lg font-semibold">
-                    {user?.first_name} {user?.last_name}
-                  </div>
-                  <div className="text-sm text-white/60">{user?.email}</div>
-                </div>
-              </div>
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white pb-32 relative overflow-hidden">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  className="px-4 py-2 rounded-2xl bg-white/10 text-sm"
-                  onClick={() => setEditing((v) => !v)}
-                >
-                  {editing ? "Close" : "Edit profile"}
-                </button>
-                <button className="px-4 py-2 rounded-2xl bg-transparent border text-sm">
-                  Logout
-                </button>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+          {/* Notification Toast */}
+          {notice && (
+            <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-5">
+              <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-xl px-6 py-3 shadow-2xl">
+                <p className="text-sm text-white">{notice}</p>
               </div>
             </div>
+          )}
 
-            {notice && (
-              <div className="mt-4 text-sm text-yellow-300">{notice}</div>
-            )}
-
-            <div className="mt-6">
-              <EditProfileForm
-                open={editing}
-                user={user}
-                value={form}
-                setValue={setForm}
-                onSave={saveProfile}
-                onClose={() => setEditing(false)}
-                saving={saving}
-              />
-            </div>
-          </div>
-
-          {/* ---------- GRID LAYOUT: two columns on lg, single on mobile ---------- */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* LEFT COLUMN: Recent orders + Addresses */}
-            <div className="space-y-6">
-              <div className="bg-white/5 rounded-2xl p-5 shadow-sm">
-                <h3 className="text-lg font-semibold mb-3">Recent orders</h3>
-                <OrdersList orders={orders} onOpen={() => {}} compact />
-              </div>
-
-              <div className="bg-white/5 rounded-2xl p-5 shadow-sm">
-                <h3 className="text-lg font-semibold mb-3">Addresses</h3>
-                <div className="space-y-3">
-                  {addresses.length === 0 ? (
-                    <div className="text-sm text-white/60">
-                      No addresses yet — add one from the button.
-                    </div>
-                  ) : (
-                    addresses.map((addr: any) => (
-                      <div
-                        key={addr.address_id}
-                        className="flex items-start justify-between p-3 bg-white/4 rounded"
-                      >
-                        <div className="text-sm">
-                          <div className="font-medium">
-                            {addr.name || addr.line1}
-                          </div>
-                          <div className="text-xs text-white/60">
-                            {addr.city}, {addr.postcode}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {addr.is_default && (
-                            <div className="text-xs text-white/70">Default</div>
-                          )}
-                          <button
-                            className="text-xs px-3 py-1 rounded bg-white/6"
-                            onClick={() => setDefaultAddress(addr.address_id)}
-                          >
-                            Set default
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                  <button
-                    className="px-4 py-2 rounded-2xl bg-white/10 text-sm"
-                    onClick={() => addOrUpdateAddress({ mock: true })}
-                  >
-                    Add address
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN: Wishlist + Quick stats */}
-            <div className="space-y-6">
-              <div className="bg-white/5 rounded-2xl p-5 shadow-sm">
-                <h3 className="text-lg font-semibold mb-3">Wishlist</h3>
-                <WishlistCard
-                  items={wishlist}
-                  onRemove={removeFromWishlist}
-                  compact
+          {/* Profile Header Section */}
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl hover:shadow-3xl transition-shadow duration-300">
+            <ProfileHeader onEdit={() => setEditing(!editing)} />
+            
+            {editing && (
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <EditProfileForm
+                  open={editing}
+                  user={user}
+                  value={form}
+                  setValue={setForm}
+                  onSave={saveProfile}
+                  onClose={() => setEditing(false)}
+                  saving={saving}
                 />
               </div>
+            )}
+          </div>
 
-              <div className="bg-white/5 rounded-2xl p-5 shadow-sm text-center">
-                <h3 className="text-lg font-semibold mb-2">Quick stats</h3>
-                <div className="grid grid-cols-3 gap-3 text-xs text-white/60">
-                  <div className="p-3 rounded bg-white/4">
-                    <div className="text-xl font-semibold">{orders.length}</div>
-                    <div>Orders</div>
-                  </div>
-                  <div className="p-3 rounded bg-white/4">
-                    <div className="text-xl font-semibold">
-                      {wishlist.length}
-                    </div>
-                    <div>Wishlist</div>
-                  </div>
-                  <div className="p-3 rounded bg-white/4">
-                    <div className="text-xl font-semibold">
-                      {addresses.length}
-                    </div>
-                    <div>Addresses</div>
-                  </div>
+          {/* Quick Stats Overview */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="backdrop-blur-xl bg-gradient-to-br from-purple-500/10 to-transparent border border-white/10 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold">{orders.length}</p>
+                  <p className="text-sm text-white/60 mt-1">Total Orders</p>
+                </div>
+                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="backdrop-blur-xl bg-gradient-to-br from-blue-500/10 to-transparent border border-white/10 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold">{wishlist.length}</p>
+                  <p className="text-sm text-white/60 mt-1">Wishlist Items</p>
+                </div>
+                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="backdrop-blur-xl bg-gradient-to-br from-green-500/10 to-transparent border border-white/10 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold">{addresses.length}</p>
+                  <p className="text-sm text-white/60 mt-1">Saved Addresses</p>
+                </div>
+                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
                 </div>
               </div>
             </div>
           </div>
-          {/* --------------------------------------------------------------------- */}
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Orders (Spans 2 columns on large screens) */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold">Recent Orders</h3>
+                  <button className="text-sm text-white/60 hover:text-white transition-colors">
+                    View All
+                  </button>
+                </div>
+                {orders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                      <svg className="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                    </div>
+                    <p className="text-white/60">No orders yet</p>
+                    <p className="text-sm text-white/40 mt-1">Your order history will appear here</p>
+                  </div>
+                ) : (
+                  <OrdersList orders={orders} onOpen={() => {}} compact />
+                )}
+              </div>
+
+              {/* Addresses Section */}
+              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold">Delivery Addresses</h3>
+                  <button
+                    onClick={() => addOrUpdateAddress({ mock: true })}
+                    className="backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-sm transition-all duration-300 hover:scale-105"
+                  >
+                    + Add New
+                  </button>
+                </div>
+
+                {addresses.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                      <svg className="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-white/60">No addresses saved</p>
+                    <p className="text-sm text-white/40 mt-1">Add a delivery address to get started</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {addresses.map((addr: any) => (
+                      <div
+                        key={addr.address_id}
+                        className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-all duration-300 group"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <p className="font-medium">{addr.name || addr.line1}</p>
+                              {addr.is_default && (
+                                <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full border border-green-500/30">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-white/60">
+                              {addr.city}, {addr.postcode}
+                            </p>
+                          </div>
+                          {!addr.is_default && (
+                            <button
+                              onClick={() => setDefaultAddress(addr.address_id)}
+                              className="text-xs backdrop-blur-sm bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg border border-white/10 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                            >
+                              Set Default
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column - Wishlist */}
+            <div className="lg:col-span-1">
+              <WishlistCard items={wishlist} onRemove={removeFromWishlist} compact />
+            </div>
+          </div>
         </div>
       </div>
       <BottomNav />
