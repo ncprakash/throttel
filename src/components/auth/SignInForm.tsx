@@ -3,8 +3,8 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import FormInput from "./FormInpute"
+import { signIn } from "next-auth/react";
+import FormInput from "./FormInpute";
 import SubmitButton from "./SubmitButton";
 import AlertMessage from "./AlertMessage";
 
@@ -25,28 +25,25 @@ export default function SignInForm() {
     setIsSubmitting(true);
 
     try {
-      const body = formData.identifier.includes("@")
-        ? { email: formData.identifier.trim(), password: formData.password }
-        : { phone: formData.identifier.trim(), password: formData.password };
+      const credentials =
+        formData.identifier.includes("@")
+          ? { email: formData.identifier.trim(), password: formData.password }
+          : { phone: formData.identifier.trim(), password: formData.password };
 
-      const response = await axios.post("/api/auth/sign-in", body, {
-        withCredentials: true,
+      // NextAuth signIn
+      const res = await signIn("credentials", {
+        redirect: false,
+        ...credentials,
       });
 
-      if (response.data.ok) {
-        // Redirect to dashboard on success
-        router.push("/dashboard");
+      if (res?.error) {
+        setError(res.error);
+      } else {
+        console.log(res);
+        router.push("/dashboard"); // redirect on success
       }
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(
-          err.response?.data?.message ||
-            err.response?.data?.error ||
-            "Sign-in failed"
-        );
-      } else {
-        setError("An unexpected error occurred");
-      }
+      setError("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }
