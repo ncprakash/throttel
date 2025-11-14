@@ -1,236 +1,259 @@
-// components/CategoryGrid.tsx
+// components/BikesShowcase.tsx
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import Image from 'next/image';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, EffectFade, Pagination, Navigation } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
 
-const categories = [
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/effect-fade';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+
+const bikes = [
   { 
-    name: 'Exhaust Systems', 
-    count: 248, 
-    description: 'High-performance exhaust systems',
-    gradient: 'from-red-500/20 to-orange-500/10'
+    id: 'royal-enfield',
+    name: 'Royal Enfield', 
+    tagline: 'Pure Motorcycling',
+    description: 'British heritage meets Indian craftsmanship in timeless classics',
+    image: 'https://images.unsplash.com/photo-1558980664-1db506751c6c?w=1200&q=80',
+    established: '1901',
+    origin: 'UK/India'
   },
   { 
-    name: 'Air Intakes', 
-    count: 156, 
-    description: 'Cold air intake systems',
-    gradient: 'from-blue-500/20 to-cyan-500/10'
+    id: 'harley-davidson',
+    name: 'Harley Davidson', 
+    tagline: 'All for Freedom',
+    description: 'Iconic American muscle and the sound of pure freedom',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80',
+    established: '1903',
+    origin: 'USA'
   },
   { 
-    name: 'ECU Tuners', 
-    count: 89, 
-    description: 'Performance tuning modules',
-    gradient: 'from-purple-500/20 to-pink-500/10'
+    id: 'ducati',
+    name: 'Ducati', 
+    tagline: 'Italian Excellence',
+    description: 'Race-bred performance with unmistakable Italian design',
+    image: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1200&q=80',
+    established: '1926',
+    origin: 'Italy'
   },
   { 
-    name: 'Brake Systems', 
-    count: 312, 
-    description: 'High-performance braking',
-    gradient: 'from-yellow-500/20 to-amber-500/10'
+    id: 'bmw',
+    name: 'BMW Motorrad', 
+    tagline: 'Make Life a Ride',
+    description: 'German engineering precision for every journey',
+    image: 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=1200&q=80',
+    established: '1923',
+    origin: 'Germany'
   },
   { 
-    name: 'Suspension', 
-    count: 198, 
-    description: 'Upgraded suspension kits',
-    gradient: 'from-green-500/20 to-emerald-500/10'
+    id: 'triumph',
+    name: 'Triumph', 
+    tagline: 'For the Ride',
+    description: 'Modern classics with British soul and character',
+    image: 'https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=1200&q=80',
+    established: '1902',
+    origin: 'UK'
   },
   { 
-    name: 'Protection', 
-    count: 267, 
-    description: 'Frame sliders & guards',
-    gradient: 'from-gray-500/20 to-slate-500/10'
+    id: 'yamaha',
+    name: 'Yamaha', 
+    tagline: 'Revs Your Heart',
+    description: 'Japanese innovation powering the thrill of riding',
+    image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=1200&q=80',
+    established: '1955',
+    origin: 'Japan'
   },
   { 
-    name: 'Styling', 
-    count: 445, 
-    description: 'Custom bodywork & accents',
-    gradient: 'from-indigo-500/20 to-violet-500/10'
+    id: 'ktm',
+    name: 'KTM', 
+    tagline: 'Ready to Race',
+    description: 'Austrian performance machines built for adrenaline',
+    image: 'https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=1200&q=80',
+    established: '1934',
+    origin: 'Austria'
   },
   { 
-    name: 'Track Gear', 
-    count: 134, 
-    description: 'Race-ready equipment',
-    gradient: 'from-rose-500/20 to-red-500/10'
+    id: 'honda',
+    name: 'Honda', 
+    tagline: 'The Power of Dreams',
+    description: 'Legendary reliability meets cutting-edge technology',
+    image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=1200&q=80',
+    established: '1948',
+    origin: 'Japan'
   },
 ];
 
 export default function CategoryGrid() {
-  const [activeCategory, setActiveCategory] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const swiperRef = useRef<SwiperType | null>(null);
 
   return (
-    <section className="relative min-h-screen bg-gradient-to-br from-slate-950 via-black to-slate-900 py-20 px-4 overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse delay-500"></div>
-      </div>
+    <div className="relative w-full h-full bg-black overflow-hidden">
+      {/* Main Slider */}
+      <Swiper
+        modules={[Autoplay, EffectFade, Pagination, Navigation]}
+        effect="fade"
+        speed={1500}
+        autoplay={{
+          delay: 4000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        }}
+        loop={true}
+        pagination={{
+          clickable: true,
+          renderBullet: (index, className) => {
+            return `<span class="${className} !bg-white/40 hover:!bg-white !w-12 !h-1 !rounded-none transition-all duration-300"></span>`;
+          },
+        }}
+        navigation={{
+          nextEl: '.swiper-button-next-custom',
+          prevEl: '.swiper-button-prev-custom',
+        }}
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+        }}
+        onSlideChange={(swiper) => {
+          setActiveIndex(swiper.realIndex);
+        }}
+        className="w-full h-full"
+      >
+        {bikes.map((bike, index) => (
+          <SwiperSlide key={bike.id}>
+            <div className="relative w-full h-full">
+              {/* Background Image */}
+              <div className="absolute inset-0">
+                <Image
+                  src={bike.image}
+                  alt={`${bike.name} motorcycle`}
+                  fill
+                  className="object-cover"
+                  quality={90}
+                  priority={index < 2}
+                />
+                {/* Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50" />
+              </div>
 
-      {/* Grid Pattern Overlay */}
-      <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]"></div>
+              {/* Content */}
+              <div className="relative h-full max-w-7xl mx-auto px-8 flex items-center">
+                <div className="max-w-2xl">
+                  {/* Badge */}
+                  <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-5 py-2 border border-white/20 mb-6 animate-fade-in">
+                    <span className="text-white/60 text-xs font-mono uppercase tracking-widest">
+                      Est. {bike.established}
+                    </span>
+                    <span className="w-1 h-1 bg-white/60 rounded-full" />
+                    <span className="text-white/60 text-xs font-mono uppercase tracking-widest">
+                      {bike.origin}
+                    </span>
+                  </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-xl rounded-full px-6 py-3 border border-white/10 mb-6">
-            <div className="flex gap-1">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce delay-100"></div>
-              <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce delay-200"></div>
+                  {/* Title */}
+                  <h1 className="text-7xl md:text-8xl font-light text-white mb-4 tracking-tight animate-slide-up">
+                    {bike.name}
+                  </h1>
+
+                  {/* Tagline */}
+                  <p className="text-2xl md:text-3xl text-white/80 font-light mb-6 animate-slide-up animation-delay-100">
+                    {bike.tagline}
+                  </p>
+
+                  {/* Description */}
+                  <p className="text-lg text-white/60 mb-8 max-w-xl animate-slide-up animation-delay-200">
+                    {bike.description}
+                  </p>
+
+                  {/* CTA Buttons */}
+                  <div className="flex gap-4 animate-slide-up animation-delay-300">
+                    <button className="group px-8 py-4 bg-white text-black font-medium rounded-full hover:bg-white/90 transition-all duration-300 flex items-center gap-3">
+                      <span>Explore Models</span>
+                      <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </button>
+                    <button className="px-8 py-4 bg-white/10 backdrop-blur-md text-white font-medium rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300">
+                      Learn More
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <span className="text-white/80 text-sm font-medium tracking-widest uppercase">
-              Performance Categories
-            </span>
-          </div>
-          
-          <h2 className="text-5xl md:text-7xl font-black text-white mb-6">
-            <span className="bg-gradient-to-r from-white via-blue-200 to-cyan-200 bg-clip-text text-transparent">
-              Elevate Your Ride
-            </span>
-            <span className="block text-3xl md:text-4xl text-white/40 font-light mt-4">
-              Premium parts for peak performance
-            </span>
-          </h2>
-          
-          <p className="text-white/60 text-lg font-light max-w-2xl mx-auto leading-relaxed">
-            Discover our curated collection of high-performance motorcycle components, 
-            engineered for riders who demand excellence.
-          </p>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      {/* Custom Navigation */}
+      <div className="absolute bottom-8 right-8 z-20 flex items-center gap-4">
+        {/* Counter */}
+        <div className="text-white/60 font-mono text-sm">
+          <span className="text-white text-2xl font-light">{String(activeIndex + 1).padStart(2, '0')}</span>
+          <span className="mx-2">/</span>
+          <span>{String(bikes.length).padStart(2, '0')}</span>
         </div>
 
-        {/* Interactive Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((category, index) => (
-            <CategoryCard 
-              key={category.name}
-              category={category}
-              index={index}
-              isActive={activeCategory === index}
-              onHover={() => setActiveCategory(index)}
-              onLeave={() => setActiveCategory(null)}
-            />
-          ))}
-        </div>
-
-        {/* Quick Stats */}
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div className="text-white">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">1,849+</div>
-            <div className="text-white/60 text-sm font-medium uppercase tracking-widest mt-2">Products</div>
-          </div>
-          <div className="text-white">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">24/7</div>
-            <div className="text-white/60 text-sm font-medium uppercase tracking-widest mt-2">Support</div>
-          </div>
-          <div className="text-white">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">Global</div>
-            <div className="text-white/60 text-sm font-medium uppercase tracking-widest mt-2">Shipping</div>
-          </div>
-          <div className="text-white">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">2-Year</div>
-            <div className="text-white/60 text-sm font-medium uppercase tracking-widest mt-2">Warranty</div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function CategoryCard({ 
-  category, 
-  index, 
-  isActive, 
-  onHover, 
-  onLeave 
-}: { 
-  category: typeof categories[0];
-  index: number;
-  isActive: boolean;
-  onHover: () => void;
-  onLeave: () => void;
-}) {
-  return (
-    <div
-      className={`group relative h-80 rounded-2xl overflow-hidden border transition-all duration-500 cursor-pointer ${
-        isActive 
-          ? 'border-white/30 scale-105 shadow-2xl' 
-          : 'border-white/10 hover:border-white/20'
-      }`}
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-      style={{
-        animationDelay: `${index * 100}ms`
-      }}
-    >
-      {/* Animated Gradient Background */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} transition-all duration-700 ${
-        isActive ? 'opacity-30' : 'opacity-20 group-hover:opacity-25'
-      }`} />
-      
-      {/* Shine Effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-      
-      {/* Content */}
-      <div className="relative h-full flex flex-col justify-between p-6 text-white">
-        {/* Top Section */}
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <div className="text-white/40 text-sm font-medium mb-2">
-              0{(index % 8) + 1}
-            </div>
-            <h3 className={`text-xl font-bold mb-2 transition-all duration-500 ${
-              isActive ? 'text-white' : 'text-white/90'
-            }`}>
-              {category.name}
-            </h3>
-            <p className="text-white/60 text-sm font-light leading-relaxed">
-              {category.description}
-            </p>
-          </div>
-          
-          {/* Animated Icon */}
-          <div className={`w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center transition-all duration-500 ${
-            isActive ? 'scale-110 rotate-12 bg-white/20' : 'group-hover:scale-105'
-          }`}>
-            <div className="w-6 h-6 bg-current opacity-60 rounded-full" />
-          </div>
-        </div>
-
-        {/* Bottom Section */}
-        <div className="flex justify-between items-end">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold text-white/90">
-              {category.count}
-            </span>
-            <span className="text-white/40 text-sm font-light">
-              products
-            </span>
-          </div>
-          
-          {/* CTA Button */}
-          <button className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border transition-all duration-500 ${
-            isActive 
-              ? 'bg-white/20 border-white/40 text-white' 
-              : 'bg-white/10 border-white/20 text-white/70 group-hover:bg-white/15 group-hover:border-white/30'
-          }`}>
-            <span className="text-sm font-medium">View</span>
-            <svg 
-              className={`w-4 h-4 transition-transform duration-500 ${
-                isActive ? 'translate-x-1' : 'group-hover:translate-x-1'
-              }`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
+        {/* Navigation Buttons */}
+        <div className="flex gap-2">
+          <button className="swiper-button-prev-custom w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all duration-300">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button className="swiper-button-next-custom w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all duration-300">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </div>
 
-      {/* Active State Glow */}
-      {isActive && (
-        <div className="absolute inset-0 rounded-2xl border-2 border-white/20 animate-pulse" />
-      )}
+      {/* Progress Bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-20">
+        <div 
+          className="h-full bg-white transition-all duration-[4000ms] ease-linear"
+          style={{
+            width: activeIndex === bikes.length - 1 ? '100%' : `${((activeIndex + 1) / bikes.length) * 100}%`
+          }}
+        />
+      </div>
+
+      {/* Brand Grid Overlay - Top Right */}
+      <div className="absolute top-8 right-8 z-20 flex gap-2">
+        {bikes.map((bike, index) => (
+          <button
+            key={bike.id}
+            onClick={() => swiperRef.current?.slideToLoop(index)}
+            className={`w-16 h-16 rounded-full border-2 transition-all duration-300 overflow-hidden ${
+              activeIndex === index 
+                ? 'border-white scale-110' 
+                : 'border-white/20 hover:border-white/40 scale-100 opacity-60 hover:opacity-100'
+            }`}
+          >
+            <Image
+              src={bike.image}
+              alt={bike.name}
+              width={64}
+              height={64}
+              className="w-full h-full object-cover"
+            />
+          </button>
+        ))}
+      </div>
+
+      {/* Scroll Down Indicator */}
+      <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+        <div className="flex flex-col items-center gap-2 text-white/40">
+          <span className="text-xs font-mono uppercase tracking-widest">Scroll</span>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </div>
+      </div>
     </div>
   );
 }

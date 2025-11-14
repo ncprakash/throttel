@@ -215,7 +215,7 @@ export default function InterleavedScrollExperience() {
         </div>
 
         {/* Section 1: Category Grid - Shows with Render 2 */}
-        <div className={`relative min-h-screen transition-opacity duration-700 ${currentSection >= 1 ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`relative min-h-screen transition-opacity duration-700 ${currentSection >= 1 ? 'opacity-100' : 'opacity-0'} h-screen snap-start snap-always`}>
           <CategoryGrid />
         </div>
 
