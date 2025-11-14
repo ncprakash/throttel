@@ -1,33 +1,114 @@
 // components/BottomNav.tsx - CYLINDER GLASSMORPHIC NAV
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function BottomNav() {
   const [activeNav, setActiveNav] = useState("home");
-  const router = useRouter();
 
   const navItems = [
-    { id: "home", label: "Home", href: "/" },
-    { id: "shop", label: "Shop", href: "/shop" },
+    {
+      id: "home",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          />
+        </svg>
+      ),
+      label: "Home",
+    },
+    {
+      id: "shop",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+          />
+        </svg>
+      ),
+      label: "Shop",
+    },
     {
       id: "garage",
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 10V3L4 14h7v7l9-11h-7z"
+          />
+        </svg>
+      ),
       label: "Garage",
-      href: "/garage",
       isCenter: true,
     },
-    { id: "guides", label: "Guides", href: "/guides" },
-    { id: "profile", label: "Profile", href: "/profile" },
+    {
+      id: "guides",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+          />
+        </svg>
+      ),
+      label: "Guides",
+    },
+    {
+      id: "profile",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+          />
+        </svg>
+      ),
+      label: "Profile",
+    },
   ];
-
-  function handleNavClick(item: any) {
-    setActiveNav(item.id);
-    router.push(item.href); // Navigate
-  }
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+      {/* Main Cylinder Container */}
       <div className="relative">
+        {/* Glassmorphic Background */}
         <div
           className="
           bg-black/40 backdrop-blur-2xl 
@@ -41,7 +122,7 @@ export default function BottomNav() {
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => handleNavClick(item)}
+                onClick={() => setActiveNav(item.id)}
                 className={`
                   relative group
                   ${item.isCenter ? "w-14 h-14" : "w-12 h-12"}
@@ -72,16 +153,16 @@ export default function BottomNav() {
                 {/* Tooltip */}
                 <div
                   className="
-                    absolute -top-14 left-1/2 -translate-x-1/2
-                    bg-black/90 backdrop-blur-xl
-                    border border-white/10
-                    rounded-xl
-                    px-3 py-2
-                    opacity-0 group-hover:opacity-100
-                    pointer-events-none
-                    transition-all duration-300
-                    whitespace-nowrap
-                  "
+                  absolute -top-14 left-1/2 -translate-x-1/2
+                  bg-black/90 backdrop-blur-xl
+                  border border-white/10
+                  rounded-xl
+                  px-3 py-2
+                  opacity-0 group-hover:opacity-100
+                  pointer-events-none
+                  transition-all duration-300
+                  whitespace-nowrap
+                "
                 >
                   <span className="text-white text-xs font-light">
                     {item.label}
