@@ -75,12 +75,15 @@ export async function POST(req: Request) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Save OTP with expiration (10 minutes)
-    const { error: otpError } = await supabase.from("email_otps").insert({
-      user_id: newUser.user_id,
-      email,
-      otp,
-      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-    });
+  const { error: otpError } = await supabase
+  .from("email_otps")
+  .insert({
+    email,
+    otp,
+    expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+  })
+  .select();
+
 
     if (otpError) {
       console.error("OTP creation error:", otpError);

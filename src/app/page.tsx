@@ -3,7 +3,8 @@
 import InterleavedScrollExperience from "../components/InterLeaved";
 import Footer from "../components/Footer";
 import BottomNav from "@/components/BottomNavbar";
-import LoginPage from "@/components/LoginPage";
+
+import AuthPage from "./auth/page";
 
 export default function Home() {
   return (
@@ -11,7 +12,7 @@ export default function Home() {
       <BottomNav />
       <InterleavedScrollExperience />
       <Footer />
-      <LoginPage />
+    <AuthPage/>
     </>
   );
 }

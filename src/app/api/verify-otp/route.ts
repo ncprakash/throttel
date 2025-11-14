@@ -6,33 +6,27 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { email, otp } = body;
 
-    // 1️⃣ Find OTP record for this user
+    const nowUTC = new Date().toISOString();
+
+    // 1️⃣ Check OTP (not expired)
     const { data: otpRecord, error: otpError } = await supabase
       .from("email_otps")
       .select("*")
       .eq("email", email)
       .eq("otp", otp)
-      .single();
+      .gt("expires_at", nowUTC)               // ⬅️ valid OTP only
+      .order("id", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    if (otpError || !otpRecord) {
+    if (!otpRecord || otpError) {
       return NextResponse.json(
-        { success: false, message: "Invalid OTP" },
+        { ok: false, message: "Invalid or expired OTP" },
         { status: 400 }
       );
     }
 
-    // 2️⃣ Check if OTP is expired
-    const now = new Date();
-    const expiry = new Date(otpRecord.expires_at);
-
-    if (now > expiry) {
-      return NextResponse.json(
-        { success: false, message: "OTP expired" },
-        { status: 400 }
-      );
-    }
-
-    // 3️⃣ OTP is correct → mark user as verified
+    // 2️⃣ Mark user as verified
     const { error: updateError } = await supabase
       .from("users")
       .update({ is_verified: true })
@@ -40,27 +34,21 @@ export async function POST(req: Request) {
 
     if (updateError) {
       return NextResponse.json(
-        { success: false, message: "Failed to verify user" },
+        { ok: false, message: "Failed to verify user" },
         { status: 500 }
       );
     }
 
-    // 4️⃣ Delete OTP after successful verification
-    await supabase
-      .from("email_otps")
-      .delete()
-      .eq("email", email);
+    // 3️⃣ Delete OTP after verification
+    await supabase.from("email_otps").delete().eq("email", email);
 
     return NextResponse.json(
-      {
-        success: true,
-        message: "OTP verified successfully",
-      },
+      { ok: true, message: "OTP verified successfully" },
       { status: 200 }
     );
   } catch (err: any) {
     return NextResponse.json(
-      { success: false, message: err.message },
+      { ok: false, message: err.message },
       { status: 500 }
     );
   }

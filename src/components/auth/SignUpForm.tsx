@@ -7,6 +7,8 @@ import axios from "axios";
 import FormInput from "./FormInpute";
 import SubmitButton from "./SubmitButton";
 import AlertMessage from "./AlertMessage";
+import { Alert, AlertTitle } from "../ui/alert";
+import { CheckCircle2Icon } from "lucide-react";
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -31,12 +33,19 @@ export default function SignUpForm() {
       first_name: formData.firstName.trim(),      // ✅ Changed
       last_name: formData.lastName.trim(),        // ✅ Changed
       email: formData.email.trim(),
-      phone: formData.phoneNumber.trim(),         // ✅ Changed
+      phone: formData.phoneNumber.trim(),        
       password: formData.password,
     });
+    if(response.data.ok==true){
+        <Alert>
+            <CheckCircle2Icon/>
+            <AlertTitle>{response.data.message}</AlertTitle>
+        </Alert>
+    }
 
     if (response.data.ok) {
-      router.push("/verify");
+        const redirectUrl=`/verify?otpemail=${encodeURIComponent(formData.email)}`;
+      router.push(redirectUrl);
     }
   } catch (err) {
     if (axios.isAxiosError(err)) {

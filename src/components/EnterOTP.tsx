@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Props = {
   length?: number;
@@ -18,25 +18,25 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Fixed: Get email from URL parameter named "otpemail"
+  const email = searchParams.get("otpemail");
 
   useEffect(() => {
-    // focus first input on mount
     inputsRef.current[0]?.focus();
   }, []);
 
   useEffect(() => {
     const code = values.join("");
     if (code.length === length && values.every((v) => v !== "")) {
-      // notify parent
       onComplete?.(code);
-      // attempt automatic verify when fully filled
       handleVerify(code);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values, length]); // intentionally not including handleVerify/onComplete to avoid re-creation loops
+  }, [values, length]);
 
   const handleChange = (index: number, val: string) => {
-    // accept only digits and limit to 1 char
     const char = val.replace(/[^0-9]/g, "").slice(-1);
     const next = [...values];
     next[index] = char;
@@ -49,19 +49,14 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
     }
   };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    i: number
-  ) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, i: number) => {
     const key = e.key;
     if (key === "Backspace") {
       if (values[i]) {
-        // clear current
         const next = [...values];
         next[i] = "";
         setValues(next);
       } else {
-        // move back
         const prev = inputsRef.current[i - 1];
         prev?.focus();
         prev?.select();
@@ -75,10 +70,7 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const paste = e.clipboardData
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, length);
+    const paste = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
     if (!paste) return;
     const next = Array(length).fill("");
     for (let i = 0; i < paste.length; i++) next[i] = paste[i];
@@ -89,28 +81,31 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
 
   async function handleVerify(code: string) {
     if (!code || code.length !== length) return;
+    
+    if (!email) {
+      setError("Email not found in URL");
+      return;
+    }
+
     setError(null);
     setSuccess(null);
     setIsSubmitting(true);
+    
     try {
-      // POST the OTP to /verify. Adjust payload if your backend expects a different key (e.g. { otp }).
-      const res = await axios.post("api/verify-otp", { code });
+      const res = await axios.post("/api/verify-otp", { 
+        otp: code,
+        email: email 
+      });
 
-      // adapt to your API shape
       if (res?.data?.ok || res?.status === 200) {
         setSuccess("Verification successful");
-        // optional: redirect after success - adjust destination as needed
-        // router.push("/dashboard");
+        setTimeout(() => router.push("/dashboard"), 1500);
       } else {
         setError(res?.data?.message || "Verification failed");
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setError(
-          err.response?.data?.message ||
-            err.response?.data?.error ||
-            "Verification failed"
-        );
+        setError(err.response?.data?.message || err.response?.data?.error || "Verification failed");
       } else {
         setError("An unexpected error occurred");
       }
@@ -122,22 +117,11 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
   return (
     <div className={`w-full max-w-md mx-auto ${className}`}>
       <div className="text-center mb-4">
-        <h2 className="text-lg font-bold tracking-tight">
-          Enter verification code
-        </h2>
-        <p className="text-xs text-white/70">
-          We sent a {length}-digit code to your device
-        </p>
+        <h2 className="text-lg font-bold tracking-tight">Enter verification code</h2>
+        <p className="text-xs text-white/70">We sent a {length}-digit code to {email || "your email"}</p>
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleVerify(values.join(""));
-        }}
-        onPaste={handlePaste}
-        className="flex gap-3 justify-center"
-      >
+      <form onSubmit={(e) => { e.preventDefault(); handleVerify(values.join("")); }} onPaste={handlePaste} className="flex gap-3 justify-center">
         {values.map((val, i) => (
           <input
             key={i}
@@ -155,36 +139,16 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
       </form>
 
       <div className="mt-4 flex items-center justify-between text-xs">
-        <button
-          type="button"
-          onClick={() => {
-            setValues(Array(length).fill(""));
-            inputsRef.current[0]?.focus();
-            onResend?.();
-            setError(null);
-            setSuccess(null);
-          }}
-          className="text-sm font-medium text-white/70 hover:text-white/90"
-        >
+        <button type="button" onClick={() => { setValues(Array(length).fill("")); inputsRef.current[0]?.focus(); onResend?.(); setError(null); setSuccess(null); }} className="text-sm font-medium text-white/70 hover:text-white/90">
           Resend code
         </button>
-
-        <button
-          type="button"
-          onClick={() => handleVerify(values.join(""))}
-          className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-50"
-          disabled={values.some((v) => v === "") || isSubmitting}
-        >
+        <button type="button" onClick={() => handleVerify(values.join(""))} className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-50" disabled={values.some((v) => v === "") || isSubmitting}>
           {isSubmitting ? "Verifying..." : "Verify"}
         </button>
       </div>
 
-      {error && (
-        <p className="mt-3 text-center text-sm text-red-400">{error}</p>
-      )}
-      {success && (
-        <p className="mt-3 text-center text-sm text-green-400">{success}</p>
-      )}
+      {error && <p className="mt-3 text-center text-sm text-red-400">{error}</p>}
+      {success && <p className="mt-3 text-center text-sm text-green-400">{success}</p>}
     </div>
   );
 }
