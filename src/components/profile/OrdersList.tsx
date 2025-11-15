@@ -1,7 +1,6 @@
-// components/OrdersList.tsx
 "use client";
 import React from "react";
-
+import Badge from "./Badge";
 
 export type Order = {
   order_id: string;
@@ -9,15 +8,10 @@ export type Order = {
   created_at?: string | number;
   status?: string;
   total_amount?: number;
-  // extend with other fields from your API as needed
 };
 
 type OrdersListProps = {
   orders: Order[];
-  /**
-   * Called when a user opens / clicks an order.
-   * The parameter is optional so parent handlers like `() => {}` are accepted.
-   */
   onOpen?: (o?: Order) => void;
   compact?: boolean;
 };
@@ -38,16 +32,15 @@ export default function OrdersList({
   });
 
   return (
-    <div className="bg-white/5 p-4 rounded-lg">
+    <div className="p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_20px_rgba(255,255,255,0.05)]">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold">Recent orders</h3>
+        <h3 className="text-sm font-semibold text-white/90">Recent orders</h3>
+
         <button
           type="button"
-          className="text-xs text-white/60 hover:underline"
-          onClick={() => {
-            /* navigate to orders page - implement in parent if needed */
-          }}
+          className="text-xs text-white/60 hover:text-white hover:underline transition"
           aria-label="View all orders"
+          onClick={() => {}}
         >
           View all
         </button>
@@ -56,25 +49,30 @@ export default function OrdersList({
       {orders.length === 0 ? (
         <p className="text-xs text-white/60">No orders yet.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {itemsToShow.map((o) => (
             <li
               key={o.order_id}
               role="button"
               tabIndex={0}
-              className="flex items-center justify-between p-3 rounded bg-white/5 hover:scale-[1.01] transition-transform cursor-pointer"
+              className="
+                flex items-center justify-between 
+                p-3 rounded-lg
+                bg-white/4 border border-white/10 
+                hover:bg-white/10 hover:border-white/20 
+                transition cursor-pointer
+                hover:scale-[1.01]
+              "
               onClick={() => onOpen(o)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  onOpen(o);
-                }
+                if (e.key === "Enter" || e.key === " ") onOpen(o);
               }}
-              aria-label={`Open order ${o.order_number || o.order_id}`}
             >
               <div>
-                <div className="font-medium">
+                <div className="font-medium text-white">
                   {o.order_number || o.order_id}
                 </div>
+
                 <div className="text-xs text-white/60">
                   {o.created_at
                     ? dateFormatter.format(new Date(o.created_at))
@@ -84,18 +82,21 @@ export default function OrdersList({
 
               <div className="flex items-center gap-3">
                 <Badge
-                  className={`${
-                    o.status
-                      ? o.status === "delivered"
-                        ? "bg-green-700/15 text-green-200"
-                        : "bg-white/6 text-white/80"
-                      : ""
-                  } px-3`}
+                  className={`
+                    inline-flex items-center rounded-full px-3 py-1 text-xs
+                    ${
+                      o.status
+                        ? o.status === "delivered"
+                          ? "bg-green-700/15 text-green-200 border border-green-700/10"
+                          : "bg-white/6 text-white/80 border border-white/10"
+                        : "bg-white/6 text-white/80 border border-white/10"
+                    }
+                  `}
                 >
                   {o.status ?? "—"}
                 </Badge>
 
-                <div className="font-medium">
+                <div className="font-medium text-white">
                   {typeof o.total_amount === "number"
                     ? new Intl.NumberFormat(undefined, {
                         style: "currency",

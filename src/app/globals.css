@@ -1,242 +1,204 @@
+/* globals.css — BLACK & WHITE ONLY (drop-in replacement) */
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* keep custom dark variant if you use it */
 @custom-variant dark (&:is(.dark *));
 
+/* --------------------
+   Animations (unchanged)
+   -------------------- */
 @layer utilities {
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slide-up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-  @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+  .animate-fade-in { animation: fade-in 0.8s ease-out forwards; }
+  .animate-slide-up { animation: slide-up 0.8s ease-out forwards; opacity: 0; }
+  .animate-slideInLeft { animation: slideInLeft 0.6s ease-out forwards; }
+  .animate-float { animation: float 3s ease-in-out infinite; }
 
-  @keyframes slideInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.8s ease-out forwards;
-  }
-
-  .animate-slide-up {
-    animation: slide-up 0.8s ease-out forwards;
-    opacity: 0;
-  }
-
-  .animate-slideInLeft {
-    animation: slideInLeft 0.6s ease-out forwards;
-  }
-
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .animation-delay-100 {
-    animation-delay: 0.1s;
-  }
-
-  .animation-delay-200 {
-    animation-delay: 0.2s;
-  }
-
-  .animation-delay-300 {
-    animation-delay: 0.3s;
-  }
-
-  .animation-delay-500 {
-    animation-delay: 0.5s;
-  }
-
-  .animation-delay-700 {
-    animation-delay: 0.7s;
-  }
-
-  .animation-delay-1000 {
-    animation-delay: 1s;
-  }
+  .animation-delay-100 { animation-delay: 0.1s; }
+  .animation-delay-200 { animation-delay: 0.2s; }
+  .animation-delay-300 { animation-delay: 0.3s; }
+  .animation-delay-500 { animation-delay: 0.5s; }
+  .animation-delay-700 { animation-delay: 0.7s; }
+  .animation-delay-1000 { animation-delay: 1s; }
 }
 
-body {
-  @apply bg-black text-white antialiased;
-}
-
-/* Custom Swiper Pagination */
-.swiper-pagination {
-  bottom: 32px !important;
-  left: 32px !important;
-  width: auto !important;
-  display: flex;
-  gap: 8px;
-}
-
-.swiper-pagination-bullet {
-  margin: 0 !important;
-}
-
-.swiper-pagination-bullet-active {
-  background: white !important;
-  width: 48px !important;
-}
-
-/* Hide default Swiper navigation */
-.swiper-button-next,
-.swiper-button-prev {
-  display: none;
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
+/* --------------------
+   Theme variables — FORCE BLACK & WHITE FAMILY
+   -------------------- */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+
+  /* force primary/secondary/accent to neutral grays */
+  --color-primary: var(--foreground);
+  --color-primary-foreground: var(--background);
+  --color-secondary: var(--foreground);
+  --color-secondary-foreground: var(--background);
+  --color-accent: var(--foreground);
+  --color-accent-foreground: var(--background);
+
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-chart-1: var(--foreground);
+  --color-chart-2: var(--foreground);
+  --color-chart-3: var(--foreground);
+  --color-chart-4: var(--foreground);
+  --color-chart-5: var(--foreground);
+
+  --color-sidebar: var(--card);
+  --color-sidebar-foreground: var(--card-foreground);
+  --color-sidebar-primary: var(--foreground);
+  --color-sidebar-primary-foreground: var(--background);
+  --color-sidebar-accent: var(--foreground);
+  --color-sidebar-accent-foreground: var(--background);
+  --color-sidebar-border: var(--border);
+  --color-sidebar-ring: var(--ring);
 }
 
-:root {
+/* Root: absolute black & white palette (no ok-lch colors) */
+:root{
+  /* spacing / radius */
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.705 0.015 286.067);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.21 0.006 285.885);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.705 0.015 286.067);
+
+  /* core */
+  --background: #000000;          /* page background */
+  --foreground: #ffffff;          /* primary text (white) */
+  --card: #0b0b0b;                /* card background (near black) */
+  --card-foreground: #ffffff;     /* card text */
+  --popover: #0b0b0b;
+  --popover-foreground: #ffffff;
+
+  /* subtle variants */
+  --muted: #bfbfbf;               /* muted text (light grey) */
+  --muted-foreground: #9f9f9f;
+  --border: rgba(255,255,255,0.06); /* thin border */
+  --input: rgba(255,255,255,0.06);  /* input backgrounds */
+  --ring: rgba(255,255,255,0.12);   /* focus ring */
+
+  /* destructive (use grayscale, not red) */
+  --destructive: #999999;
+
+  /* charts & accents all neutral */
+  --chart-1: #bfbfbf;
+  --chart-2: #9f9f9f;
+  --chart-3: #7f7f7f;
+  --chart-4: #5f5f5f;
+  --chart-5: #3f3f3f;
 }
 
-.dark {
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.92 0.004 286.32);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.552 0.016 285.938);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.552 0.016 285.938);
+/* Dark class: invert polarity if you want a bright card on dark bg (but still mono) */
+.dark{
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #0b0b0b;
+  --card-foreground: #ffffff;
+  --muted: #bfbfbf;
+  --muted-foreground: #9f9f9f;
+  --border: rgba(255,255,255,0.06);
+  --input: rgba(255,255,255,0.06);
+  --ring: rgba(255,255,255,0.12);
+  --destructive: #999999;
+  --chart-1: #bfbfbf;
+  --chart-2: #9f9f9f;
+  --chart-3: #7f7f7f;
+  --chart-4: #5f5f5f;
+  --chart-5: #3f3f3f;
 }
 
+/* --------------------
+   Accessibility & reduced motion
+   -------------------- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --------------------
+   Swiper tweaks (keep important where necessary)
+   -------------------- */
+.swiper-pagination{ bottom:32px !important; left:32px !important; width:auto !important; display:flex; gap:8px; }
+.swiper-pagination-bullet{ margin:0 !important; }
+.swiper-pagination-bullet-active{ background: #ffffff !important; width:48px !important; }
+.swiper-button-next,.swiper-button-prev{ display:none; }
+
+/* --------------------
+   Base layer — targeted & safe (NO universal selector)
+   - only set outlines/borders for interactive/form elements
+   - use theme variables so components can override with Tailwind classes
+   -------------------- */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  /* accessible focus outlines for interactive elements only */
+  button, a, input, textarea, select, summary {
+    outline-offset: 2px;
   }
+
+  /* sensible defaults for inputs & controls */
+  input, textarea, select {
+    @apply border rounded;
+    border-color: var(--border);
+    background-color: var(--input);
+    color: var(--foreground);
+  }
+
+  /* body — enforce page background + text */
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* utility safety: normalize common colorful elements to grayscale */
+  /* This prevents libraries (charts, badges) from defaulting to bright colors.
+     Use only where necessary; it's intentionally scoped to common class names. */
+  .badge, .chip, .tag, .kpi, .stat {
+    color: var(--foreground) !important;
+    background-color: rgba(255,255,255,0.03) !important;
+    border-color: var(--border) !important;
+  }
+
+  /* If some third-party element sets inline color attributes, prefer CSS variables on these */
+  .app-bg, .page-bg, .panel-bg {
+    background-color: var(--card) !important;
+    color: var(--card-foreground) !important;
   }
 }
+
+/* --------------------
+   Aggressive fallback (only enable if you truly want ALL color removed)
+   - Uncomment the block below to force EVERY textual color to white and
+     every background to remain black/near-black. Use with caution.
+   -------------------- */
+
+/*
+:root, :root * {
+  color: var(--foreground) !important;
+  background-color: transparent !important;
+}
+
+body * {
+  background-color: transparent !important;
+}
+*/

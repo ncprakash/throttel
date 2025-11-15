@@ -1,4 +1,4 @@
-// app/auth/page.tsx
+// app/profile/page.tsx
 "use client";
 
 import { useState } from "react";
