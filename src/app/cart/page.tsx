@@ -73,7 +73,7 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-black via-gray-900 to-black flex items-center justify-center">
         <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
