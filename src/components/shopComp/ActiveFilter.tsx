@@ -47,10 +47,10 @@ export default function FilterSidebar({
         className={`
         fixed lg:sticky top-0 left-0 h-screen lg:h-auto
         w-80 lg:w-full
-        backdrop-blur-2xl bg-black/40 lg:bg-white/5 
-        border-r lg:border border-white/10 
+        backdrop-blur-2xl bg-[rgba(0,0,0,0.45)] lg:bg-[rgba(255,255,255,0.03)]
+        border-r lg:border border-[rgba(255,255,255,0.08)]
         rounded-none lg:rounded-2xl
-        p-6 
+        p-6
         overflow-y-auto
         transition-transform duration-300 z-50
         ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
@@ -62,6 +62,7 @@ export default function FilterSidebar({
           <button
             onClick={onClose}
             className="lg:hidden text-white/60 hover:text-white"
+            aria-label="Close filters"
           >
             <svg
               className="w-6 h-6"
@@ -81,17 +82,18 @@ export default function FilterSidebar({
 
         {/* Active Filter Chips */}
         {activeFilters.length > 0 && (
-          <div className="mb-6 pb-6 border-b border-white/10">
+          <div className="mb-6 pb-6 border-b border-[rgba(255,255,255,0.06)]">
             <div className="flex flex-wrap gap-2 mb-3">
               {activeFilters.map((filter) => (
                 <div
                   key={filter.id}
-                  className="backdrop-blur-md bg-purple-500/20 border border-purple-500/30 rounded-lg px-3 py-1.5 text-sm text-white flex items-center gap-2"
+                  className="backdrop-blur-md bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-lg px-3 py-1.5 text-sm text-white flex items-center gap-2"
                 >
                   <span>{filter.label}</span>
                   <button
                     onClick={() => onRemoveFilter(filter.id)}
-                    className="hover:text-purple-300"
+                    className="hover:text-white/90"
+                    aria-label={`Remove ${filter.label}`}
                   >
                     <svg
                       className="w-4 h-4"
@@ -110,9 +112,10 @@ export default function FilterSidebar({
                 </div>
               ))}
             </div>
+
             <button
               onClick={onClearAll}
-              className="w-full backdrop-blur-md bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white transition-all"
+              className="w-full backdrop-blur-md bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.06)] rounded-xl px-4 py-2.5 text-sm text-white transition-all"
             >
               Clear All Filters
             </button>
@@ -121,12 +124,12 @@ export default function FilterSidebar({
 
         {/* Compatibility Check */}
         <div className="mb-6">
-          <div className="backdrop-blur-md bg-gradient-to-br from-green-500/10 to-transparent border border-green-500/30 rounded-xl p-4">
+          <div className="backdrop-blur-md bg-[linear-gradient(180deg,rgba(34,197,94,0.06),transparent)] border border-[rgba(34,197,94,0.12)] rounded-xl p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-white mb-1 flex items-center gap-2">
                   <svg
-                    className="w-5 h-5 text-green-400"
+                    className="w-5 h-5 text-[rgba(34,197,94,1)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -140,10 +143,11 @@ export default function FilterSidebar({
                   </svg>
                   Check Compatibility
                 </h4>
-                <p className="text-xs text-white/70">
+                <p className="text-xs text-[rgba(255,255,255,0.75)]">
                   See parts that fit your bike
                 </p>
               </div>
+
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
@@ -151,36 +155,63 @@ export default function FilterSidebar({
                   onChange={(e) => setCompatibilityCheck(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                <div className="w-11 h-6 bg-[rgba(255,255,255,0.12)] peer-focus:outline-none rounded-full relative peer-checked:bg-[rgba(34,197,94,1)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
               </label>
             </div>
+
             {compatibilityCheck && (
-              <div className="text-xs text-green-300 bg-green-500/10 rounded-lg p-2 mt-2">
+              <div className="text-xs text-[rgba(34,197,94,1)] bg-[rgba(34,197,94,0.06)] rounded-lg p-2 mt-2">
                 ✓ Showing parts for <strong>Himalayan 450</strong>
               </div>
             )}
           </div>
         </div>
 
-        {/* Price Range */}
-       
+        {/* Price Range (placeholder UI; keep behavior same) */}
+        <div className="mb-6">
+          <h4 className="text-sm font-semibold text-white mb-3">Price</h4>
+          <div className="backdrop-blur-md bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+            <div className="text-sm text-[rgba(255,255,255,0.8)] mb-3">
+              {`$${priceRange[0]} — $${priceRange[1]}`}
+            </div>
+            {/* Keep the simple range inputs — replace with your range component if you have one */}
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={priceRange[0]}
+                onChange={(e) =>
+                  setPriceRange([Number(e.target.value), priceRange[1]])
+                }
+                className="w-1/2 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none"
+              />
+              <input
+                type="number"
+                value={priceRange[1]}
+                onChange={(e) =>
+                  setPriceRange([priceRange[0], Number(e.target.value)])
+                }
+                className="w-1/2 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Brand Filter */}
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-white mb-4">Brand</h4>
-          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
+          <div className="backdrop-blur-md bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
             <div className="mb-3">
               <input
                 type="text"
                 placeholder="Search brands..."
-                className="w-full backdrop-blur-sm bg-white/10 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/30"
+                className="w-full backdrop-blur-sm bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-lg px-3 py-2 text-sm text-white placeholder-[rgba(255,255,255,0.4)] focus:outline-none focus:border-[rgba(255,255,255,0.08)]"
               />
             </div>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {brands.map((brand) => (
                 <label
                   key={brand}
-                  className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors"
+                  className="flex items-center gap-3 cursor-pointer hover:bg-[rgba(255,255,255,0.02)] p-2 rounded-lg transition-colors"
                 >
                   <input
                     type="checkbox"
@@ -189,10 +220,12 @@ export default function FilterSidebar({
                       if (e.target.checked) {
                         setSelectedBrands([...selectedBrands, brand]);
                       } else {
-                        setSelectedBrands(selectedBrands.filter((b) => b !== brand));
+                        setSelectedBrands(
+                          selectedBrands.filter((b) => b !== brand)
+                        );
                       }
                     }}
-                    className="w-5 h-5 rounded border-white/20 bg-white/10 checked:bg-purple-500 checked:border-purple-500 focus:ring-2 focus:ring-purple-500/50"
+                    className="w-5 h-5 rounded border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] checked:bg-[rgba(34,197,94,1)] checked:border-[rgba(34,197,94,1)] focus:ring-2 focus:ring-[rgba(34,197,94,0.14)]"
                   />
                   <span className="text-sm text-white">{brand}</span>
                 </label>
@@ -204,13 +237,13 @@ export default function FilterSidebar({
         {/* Rating Filter */}
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-white mb-4">Rating</h4>
-          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4">
-            <button className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors">
+          <div className="backdrop-blur-md bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-xl p-4">
+            <button className="flex items-center gap-2 text-sm text-[rgba(255,255,255,0.75)] hover:text-white transition-colors">
               <span className="flex">
                 {[1, 2, 3].map((i) => (
                   <svg
                     key={i}
-                    className="w-4 h-4 text-yellow-400 fill-current"
+                    className="w-4 h-4 text-[rgba(250,204,21,1)] fill-current"
                     viewBox="0 0 24 24"
                   >
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -224,8 +257,10 @@ export default function FilterSidebar({
 
         {/* Stock Filter */}
         <div className="mb-6">
-          <label className="flex items-center justify-between cursor-pointer backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
-            <span className="text-sm font-semibold text-white">In Stock Only</span>
+          <label className="flex items-center justify-between cursor-pointer backdrop-blur-md bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-xl p-4 hover:bg-[rgba(255,255,255,0.06)] transition-colors">
+            <span className="text-sm font-semibold text-white">
+              In Stock Only
+            </span>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -233,7 +268,7 @@ export default function FilterSidebar({
                 onChange={(e) => setInStockOnly(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+              <div className="w-11 h-6 bg-[rgba(255,255,255,0.12)] peer-focus:outline-none rounded-full relative peer-checked:bg-[rgba(34,197,94,1)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
             </label>
           </label>
         </div>

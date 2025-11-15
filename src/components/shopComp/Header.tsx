@@ -1,8 +1,6 @@
 // components/shop/ShopHeader.tsx
 "use client";
 
-
-
 type ShopHeaderProps = {
   totalResults: number;
   currentView: "grid" | "list";
@@ -19,7 +17,15 @@ export default function ShopHeader({
   onSortChange,
 }: ShopHeaderProps) {
   return (
-    <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 mb-6">
+    <div
+      className="
+        backdrop-blur-xl 
+        bg-[rgba(255,255,255,0.04)] 
+        border 
+        border-[rgba(255,255,255,0.08)] 
+        rounded-2xl p-4 sm:p-6 mb-6
+      "
+    >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         {/* Left: Results Count */}
         <div>
@@ -35,28 +41,27 @@ export default function ShopHeader({
             <select
               value={sortBy}
               onChange={(e) => onSortChange(e.target.value)}
-              className="w-full sm:w-auto backdrop-blur-md bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-white/40 hover:bg-white/15 transition-all cursor-pointer"
+              className="
+                w-full sm:w-auto
+                backdrop-blur-md
+                bg-[rgba(255,255,255,0.06)]
+                border border-[rgba(255,255,255,0.08)]
+                rounded-xl px-4 py-2.5 text-white text-sm
+                focus:outline-none focus:ring-2 focus:ring-[rgba(255,255,255,0.06)]
+                hover:bg-[rgba(255,255,255,0.08)]
+                transition-all cursor-pointer
+              "
             >
-              <option value="featured" className="bg-gray-900">
-                Sort by: Featured
-              </option>
-              <option value="price-low" className="bg-gray-900">
-                Price: Low to High
-              </option>
-              <option value="price-high" className="bg-gray-900">
-                Price: High to Low
-              </option>
-              <option value="newest" className="bg-gray-900">
-                Newest First
-              </option>
-              <option value="rating" className="bg-gray-900">
-                Highest Rated
-              </option>
+              <option value="featured">Sort by: Featured</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="newest">Newest First</option>
+              <option value="rating">Highest Rated</option>
             </select>
           </div>
 
           {/* View Toggle */}
-          <div className="hidden sm:flex backdrop-blur-md bg-white/10 border border-white/20 rounded-xl p-1">
+          <div className="hidden sm:flex backdrop-blur-md bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.08)] rounded-xl p-1">
             <button
               onClick={() => onViewChange("grid")}
               className={`p-2 rounded-lg transition-all ${
@@ -80,6 +85,7 @@ export default function ShopHeader({
                 />
               </svg>
             </button>
+
             <button
               onClick={() => onViewChange("list")}
               className={`p-2 rounded-lg transition-all ${
