@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import Badge from "./Badge";
 
 export type Order = {
   order_id: string;
@@ -81,20 +80,9 @@ export default function OrdersList({
               </div>
 
               <div className="flex items-center gap-3">
-                <Badge
-                  className={`
-                    inline-flex items-center rounded-full px-3 py-1 text-xs
-                    ${
-                      o.status
-                        ? o.status === "delivered"
-                          ? "bg-green-700/15 text-green-200 border border-green-700/10"
-                          : "bg-white/6 text-white/80 border border-white/10"
-                        : "bg-white/6 text-white/80 border border-white/10"
-                    }
-                  `}
-                >
+               
                   {o.status ?? "—"}
-                </Badge>
+               
 
                 <div className="font-medium text-white">
                   {typeof o.total_amount === "number"

@@ -21,7 +21,7 @@ export default function ProfileHeader({ onEdit }: { onEdit: () => void }) {
   return (
     <div className="relative overflow-hidden backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 shadow-[0_0_25px_rgba(255,255,255,0.08)]">
       {/* Soft radial glow */}
-      <div className="absolute inset-0 pointer-events-none rounded-2xl bg-gradient-to-br from-white/10 via-transparent to-transparent"></div>
+      <div className="absolute inset-0 pointer-events-none rounded-2xl bg-linear-to-br from-white/10 via-transparent to-transparent"></div>
 
       <div className="relative flex items-center gap-4">
         <div className="flex-1 min-w-0">

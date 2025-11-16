@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-
+import axios from "axios";
 type Filter = {
   id: string;
   label: string;
@@ -18,7 +18,7 @@ type FilterSidebarProps = {
   onClearAll: () => void;
 };
 
-export default function FilterSidebar({
+export default  function FilterSidebar({
   isOpen,
   onClose,
   activeFilters,
@@ -31,6 +31,7 @@ export default function FilterSidebar({
   const [compatibilityCheck, setCompatibilityCheck] = useState(true);
 
   const brands = ["Akrapovič", "Yoshimura", "Brembo", "Öhlins", "SC-Project"];
+  
 
   return (
     <>

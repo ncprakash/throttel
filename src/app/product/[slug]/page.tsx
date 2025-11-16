@@ -11,6 +11,8 @@ import ProductVariants from "@/components/ProductComp/ProductVariants";
 import ProductActions from "@/components/ProductComp/ProductActions";
 import ProductBadges from "@/components/ProductComp/ProductBadges"
 import ProductTabs from "@/components/ProductComp/ProductTabs";
+import BottomNav from "@/components/BottomNavbar";
+import Footer from "@/components/Footer";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -156,6 +158,8 @@ export default function ProductDetailPage() {
           fitmentGuide={product.fitment_guide}
         />
       </div>
+      <BottomNav/>
+      <Footer/>
     </div>
   );
 }

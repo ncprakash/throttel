@@ -76,7 +76,7 @@ function ProductCard({
 
   if (viewMode === "list") {
     return (
-      <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 hover:border-white/20 transition-all group">
+       <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 hover:border-white/20 transition-all group relative z-0">
         <div className="flex gap-6">
           {/* Image - Clickable */}
           <div 

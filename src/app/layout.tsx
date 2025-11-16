@@ -10,9 +10,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={` antialiased`}
-      >
+     <body className="bg-black text-white antialiased">
           <Providers>{children}</Providers>
       </body>
     </html>

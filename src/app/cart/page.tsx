@@ -6,6 +6,8 @@ import EmptyCart from "@/components/Cart/EmptyCart";
 import RecommendedProducts from "@/components/Cart/RecommededProduct";
 import CartItem from "@/components/Cart/CartItem";
 import CartSummary from "@/components/Cart/CartSummary";
+import BottomNav from "@/components/BottomNavbar";
+import Footer from "@/components/Footer";
 export default function CartPage() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -136,6 +138,8 @@ export default function CartPage() {
           <RecommendedProducts products={recommendedProducts} />
         )}
       </div>
+      <BottomNav/>
+      <Footer/>
     </div>
   );
 }
