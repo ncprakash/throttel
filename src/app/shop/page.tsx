@@ -86,7 +86,7 @@ export default function ShopPage() {
   }, [products, sortBy]);
 
   return (
-    <div className="min-h-screen bg-black text-white pb-32">
+    <div className="min-h-screen bg-transparent text-white pb-32">
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
         {/* Header (higher stacking context) */}
         <div className="relative z-40">

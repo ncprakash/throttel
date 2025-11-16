@@ -1,23 +1,22 @@
-// app/admin/brands/page.tsx
+// app/admin/categories/page.tsx
 "use client";
 
-import React from "react";
-import BrandsList from "@/components/admin/BrandsList";
+import CategoriesManager from "@/components/admin/CategoriesManager";
 
-export default function AdminBrandsPage() {
+export default function AdminCategoriesPage() {
   return (
     <div className="min-h-screen bg-transparent text-white">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Brands</h1>
+          <h1 className="text-2xl font-bold">Categories</h1>
           <p className="text-sm text-white/60 mt-1">
-            Overview of brands and related products
+            Manage product categories used by ProductForm
           </p>
         </div>
       </div>
 
       <div className="mt-6">
-        <BrandsList />
+        <CategoriesManager />
       </div>
     </div>
   );

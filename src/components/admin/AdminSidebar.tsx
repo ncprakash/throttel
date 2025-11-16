@@ -102,6 +102,27 @@ export default function AdminSidebar({
       ),
     },
     {
+      id: "categories",
+      label: "Categories",
+      path: "/admin/categories",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M4 6h16M4 12h8m-8 6h16"
+          />
+        </svg>
+      ),
+    },
+
+    {
       id: "settings",
       label: "Settings",
       path: "/admin/settings",

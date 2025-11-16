@@ -12,7 +12,7 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<TabType>("signin");
 
   return (
-    <section className="min-h-screen w-full bg-black text-white flex items-center justify-center py-20 px-6">
+    <section className="min-h-screen w-full bg-transparent text-white flex items-center justify-center py-20 px-6">
       <div className="w-full max-w-3xl transition-all duration-1000 opacity-100 translate-y-0">
         <div className="bg-white/4 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-8">

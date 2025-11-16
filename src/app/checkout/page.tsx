@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 
 import CheckoutForm from "@/components/Checkout/CheckoutForm";
-import PaymentMethods from "@/components/Checkout/PaymentMethods";
 import CheckoutSummary from "@/components/Checkout/CheckoutSummary";
 import OrderReview from "@/components/Checkout/OrderReview";
 
@@ -51,7 +50,7 @@ export default function CheckoutPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-transparentflex items-center justify-center">
         <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-[rgba(255,255,255,0.16)] border-t-white rounded-full animate-spin" />
@@ -63,7 +62,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-32">
+    <div className="min-h-screen bg-transparent text-white pb-32">
       <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold">Checkout</h1>
@@ -77,14 +76,6 @@ export default function CheckoutPage() {
             <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-2xl p-6">
               <h2 className="text-lg font-semibold mb-4">Shipping & Contact</h2>
               <CheckoutForm />
-            </div>
-
-            <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-2xl p-6">
-              <h2 className="text-lg font-semibold mb-4">Payment</h2>
-              <PaymentMethods
-                onPlaceOrder={handlePlaceOrder}
-                cartTotal={total}
-              />
             </div>
           </div>
 
