@@ -1,7 +1,8 @@
-
 import "./globals.css";
 
-import {Providers} from "./provider"
+import { Providers } from "./provider";
+import Footer from "@/components/Footer";
+import BottomNav from "@/components/BottomNavbar";
 
 export default function RootLayout({
   children,
@@ -10,8 +11,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-     <body className="bg-black text-white antialiased">
-          <Providers>{children}</Providers>
+      <body className={` antialiased`}>
+        <Providers>{children}</Providers>
+        <Footer />
+        <BottomNav />
       </body>
     </html>
   );

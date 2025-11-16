@@ -67,7 +67,15 @@ export default function ShopHeader({
   };
 
   return (
-    <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 mb-6">
+    <div
+      className="
+        backdrop-blur-xl 
+        bg-[rgba(255,255,255,0.04)] 
+        border 
+        border-[rgba(255,255,255,0.08)] 
+        rounded-2xl p-4 sm:p-6 mb-6
+      "
+    >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-white">
           Showing {totalResults} results

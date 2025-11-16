@@ -8,14 +8,15 @@ export default function EmptyCart() {
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
-      <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-12 max-w-2xl w-full text-center">
+      <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-3xl p-12 max-w-2xl w-full text-center">
         {/* Cart Icon */}
-        <div className="w-24 h-24 mx-auto mb-6 backdrop-blur-md bg-cyan-500/20 rounded-full flex items-center justify-center">
+        <div className="w-24 h-24 mx-auto mb-6 backdrop-blur-md bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] rounded-full flex items-center justify-center">
           <svg
-            className="w-12 h-12 text-cyan-400"
+            className="w-12 h-12 text-[rgba(255,255,255,0.8)]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden
           >
             <path
               strokeLinecap="round"
@@ -30,14 +31,24 @@ export default function EmptyCart() {
         <h2 className="text-3xl font-bold text-white mb-3">
           Your Cart is Empty
         </h2>
-        <p className="text-white/60 mb-8">
-          Looks like you haven't added anything yet. Let's find something for your ride.
+        <p className="text-[rgba(255,255,255,0.6)] mb-8">
+          Looks like you haven't added anything yet. Let’s find something that
+          sparks your ride.
         </p>
 
         {/* CTA Button */}
         <button
           onClick={() => router.push("/shop")}
-          className="backdrop-blur-xl bg-cyan-500 hover:bg-cyan-600 text-white font-bold px-8 py-4 rounded-xl transition-all hover:scale-105 shadow-lg shadow-cyan-500/30"
+          className="
+            backdrop-blur-md 
+            bg-[rgba(255,255,255,0.08)] 
+            hover:bg-[rgba(255,255,255,0.12)] 
+            text-white font-semibold 
+            px-8 py-4 rounded-xl 
+            transition-all hover:scale-105 
+            shadow-[0_8px_30px_rgba(0,0,0,0.4)]
+          "
+          aria-label="Continue shopping"
         >
           Continue Shopping
         </button>
