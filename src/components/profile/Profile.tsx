@@ -168,8 +168,8 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
-        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 shadow-2xl">
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="glass-panel p-8 rounded-2xl shadow-2xl">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
             <p className="text-white text-sm">Loading your profile...</p>
@@ -181,29 +181,23 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* FIXED: Changed from var(--background) to actual dark gradient */}
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white pb-32 relative overflow-hidden">
-        
-        {/* Background Decorative Elements */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-
+      <div className="min-h-screen bg-black text-white pb-32 relative overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
           {/* Notification Toast */}
           {notice && (
-            <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-5">
-              <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-xl px-6 py-3 shadow-2xl">
+            <div className="fixed top-6 right-6 z-50">
+              <div className="glass-panel px-6 py-3 rounded-xl shadow">
                 <p className="text-sm text-white">{notice}</p>
               </div>
             </div>
           )}
 
           {/* Profile Header Section */}
-          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+          <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-xl transition-shadow duration-300">
             <ProfileHeader onEdit={() => setEditing(!editing)} />
 
             {editing && (
-              <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="mt-6 pt-6 border-t border-white/8">
                 <EditProfileForm
                   open={editing}
                   user={user}
@@ -219,43 +213,79 @@ export default function ProfilePage() {
 
           {/* Quick Stats Overview */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="backdrop-blur-xl bg-gradient-to-br from-purple-500/10 to-transparent border border-white/10 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
+            <div className="glass-panel p-6 rounded-2xl transform-gpu transition-transform duration-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-white">{orders.length}</p>
+                  <p className="text-3xl font-bold text-white">
+                    {orders.length}
+                  </p>
                   <p className="text-sm text-white/60 mt-1">Total Orders</p>
                 </div>
-                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                <div className="w-12 h-12 bg-white/6 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-white/70"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                    />
                   </svg>
                 </div>
               </div>
             </div>
 
-            <div className="backdrop-blur-xl bg-gradient-to-br from-blue-500/10 to-transparent border border-white/10 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
+            <div className="glass-panel p-6 rounded-2xl transform-gpu transition-transform duration-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-white">{wishlist.length}</p>
+                  <p className="text-3xl font-bold text-white">
+                    {wishlist.length}
+                  </p>
                   <p className="text-sm text-white/60 mt-1">Wishlist Items</p>
                 </div>
-                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                <div className="w-12 h-12 bg-white/6 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-white/70"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
                   </svg>
                 </div>
               </div>
             </div>
 
-            <div className="backdrop-blur-xl bg-gradient-to-br from-green-500/10 to-transparent border border-white/10 rounded-2xl p-6 hover:scale-105 transition-transform duration-300">
+            <div className="glass-panel p-6 rounded-2xl transform-gpu transition-transform duration-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-white">{addresses.length}</p>
+                  <p className="text-3xl font-bold text-white">
+                    {addresses.length}
+                  </p>
                   <p className="text-sm text-white/60 mt-1">Saved Addresses</p>
                 </div>
-                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <div className="w-12 h-12 bg-white/6 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-white/70"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
                   </svg>
                 </div>
               </div>
@@ -266,22 +296,36 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Orders */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl">
+              <div className="glass-panel p-6 sm:p-8 rounded-3xl shadow-xl">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-white">Recent Orders</h3>
+                  <h3 className="text-xl font-semibold text-white">
+                    Recent Orders
+                  </h3>
                   <button className="text-sm text-white/60 hover:text-white transition-colors">
                     View All
                   </button>
                 </div>
                 {orders.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                      <svg className="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/6 border border-white/10 flex items-center justify-center">
+                      <svg
+                        className="w-10 h-10 text-white/40"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                        />
                       </svg>
                     </div>
                     <p className="text-white/60">No orders yet</p>
-                    <p className="text-sm text-white/40 mt-1">Your order history will appear here</p>
+                    <p className="text-sm text-white/40 mt-1">
+                      Your order history will appear here
+                    </p>
                   </div>
                 ) : (
                   <OrdersList orders={orders} onOpen={() => {}} compact />
@@ -289,12 +333,14 @@ export default function ProfilePage() {
               </div>
 
               {/* Addresses Section */}
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-xl">
+              <div className="glass-panel p-6 sm:p-8 rounded-3xl shadow-xl">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-white">Delivery Addresses</h3>
+                  <h3 className="text-xl font-semibold text-white">
+                    Delivery Addresses
+                  </h3>
                   <button
                     onClick={() => addOrUpdateAddress({ mock: true })}
-                    className="backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-sm transition-all duration-300 hover:scale-105"
+                    className="px-4 py-2 rounded-xl text-sm font-medium backdrop-blur-sm bg-white/8 border border-white/12 hover:bg-white/12 transition"
                   >
                     + Add New
                   </button>
@@ -302,37 +348,53 @@ export default function ProfilePage() {
 
                 {addresses.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                      <svg className="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/6 border border-white/10 flex items-center justify-center">
+                      <svg
+                        className="w-10 h-10 text-white/40"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
                       </svg>
                     </div>
                     <p className="text-white/60">No addresses saved</p>
-                    <p className="text-sm text-white/40 mt-1">Add a delivery address to get started</p>
+                    <p className="text-sm text-white/40 mt-1">
+                      Add a delivery address to get started
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {addresses.map((addr: any) => (
                       <div
                         key={addr.address_id}
-                        className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-all duration-300 group"
+                        className="glass-panel p-5 rounded-xl hover:bg-white/12 transition-all duration-300 group"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <p className="font-medium text-white">{addr.name || addr.line1}</p>
+                              <p className="font-medium text-white">
+                                {addr.name || addr.line1}
+                              </p>
                               {addr.is_default && (
-                                <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded-full border border-green-500/30">
+                                <span className="text-xs bg-white/8 text-black px-2 py-1 rounded-full border border-white/10">
                                   Default
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-white/60">{addr.city}, {addr.postcode}</p>
+                            <p className="text-sm text-white/60">
+                              {addr.city}, {addr.postcode}
+                            </p>
                           </div>
                           {!addr.is_default && (
                             <button
                               onClick={() => setDefaultAddress(addr.address_id)}
-                              className="text-xs backdrop-blur-sm bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg border border-white/10 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                              className="text-xs backdrop-blur-sm bg-white/8 hover:bg-white/12 px-3 py-1.5 rounded-lg border border-white/10 transition-all duration-300 opacity-0 group-hover:opacity-100"
                             >
                               Set Default
                             </button>
@@ -347,7 +409,13 @@ export default function ProfilePage() {
 
             {/* Right Column - Wishlist */}
             <div className="lg:col-span-1">
-              <WishlistCard items={wishlist} onRemove={removeFromWishlist} compact />
+              <div className="glass-panel rounded-2xl p-6 shadow-xl">
+                <WishlistCard
+                  items={wishlist}
+                  onRemove={removeFromWishlist}
+                  compact
+                />
+              </div>
             </div>
           </div>
         </div>
