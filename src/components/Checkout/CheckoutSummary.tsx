@@ -4,7 +4,7 @@
 type Props = {
   subtotal: number;
   shipping: number;
-  tax: number;
+
   total: number;
   itemCount: number;
   shippingMethod: "standard" | "express";
@@ -14,7 +14,7 @@ type Props = {
 export default function CheckoutSummary({
   subtotal,
   shipping,
-  tax,
+
   total,
   itemCount,
   shippingMethod,
@@ -55,10 +55,6 @@ export default function CheckoutSummary({
           </span>
         </div>
 
-        <div className="flex justify-between">
-          <span className="text-white/70">Tax</span>
-          <span className="font-semibold text-white">${tax.toFixed(2)}</span>
-        </div>
       </div>
 
       <div className="border-t border-white/10 pt-4 mb-4 relative z-10">

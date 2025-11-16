@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import Image from "next/image";
 
 type Category = { category_id: string; name: string };
 
@@ -44,6 +45,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
   // images (local preview + file)
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // compatibility list
@@ -55,7 +57,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
       year_to?: number | null;
       notes?: string;
     }[]
-  >(product?.compatibility || []);
+  >(product?.product_compatibility || []);
 
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -134,7 +136,6 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         const numeric = Number(weightValue || 0);
         if (!isNaN(numeric) && numeric > 0) {
           weightKg = weightUnit === "g" ? numeric / 1000 : numeric;
-          // round to 2 decimals to match DECIMAL(8,2)
           weightKg = Math.round(weightKg * 100) / 100;
         }
       }
@@ -151,13 +152,15 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         stock_quantity: Number(form.stock_quantity || 0),
         is_active: Boolean(form.is_active),
         is_featured: Boolean(form.is_featured),
-        weight: weightKg, // send weight in kilograms
+        weight: weightKg,
         warranty_months: form.warranty_months || 6,
         warranty_description: product?.warranty_description ?? null,
         material: form.material || null,
       };
 
       let savedProd: any;
+      
+      // Create or Update Product
       if (editing && product.product_id) {
         const res = await axios.patch(
           `/api/admin/products/${product.product_id}`,
@@ -169,30 +172,33 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         savedProd = res.data.product || res.data;
       }
 
-      // upload images sequentially
+      // Upload images using bulk endpoint
       if (imageFiles.length > 0 && savedProd?.product_id) {
-        for (let i = 0; i < imageFiles.length; i++) {
-          const img = imageFiles[i];
-          const fd = new FormData();
-          fd.append("image", img);
-          fd.append("alt_text", img.name);
-          fd.append("display_order", String(i));
-          fd.append("is_primary", i === 0 ? "true" : "false");
-          try {
-            await axios.post(
-              `/api/admin/products/${savedProd.product_id}/images`,
-              fd,
-              {
-                headers: { "Content-Type": "multipart/form-data" },
-              }
-            );
-          } catch (err) {
-            console.warn("Image upload failed for", img.name, err);
-          }
+        setUploadingImages(true);
+        const formData = new FormData();
+        
+        // Append all images with the same field name
+        imageFiles.forEach((file) => {
+          formData.append("images", file);
+        });
+
+        try {
+          await axios.post(
+            `/api/admin/products/${savedProd.product_id}/images/bulk`,
+            formData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+            }
+          );
+        } catch (err) {
+          console.warn("Bulk image upload failed", err);
+          setNotice("Product saved but image upload failed");
+        } finally {
+          setUploadingImages(false);
         }
       }
 
-      // compatibility entries
+      // Save compatibility entries
       if (compatList.length > 0 && savedProd?.product_id) {
         for (const c of compatList) {
           if (!c.bike_model?.trim()) continue;
@@ -214,20 +220,29 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
       }
 
       setNotice("Saved successfully");
+      setImageFiles([]);
+      setImagePreviews([]);
       onSaved?.(savedProd);
     } catch (err: any) {
       console.error("Save failed", err);
-      setNotice(err?.message || "Save failed");
+      setNotice(err?.response?.data?.error || err?.message || "Save failed");
     } finally {
       setSaving(false);
-      setTimeout(() => setNotice(null), 2500);
+      setTimeout(() => setNotice(null), 3000);
     }
   };
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
     const arr = Array.from(files);
-    setImageFiles((prev) => [...prev, ...arr].slice(0, 8));
+    const totalImages = imageFiles.length + arr.length;
+    
+    if (totalImages > 8) {
+      alert("You can only upload up to 8 images");
+      return;
+    }
+    
+    setImageFiles((prev) => [...prev, ...arr]);
   };
 
   const removePreviewAt = (idx: number) => {
@@ -235,10 +250,9 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     setImagePreviews((s) => s.filter((_, i) => i !== idx));
   };
 
-  // If editing and product.weight exists, initialize properly (once)
+  // If editing and product.weight exists, initialize properly
   useEffect(() => {
     if (editing && product?.weight != null) {
-      // product.weight is stored in kilograms. Keep unit as kg and value = weight
       setWeightValue(product.weight);
       setWeightUnit("kg");
     }
@@ -309,6 +323,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
             value={form.category_id}
             onChange={(e) => setField("category_id", e.target.value)}
             className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
+            disabled={loadingCategories}
           >
             <option value="">— Select category —</option>
             {categories.map((c) => (
@@ -418,12 +433,13 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 rounded-md bg-white text-black"
+            disabled={uploadingImages || imageFiles.length >= 8}
+            className="px-4 py-2 rounded-md bg-white text-black disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Select images
+            {uploadingImages ? "Uploading..." : "Select images"}
           </button>
           <div className="text-sm text-white/60 self-center">
-            You can upload up to 8 images.
+            You can upload up to 8 images. ({imageFiles.length}/8)
           </div>
         </div>
 
@@ -434,18 +450,25 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
                 key={i}
                 className="relative rounded-md overflow-hidden border border-white/10"
               >
-                <img
+                <Image
                   src={src}
+                  width={200}
+                  height={200}
                   alt={`preview-${i}`}
                   className="w-full h-24 object-cover"
                 />
                 <button
                   type="button"
                   onClick={() => removePreviewAt(i)}
-                  className="absolute top-1 right-1 bg-black/60 p-1 rounded-full"
+                  className="absolute top-1 right-1 bg-black/60 p-1 rounded-full text-white hover:bg-black/80"
                 >
                   ×
                 </button>
+                {i === 0 && (
+                  <span className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                    Primary
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -459,7 +482,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
           <button
             type="button"
             onClick={addCompat}
-            className="px-3 py-1 rounded-md bg-white/8"
+            className="px-3 py-1 rounded-md bg-white/8 hover:bg-white/10"
           >
             + Add row
           </button>
@@ -566,7 +589,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
                   <button
                     type="button"
                     onClick={() => removeCompat(idx)}
-                    className="px-3 py-1 rounded-md text-sm"
+                    className="px-3 py-1 rounded-md text-sm text-red-400 hover:text-red-300"
                   >
                     Remove
                   </button>
@@ -583,21 +606,37 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-md"
+            className="px-4 py-2 rounded-md border border-white/10 hover:bg-white/5"
           >
             Cancel
           </button>
         )}
         <button
           type="submit"
-          disabled={saving}
-          className="px-4 py-2 rounded-md bg-white text-black font-semibold"
+          disabled={saving || uploadingImages}
+          className="px-4 py-2 rounded-md bg-white text-black font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {saving ? "Saving..." : editing ? "Save changes" : "Create product"}
+          {saving
+            ? uploadingImages
+              ? "Uploading images..."
+              : "Saving..."
+            : editing
+            ? "Save changes"
+            : "Create product"}
         </button>
       </div>
 
-      {notice && <div className="text-sm text-white/70">{notice}</div>}
+      {notice && (
+        <div
+          className={`text-sm p-3 rounded-md ${
+            notice.includes("failed")
+              ? "bg-red-500/10 text-red-400"
+              : "bg-green-500/10 text-green-400"
+          }`}
+        >
+          {notice}
+        </div>
+      )}
     </form>
   );
 }

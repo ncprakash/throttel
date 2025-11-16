@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Image from "next/image";
 
 export default function ProductsQuickList({
   onEdit,
@@ -98,7 +99,7 @@ function ProductRow({
     <div className="p-3 rounded-md bg-white/3 border border-white/6 flex items-center gap-3">
       <div className="w-12 h-12 bg-white/6 rounded-md overflow-hidden flex items-center justify-center text-xs">
         {product.primary_image_url || product.image_url ? (
-          <img
+          <Image
             src={product.primary_image_url || product.image_url}
             alt={product.name}
             className="w-full h-full object-cover"

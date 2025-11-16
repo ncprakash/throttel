@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import EmptyCart from "@/components/Cart/EmptyCart";
 import RecommendedProducts from "@/components/Cart/RecommededProduct";
 import CartItem from "@/components/Cart/CartItem";
@@ -22,12 +21,19 @@ export default function CartPage() {
     fetchRecommendedProducts();
   }, []);
 
-  const fetchCartItems = async () => {
+  // Fetch cart items from localStorage
+  const fetchCartItems = () => {
     try {
-      const response = await axios.get("/api/cart");
-      setCartItems(response.data.items || []);
+      const storedCart = localStorage.getItem("cartItems");
+      if (storedCart) {
+        const parsedCart = JSON.parse(storedCart);
+        setCartItems(parsedCart || []);
+      } else {
+        setCartItems([]);
+      }
     } catch (error) {
-      console.error("Error fetching cart:", error);
+      console.error("Error fetching cart from localStorage:", error);
+      setCartItems([]);
     } finally {
       setLoading(false);
     }
@@ -35,32 +41,36 @@ export default function CartPage() {
 
   const fetchRecommendedProducts = async () => {
     try {
-      const response = await axios.get("/api/products/recommended");
-      setRecommendedProducts(response.data.products || []);
+      // Keep your existing API call for recommended products
+      const response = await fetch("/api/products/recommended");
+      const data = await response.json();
+      setRecommendedProducts(data.products || []);
     } catch (error) {
       console.error("Error fetching recommendations:", error);
     }
   };
 
-  const handleUpdateQuantity = async (itemId: string, quantity: number) => {
+  const handleUpdateQuantity = (itemId: string, quantity: number) => {
     try {
-      await axios.patch(`/api/cart/${itemId}`, { quantity });
-      setCartItems((items) =>
-        items.map((item) =>
-          item.cart_item_id === itemId ? { ...item, quantity } : item
-        )
+      const updatedItems = cartItems.map((item) =>
+        item.cart_item_id === itemId ? { ...item, quantity } : item
       );
+      setCartItems(updatedItems);
+      // Save updated cart to localStorage
+      localStorage.setItem("cartItems", JSON.stringify(updatedItems));
     } catch (error) {
       console.error("Error updating quantity:", error);
     }
   };
 
-  const handleRemoveItem = async (itemId: string) => {
+  const handleRemoveItem = (itemId: string) => {
     try {
-      await axios.delete(`/api/cart/${itemId}`);
-      setCartItems((items) =>
-        items.filter((item) => item.cart_item_id !== itemId)
+      const filteredItems = cartItems.filter(
+        (item) => item.cart_item_id !== itemId
       );
+      setCartItems(filteredItems);
+      // Save updated cart to localStorage
+      localStorage.setItem("cartItems", JSON.stringify(filteredItems));
     } catch (error) {
       console.error("Error removing item:", error);
     }
@@ -73,9 +83,9 @@ export default function CartPage() {
     return sum + (price + variantPrice) * item.quantity;
   }, 0);
 
-  const shipping = subtotal > 50 ? 0 : 10;
-  const tax = subtotal * 0.18;
-  const total = subtotal + shipping + tax;
+  const shipping = subtotal > 50 ? 80 : 80;
+  
+  const total = subtotal + shipping ;
 
   if (loading) {
     return (
@@ -116,7 +126,6 @@ export default function CartPage() {
               )}
             </>
           ) : (
-            // ensure both columns align to the top so the right column remains stable
             <div className="grid lg:grid-cols-3 gap-8 items-start">
               {/* Cart Items */}
               <div className="lg:col-span-2 space-y-4">
@@ -132,12 +141,11 @@ export default function CartPage() {
 
               {/* Summary */}
               <div className="lg:col-span-1">
-                {/* make this wrapper sticky only on large screens and anchor it to the start */}
                 <div className="lg:sticky lg:top-8 lg:self-start z-20 backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6">
                   <CartSummary
                     subtotal={subtotal}
                     shipping={shipping}
-                    tax={tax}
+                  
                     total={total}
                     itemCount={cartItems.length}
                   />
@@ -175,9 +183,8 @@ export default function CartPage() {
           )}
         </div>
       </div>
-      <BottomNav/>
-      <Footer/>
- 
+      <BottomNav />
+      <Footer />
     </>
   );
 }

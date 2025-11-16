@@ -40,8 +40,7 @@ export default function CheckoutPage() {
   }, 0);
 
   const shipping = shippingMethod === "express" ? 20 : subtotal > 50 ? 0 : 10;
-  const tax = subtotal * 0.18;
-  const total = subtotal + shipping + tax;
+  const total = subtotal + shipping ;
 
   const handlePlaceOrder = async (formValues: any, paymentMethod: string) => {
     // UI-only: simulate order placement
@@ -93,7 +92,7 @@ export default function CheckoutPage() {
             <CheckoutSummary
               subtotal={subtotal}
               shipping={shipping}
-              tax={tax}
+              
               total={total}
               itemCount={cartItems.length}
               onChangeShipping={(m) => setShippingMethod(m)}

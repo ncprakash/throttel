@@ -39,10 +39,56 @@ export default function ProductDetailPage() {
     if (slug) fetchProduct();
   }, [slug]);
 
-  const handleAddToCart = (quantity: number) => {
-    console.log("Adding to cart:", { product, quantity, selectedVariant });
-    // UI-only: wire your cart logic here
+const handleAddToCart = (quantity: number) => {
+  if (!product) return;
+
+  // 1. Get existing cart from localStorage - USE SAME KEY AS CART PAGE
+  let cart = [];
+  const existingCart = localStorage.getItem("cartItems"); // Changed from "shopping_cart"
+  if (existingCart) {
+    cart = JSON.parse(existingCart);
+  }
+
+  // 2. Create the cart item matching your CartItemProps structure
+  const cartItem = {
+    cart_item_id: `cart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    product: {
+      product_id: product.product_id,
+      name: product.name,
+      slug: product.slug,
+      image_url: product.images?.[0]?.image_url || "",
+      regular_price: product.regular_price,
+      sale_price: product.sale_price,
+    },
+    variant: selectedVariant ? {
+      variant_id: selectedVariant.variant_id,
+      variant_name: selectedVariant.variant_name,
+      color: selectedVariant.color,
+      additional_price: selectedVariant.additional_price,
+    } : undefined,
+    quantity: quantity,
   };
+
+  // 3. Check if item already exists (same product + variant)
+  const existingItemIndex = cart.findIndex(
+    (item: any) =>
+      item.product.product_id === cartItem.product.product_id &&
+      item.variant?.variant_id === cartItem.variant?.variant_id
+  );
+
+  // 4. Update quantity if exists, otherwise add new item
+  if (existingItemIndex > -1) {
+    cart[existingItemIndex].quantity += quantity;
+  } else {
+    cart.push(cartItem);
+  }
+
+  // 5. Save updated cart back to localStorage - USE SAME KEY AS CART PAGE
+  localStorage.setItem("cartItems", JSON.stringify(cart)); // Changed from "shopping_cart"
+
+  alert(`Added ${quantity} item(s) to cart!`);
+};
+
 
   const handleAddToWishlist = () => {
     console.log("Adding to wishlist:", product);

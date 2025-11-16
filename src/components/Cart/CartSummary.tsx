@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 type CartSummaryProps = {
   subtotal: number;
   shipping: number;
-  tax: number;
+
   total: number;
   itemCount: number;
 };
@@ -14,7 +14,7 @@ type CartSummaryProps = {
 export default function CartSummary({
   subtotal,
   shipping,
-  tax,
+  
   total,
   itemCount,
 }: CartSummaryProps) {
@@ -31,27 +31,24 @@ export default function CartSummary({
             Subtotal ({itemCount} items)
           </span>
           <span className="text-white font-semibold">
-            ${subtotal.toFixed(2)}
+            Rs{subtotal.toFixed(2)}
           </span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-[rgba(255,255,255,0.6)]">Shipping</span>
           <span className="text-[rgba(34,197,94,1)] font-semibold">
-            {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
+            {shipping === 0 ? "FREE" : `Rs${shipping.toFixed(2)}`}
           </span>
         </div>
 
-        <div className="flex justify-between text-sm">
-          <span className="text-[rgba(255,255,255,0.6)]">Tax (18%)</span>
-          <span className="text-white font-semibold">${tax.toFixed(2)}</span>
-        </div>
+      
 
         <div className="border-t border-[rgba(255,255,255,0.06)] pt-3 mt-3">
           <div className="flex justify-between">
             <span className="text-lg font-bold text-white">Total</span>
             <span className="text-2xl font-bold text-white">
-              ${total.toFixed(2)}
+              Rs{total.toFixed(2)}
             </span>
           </div>
         </div>
