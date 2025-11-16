@@ -79,7 +79,7 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
@@ -92,7 +92,7 @@ export default function CartPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-black text-white pb-32">
+      <div className="min-h-screen bg-transparent text-white pb-32">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
@@ -143,15 +143,7 @@ export default function CartPage() {
                   />
 
                   <div className="mt-6 flex flex-col gap-3">
-                    {/* Checkout */}
-                    <button
-                      onClick={() => router.push("/checkout")}
-                      className="w-full px-4 py-3 rounded-lg text-sm font-semibold
-                               backdrop-blur-md bg-white/10 border border-white/20
-                               hover:bg-white/20 transition-all"
-                    >
-                      Proceed to Checkout
-                    </button>
+                    {/* removed duplicate Proceed to Checkout here (kept inside CartSummary) */}
 
                     {/* Continue shopping */}
                     <button
@@ -175,9 +167,8 @@ export default function CartPage() {
           )}
         </div>
       </div>
-      <BottomNav/>
-      <Footer/>
- 
+      <BottomNav />
+      <Footer />
     </>
   );
 }

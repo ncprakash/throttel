@@ -51,7 +51,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-[rgba(255,255,255,0.12)] border-t-white rounded-full animate-spin" />
@@ -64,7 +64,7 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8 text-center">
           <h2 className="text-2xl font-bold text-white mb-4">
             Product Not Found
@@ -186,9 +186,8 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
-      <BottomNav/>
-      <Footer/>
-
+      <BottomNav />
+      <Footer />
     </>
   );
 }

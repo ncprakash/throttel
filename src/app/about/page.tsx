@@ -9,7 +9,7 @@ import React from "react";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-transparent text-white">
       <main className="max-w-6xl mx-auto px-6 py-10 space-y-16">
         <Hero />
 
