@@ -202,3 +202,17 @@ body * {
   background-color: transparent !important;
 }
 */
+/* app/globals.css */
+@keyframes backgroundZoom {
+  0% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1.2);
+  }
+}
+
+.bg-zoom {
+  animation: backgroundZoom 20s ease-in-out infinite alternate;
+}
+

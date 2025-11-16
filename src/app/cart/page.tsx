@@ -85,7 +85,8 @@ export default function CartPage() {
 
   const shipping = subtotal > 50 ? 80 : 80;
   
-  const total = subtotal + shipping ;
+  const total = subtotal + shipping 
+  ;
 
   if (loading) {
     return (

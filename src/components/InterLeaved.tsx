@@ -10,18 +10,28 @@ import NewsletterCTA from "./NewsLetterCTA";
 
 export default function InterleavedScrollExperience() {
   return (
-    <div className="relative bg-black">
+    <div className="relative bg-black/80">
       {/* Static Background Image */}
-      <div className="fixed inset-0 w-full h-screen pointer-events-none z-0">
-        <div
-          className="w-full h-full bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: "url(/frames/render1.png)",
-            backgroundAttachment: "fixed",
-          }}
-        />
-        <div className="absolute inset-0 bg-black/60" />
-      </div>
+<div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
+  <div
+    className="absolute inset-0 animate-subtle-zoom"
+    style={{
+      backgroundImage: "url(/frames/render9_filled.png)",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      backgroundAttachment: "fixed",
+      width: "100%",
+      height: "100%",
+    }}
+  />
+  <div className="absolute inset-0 bg-black/30" />
+</div>
+
+
+
+
+
       {/* Hero Content */}
       <div className="relative h-screen flex items-center justify-center z-10">
         <div className="text-center px-6 max-w-5xl mx-auto">

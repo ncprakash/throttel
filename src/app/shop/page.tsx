@@ -111,7 +111,7 @@ export default function ShopPage() {
                     Filtering by:
                   </span>
                   <div className="backdrop-blur-md bg-white/6 border border-white/12 px-4 py-2 rounded-xl text-white font-medium flex items-center gap-3">
-                    <span className="text-xl">🏍️</span>
+                   
                     <span className="truncate max-w-xs">{searchFilter}</span>
                     <button
                       onClick={() => setSearchFilter("")}
