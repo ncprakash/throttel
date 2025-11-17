@@ -47,7 +47,8 @@ export default function ProductInfo({
                 Fits Your {compatibility.bike_brand} {compatibility.bike_model}
               </h3>
               <p className="text-sm text-green-300/80">
-                This part is confirmed to be compatible with your selected motorcycle.
+                This part is confirmed to be compatible with your selected
+                motorcycle.
               </p>
             </div>
           </div>
@@ -64,7 +65,9 @@ export default function ProductInfo({
           {brand && (
             <>
               <span>|</span>
-              <span>Brand: <span className="text-white">{brand}</span></span>
+              <span>
+                Brand: <span className="text-white">{brand}</span>
+              </span>
             </>
           )}
         </div>

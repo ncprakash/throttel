@@ -216,3 +216,31 @@ body * {
   animation: backgroundZoom 20s ease-in-out infinite alternate;
 }
 
+
+/* Pure Black & White Toast Theme */
+.bw-toast {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: white !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+}
+
+/* Remove colored icons (green/red) */
+.bw-toast [data-icon] {
+  color: rgba(255, 255, 255, 0.7) !important; /* soft white */
+}
+
+/* Remove color from progress bar */
+.bw-toast::after {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Close button */
+.bw-toast [data-close-button] {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.bw-toast [data-close-button]:hover {
+  color: white !important;
+}
