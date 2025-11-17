@@ -37,11 +37,11 @@ export default function CategoriesManager() {
   }, []);
 
   async function createCategory() {
-    const name = newName.trim();
-    if (!name) return;
+   
+   
     setSaving(true);
     try {
-      const res = await axios.post("/api/admin/categories", { name });
+      const res = await axios.post("/api/admin/categories");
       const created = res.data.category ?? res.data;
       // optimistic update
       setCategories((s) => [created, ...s]);

@@ -1,10 +1,48 @@
 // components/BottomNav.tsx
 "use client";
 import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    // Function to update cart count from localStorage
+    const updateCartCount = () => {
+      try {
+        const cartItems = localStorage.getItem("cartItems");
+        if (cartItems) {
+          const items = JSON.parse(cartItems);
+          // Calculate total quantity of items
+          const totalCount = Array.isArray(items)
+            ? items.reduce((sum, item) => sum + (item.quantity || 1), 0)
+            : 0;
+          setCartCount(totalCount);
+        } else {
+          setCartCount(0);
+        }
+      } catch (error) {
+        console.error("Error reading cart from localStorage:", error);
+        setCartCount(0);
+      }
+    };
+
+    // Initial load
+    updateCartCount();
+
+    // Listen for storage events (updates from other tabs)
+    window.addEventListener("storage", updateCartCount);
+
+    // Custom event for same-tab updates
+    window.addEventListener("cartUpdated", updateCartCount);
+
+    return () => {
+      window.removeEventListener("storage", updateCartCount);
+      window.removeEventListener("cartUpdated", updateCartCount);
+    };
+  }, []);
 
   const navItems = [
     {
@@ -67,6 +105,7 @@ export default function BottomNav() {
       ),
       label: "Garage",
       isCenter: true,
+      showBadge: true,
     },
     {
       id: "about",
@@ -140,6 +179,13 @@ export default function BottomNav() {
                   `}
                 >
                   {item.icon}
+
+                  {/* Cart Badge */}
+                  {item.showBadge && cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-lg shadow-red-500/50 border-2 border-white">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
 
                   {/* Active Indicator */}
                   {isActive && !item.isCenter && (
