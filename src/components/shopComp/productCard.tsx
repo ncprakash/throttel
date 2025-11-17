@@ -1,9 +1,9 @@
-// components/shop/ProductGrid.tsx
 "use client";
 
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   FaCheck,
   FaTimes,
@@ -32,9 +32,20 @@ export default function ProductGrid({ products, viewMode }: ProductGridProps) {
   const [wishlist, setWishlist] = useState<string[]>([]);
 
   const toggleWishlist = (id: string) => {
-    setWishlist((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    setWishlist((prev) => {
+      const next = prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id];
+
+      // Toast feedback
+      if (next.includes(id)) {
+        toast.success("Added to wishlist");
+      } else {
+        toast("Removed from wishlist");
+      }
+
+      return next;
+    });
   };
 
   return (
@@ -187,7 +198,6 @@ const AddToCartBtn = ({
 );
 
 /* ------------------- ProductCard (list & grid) ------------------- */
-// Replace only the ProductCard function in components/shop/ProductGrid.tsx
 function ProductCard({
   product,
   viewMode,
@@ -215,7 +225,15 @@ function ProductCard({
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (product.stock === 0) {
+      toast.error("Item is out of stock");
+      return;
+    }
+
     // Add to cart logic placeholder
+    // TODO: integrate with real cart (localStorage / API)
+    toast.success("Added to cart");
     console.log("Added to cart:", product.id);
   };
 

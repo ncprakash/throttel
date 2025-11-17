@@ -1,7 +1,7 @@
-// components/product/ProductActions.tsx
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 type ProductActionsProps = {
   maxQuantity: number;
@@ -29,25 +29,34 @@ export default function ProductActions({
         </label>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center backdrop-blur-md bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-xl">
+          <div
+            className="flex items-center rounded-xl border"
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              borderColor: "rgba(255,255,255,0.06)",
+              backdropFilter: "blur(6px)",
+            }}
+          >
             <button
               onClick={() => handleQuantityChange(-1)}
               disabled={quantity <= 1}
-              className="px-4 py-3 text-white text-xl hover:bg-[rgba(255,255,255,0.08)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed rounded-l-xl"
+              className="px-4 py-3 text-white text-xl disabled:opacity-30 flex items-center justify-center"
+              aria-label="decrease quantity"
             >
-              −
+              <span className="leading-none select-none">−</span>
             </button>
 
-            <span className="px-6 py-3 text-lg font-semibold text-white border-x border-[rgba(255,255,255,0.06)]">
+            <span className="px-6 py-3 text-lg font-semibold text-white border-x border-[rgba(255,255,255,0.06)] text-center min-w-[56px]">
               {quantity}
             </span>
 
             <button
               onClick={() => handleQuantityChange(1)}
               disabled={quantity >= maxQuantity}
-              className="px-4 py-3 text-white text-xl hover:bg-[rgba(255,255,255,0.08)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed rounded-r-xl"
+              className="px-4 py-3 text-white text-xl disabled:opacity-30 flex items-center justify-center"
+              aria-label="increase quantity"
             >
-              +
+              <span className="leading-none select-none">+</span>
             </button>
           </div>
 
@@ -61,21 +70,28 @@ export default function ProductActions({
       <div className="space-y-3">
         {/* Add to Cart */}
         <button
-          onClick={() => onAddToCart(quantity)}
-          className="
-            w-full py-4 rounded-xl font-semibold text-white
-            backdrop-blur-xl bg-[rgba(255,255,255,0.08)]
-            border border-[rgba(255,255,255,0.12)]
-            hover:bg-[rgba(255,255,255,0.12)]
-            hover:scale-[1.02]
-            transition-all flex items-center justify-center gap-2
-          "
+          onClick={() => {
+            try {
+              onAddToCart(quantity);
+              toast.success("Added to cart");
+            } catch (err) {
+              toast.error("Could not add to cart");
+            }
+          }}
+          className="w-full py-3 rounded-xl font-semibold text-white border flex items-center justify-center gap-3"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            borderColor: "rgba(255,255,255,0.08)",
+            backdropFilter: "blur(6px)",
+            transition: "opacity 120ms ease, transform 120ms ease",
+          }}
         >
           <svg
-            className="w-5 h-5 text-white"
+            className="w-5 h-5 flex-shrink-0"
+            viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            viewBox="0 0 24 24"
+            aria-hidden
           >
             <path
               strokeLinecap="round"
@@ -86,25 +102,33 @@ export default function ProductActions({
               2a2 2 0 11-4 0 2 2 0 014 0z"
             />
           </svg>
-          Add to Cart
+          <span className="leading-none">Add to Cart</span>
         </button>
 
         {/* Add to Wishlist */}
         <button
-          onClick={onAddToWishlist}
-          className="
-            w-full py-4 rounded-xl font-semibold text-white
-            backdrop-blur-md bg-[rgba(255,255,255,0.06)]
-            border border-[rgba(255,255,255,0.12)]
-            hover:bg-[rgba(255,255,255,0.12)]
-            transition-all flex items-center justify-center gap-2
-          "
+          onClick={() => {
+            try {
+              onAddToWishlist();
+              toast.success("Added to wishlist");
+            } catch (err) {
+              toast.error("Could not add to wishlist");
+            }
+          }}
+          className="w-full py-3 rounded-xl font-semibold text-white border flex items-center justify-center gap-3"
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            borderColor: "rgba(255,255,255,0.08)",
+            backdropFilter: "blur(6px)",
+            transition: "opacity 120ms ease, transform 120ms ease",
+          }}
         >
           <svg
-            className="w-5 h-5 text-white"
+            className="w-5 h-5 flex-shrink-0"
+            viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            viewBox="0 0 24 24"
+            aria-hidden
           >
             <path
               strokeLinecap="round"
@@ -117,7 +141,7 @@ export default function ProductActions({
               0 00-6.364 0z"
             />
           </svg>
-          Add to Wishlist
+          <span className="leading-none">Add to Wishlist</span>
         </button>
       </div>
     </div>

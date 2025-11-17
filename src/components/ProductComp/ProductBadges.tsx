@@ -75,7 +75,9 @@ export default function ProductBadges({
             />
           </svg>
         </div>
-        <div className="text-xs font-semibold text-white mb-1">Free Shipping</div>
+        <div className="text-xs font-semibold text-white mb-1">
+          Free Shipping
+        </div>
         <div className="text-xs text-white/60">On orders over $50</div>
       </div>
     </div>
