@@ -1,4 +1,4 @@
-// app/api/admin/products/[productId]/images/bulk/route.ts
+// app/api/admin/products/[product_id]/images/bulk/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { supabase } from "@/lib/supabase";
@@ -11,12 +11,31 @@ cloudinary.config({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ product_id: string }> }  // ✅ Changed to Promise
 ) {
   try {
-    const { productId } = params;
+    // ✅ CRITICAL: Await params before accessing
+    const { product_id } = await params;
+
+    // 🔍 DEBUG: Add logging
+    console.log("=== Image Upload API ===");
+    console.log("Received product_id:", product_id);
+    console.log("Type:", typeof product_id);
+    
+    // Validate product_id
+    if (!product_id || product_id === "undefined" || product_id === "null") {
+      console.error("❌ Invalid product_id:", product_id);
+      return NextResponse.json(
+        { error: "Invalid product_id" },
+        { status: 400 }
+      );
+    }
+
     const formData = await request.formData();
     const images = formData.getAll("images") as File[];
+
+    console.log("Number of images:", images.length);
+    console.log("========================");
 
     if (!images || images.length === 0) {
       return NextResponse.json(
@@ -59,25 +78,30 @@ export async function POST(
     const uploadedImages = await Promise.all(uploadPromises);
 
     // Save all to database
-
-
     const imageRecords = uploadedImages.map((img) => ({
-      product_id: productId,
+      product_id: product_id,  // ✅ Now this will have the correct value
       ...img,
     }));
 
+    // 🔍 DEBUG: Log what we're inserting
+    console.log("=== Inserting to DB ===");
+    console.log("First record:", JSON.stringify(imageRecords[0], null, 2));
+    
     const { data, error } = await supabase
       .from("product_images")
       .insert(imageRecords)
       .select();
 
     if (error) {
-      console.error("Database error:", error);
+      console.error("❌ Database error:", error);
       return NextResponse.json(
-        { error: "Failed to save images to database" },
+        { error: "Failed to save images to database", details: error.message },
         { status: 500 }
       );
     }
+
+    console.log("✅ Images saved to DB:", data?.length);
+    console.log("=======================");
 
     return NextResponse.json({
       success: true,
@@ -85,7 +109,7 @@ export async function POST(
       message: `Successfully uploaded ${images.length} images`,
     });
   } catch (error: any) {
-    console.error("Upload error:", error);
+    console.error("❌ Upload error:", error);
     return NextResponse.json(
       { error: error.message || "Failed to upload images" },
       { status: 500 }

@@ -5,10 +5,10 @@ import { supabase } from "@/lib/supabase";
 // GET - Fetch single product
 export async function GET(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { product_id: string } }
 ) {
   try {
-    const { productId } = params;
+    const { product_id } = params;
 
 
     const { data, error } = await supabase
@@ -20,7 +20,7 @@ export async function GET(
         product_variants(variant_id, variant_name, color, size, sku, additional_price, stock_quantity, is_active),
         product_compatibility(compatibility_id, bike_model, bike_brand, year_from, year_to, notes)
       `)
-      .eq("product_id", productId)
+      .eq("product_id", product_id)
       .single();
 
     if (error) {

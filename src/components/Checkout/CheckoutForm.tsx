@@ -1,136 +1,107 @@
 // components/Checkout/CheckoutForm.tsx
 "use client";
 
-import { useState } from "react";
+type Props = {
+  formValues: any;
+  onChange: (values: any) => void;
+};
 
-export default function CheckoutForm() {
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zip: "",
-    country: "India",
-  });
-
-  const update = (k: keyof typeof form, v: string) =>
-    setForm((f) => ({ ...f, [k]: v }));
-
-  const InputWrapper: React.FC<
-    React.PropsWithChildren<{ className?: string; "aria-label"?: string }>
-  > = ({ children, className = "", ...rest }) => (
-    <div
-      className={`relative ${className} focus-within:ring-1 focus-within:ring-white/20 focus-within:shadow-lg transition-all rounded-lg`}
-      {...rest}
-    >
-      {/* glossy sheen overlay */}
-      <span className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-b from-[rgba(255,255,255,0.02)] to-[rgba(255,255,255,0.01)] mix-blend-overlay" />
-      {children}
-    </div>
-  );
-
-  const inputBase =
-    "w-full backdrop-blur-md bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-lg px-4 py-3 text-sm text-white placeholder-[rgba(255,255,255,0.4)] focus:outline-none shadow-inner transition-all";
+export default function CheckoutForm({ formValues, onChange }: Props) {
+  const handleChange = (field: string, value: string) => {
+    onChange({ ...formValues, [field]: value });
+  };
 
   return (
-    <form className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <InputWrapper className="col-span-1" aria-label="First name field">
+    <div className="space-y-4">
+      <div>
+        <label className="text-sm text-white/60">Full Name *</label>
         <input
-          value={form.firstName}
-          onChange={(e) => update("firstName", e.target.value)}
-          placeholder="First name"
-          className={`${inputBase}`}
+          type="text"
+          value={formValues.customer_name}
+          onChange={(e) => handleChange("customer_name", e.target.value)}
+          className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+          required
         />
-      </InputWrapper>
+      </div>
 
-      <InputWrapper className="col-span-1" aria-label="Last name field">
+      <div>
+        <label className="text-sm text-white/60">Email *</label>
         <input
-          value={form.lastName}
-          onChange={(e) => update("lastName", e.target.value)}
-          placeholder="Last name"
-          className={`${inputBase}`}
-        />
-      </InputWrapper>
-
-      <InputWrapper
-        className="col-span-1 sm:col-span-2"
-        aria-label="Email address field"
-      >
-        <input
-          value={form.email}
-          onChange={(e) => update("email", e.target.value)}
-          placeholder="Email address"
-          className={`${inputBase}`}
           type="email"
+          value={formValues.customer_email}
+          onChange={(e) => handleChange("customer_email", e.target.value)}
+          className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+          required
         />
-      </InputWrapper>
+      </div>
 
-      <InputWrapper
-        className="col-span-1 sm:col-span-2"
-        aria-label="Phone field"
-      >
+      <div>
+        <label className="text-sm text-white/60">Phone</label>
         <input
-          value={form.phone}
-          onChange={(e) => update("phone", e.target.value)}
-          placeholder="Phone"
-          className={`${inputBase}`}
-          inputMode="tel"
+          type="tel"
+          value={formValues.customer_phone}
+          onChange={(e) => handleChange("customer_phone", e.target.value)}
+          className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
         />
-      </InputWrapper>
+      </div>
 
-      <InputWrapper
-        className="col-span-1 sm:col-span-2"
-        aria-label="Street address field"
-      >
-        <input
-          value={form.address}
-          onChange={(e) => update("address", e.target.value)}
-          placeholder="Street address"
-          className={`${inputBase}`}
+      <div>
+        <label className="text-sm text-white/60">Address *</label>
+        <textarea
+          value={formValues.shipping_address}
+          onChange={(e) => handleChange("shipping_address", e.target.value)}
+          rows={3}
+          className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+          required
         />
-      </InputWrapper>
+      </div>
 
-      <InputWrapper aria-label="City field">
-        <input
-          value={form.city}
-          onChange={(e) => update("city", e.target.value)}
-          placeholder="City"
-          className={`${inputBase}`}
-        />
-      </InputWrapper>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm text-white/60">City *</label>
+          <input
+            type="text"
+            value={formValues.shipping_city}
+            onChange={(e) => handleChange("shipping_city", e.target.value)}
+            className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+            required
+          />
+        </div>
 
-      <InputWrapper aria-label="State / Province field">
-        <input
-          value={form.state}
-          onChange={(e) => update("state", e.target.value)}
-          placeholder="State / Province"
-          className={`${inputBase}`}
-        />
-      </InputWrapper>
+        <div>
+          <label className="text-sm text-white/60">State *</label>
+          <input
+            type="text"
+            value={formValues.shipping_state}
+            onChange={(e) => handleChange("shipping_state", e.target.value)}
+            className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+            required
+          />
+        </div>
+      </div>
 
-      <InputWrapper aria-label="ZIP / PIN field">
-        <input
-          value={form.zip}
-          onChange={(e) => update("zip", e.target.value)}
-          placeholder="ZIP / PIN"
-          className={`${inputBase}`}
-        />
-      </InputWrapper>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm text-white/60">Postal Code *</label>
+          <input
+            type="text"
+            value={formValues.shipping_postal_code}
+            onChange={(e) => handleChange("shipping_postal_code", e.target.value)}
+            className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+            required
+          />
+        </div>
 
-      <InputWrapper
-        className="col-span-1 sm:col-span-2"
-        aria-label="Country field"
-      >
-        <input
-          value={form.country}
-          onChange={(e) => update("country", e.target.value)}
-          placeholder="Country"
-          className={`${inputBase}`}
-        />
-      </InputWrapper>
-    </form>
+        <div>
+          <label className="text-sm text-white/60">Country</label>
+          <input
+            type="text"
+            value={formValues.shipping_country}
+            onChange={(e) => handleChange("shipping_country", e.target.value)}
+            className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+          />
+        </div>
+      </div>
+    </div>
   );
 }
