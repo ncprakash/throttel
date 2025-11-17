@@ -7,6 +7,7 @@ import EditProfileForm from "./EditProfileForm";
 import OrdersList from "./OrdersList";
 import WishlistCard from "./WishlistCard";
 import BottomNav from "../BottomNavbar";
+import { useSession } from "next-auth/react";
 
 type User = {
   user_id?: string;
@@ -17,9 +18,12 @@ type User = {
 } | null;
 
 export default function ProfilePage() {
+  const { data: session } = useSession();
+console.log(session?.user.id);
+
   const [user, setUser] = useState<User>(null);
   const [orders, setOrders] = useState<any[]>([]);
-  const [wishlist, setWishlist] = useState<any[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]); // ✅ Fixed: Initialize as array
   const [addresses, setAddresses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -38,10 +42,16 @@ export default function ProfilePage() {
       setLoading(true);
       setNotice(null);
 
+      // ✅ Fixed: Check if session exists before making requests
+      if (!session?.user?.id) {
+        setLoading(false);
+        return;
+      }
+
       const requests = {
         user: axios.get("/api/user"),
         orders: axios.get("/api/orders"),
-        wishlist: axios.get("/api/wishlist"),
+        wishlist: axios.get(`/api/wishlist?user_id=${session.user.id.trim()}`), // ✅ Fixed: Added trim()
         addresses: axios.get("/api/addresses"),
       };
 
@@ -81,7 +91,9 @@ export default function ProfilePage() {
           ) ?? []
         );
 
-        setWishlist(mapped.wishlist || []);
+        // ✅ Fixed: Extract wishlist array from response
+        setWishlistItems(mapped.wishlist?.wishlist || []);
+        
         setAddresses(mapped.addresses || []);
 
         if (errors.length) {
@@ -99,7 +111,7 @@ export default function ProfilePage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [session]); // ✅ Fixed: Added session as dependency
 
   async function saveProfile() {
     if (!user) return;
@@ -117,21 +129,6 @@ export default function ProfilePage() {
     } finally {
       setSaving(false);
       setTimeout(() => setNotice(null), 2000);
-    }
-  }
-
-  async function removeFromWishlist(id: string) {
-    const prev = [...wishlist];
-    setWishlist((w) => w.filter((i) => i.wishlist_id !== id));
-    try {
-      await axios.delete(`/api/wishlist/${id}`);
-      setNotice("Removed from wishlist");
-    } catch (err) {
-      console.error(err);
-      setWishlist(prev);
-      setNotice("Could not remove item");
-    } finally {
-      setTimeout(() => setNotice(null), 1500);
     }
   }
 
@@ -165,6 +162,27 @@ export default function ProfilePage() {
       setTimeout(() => setNotice(null), 1500);
     }
   }
+
+  // ✅ Fixed: Moved handleRemove before the loading check
+  const handleRemove = async (wishlist_id: string) => {
+    if (!confirm("Remove this item from wishlist?")) return;
+
+    try {
+      await axios.delete(`/api/wishlist/${wishlist_id}`);
+
+      // Remove from state
+      setWishlistItems((prev) =>
+        prev.filter((item) => item.wishlist_id !== wishlist_id)
+      );
+
+      setNotice("Removed from wishlist!");
+      setTimeout(() => setNotice(null), 1500);
+    } catch (error) {
+      console.error("Failed to remove:", error);
+      setNotice("Failed to remove from wishlist");
+      setTimeout(() => setNotice(null), 1500);
+    }
+  };
 
   if (loading) {
     return (
@@ -243,7 +261,7 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold text-white">
-                    {wishlist.length}
+                    {wishlistItems.length} {/* ✅ Fixed: Use wishlistItems */}
                   </p>
                   <p className="text-sm text-white/60 mt-1">Wishlist Items</p>
                 </div>
@@ -411,9 +429,9 @@ export default function ProfilePage() {
             <div className="lg:col-span-1">
               <div className="glass-panel rounded-2xl p-6 shadow-xl">
                 <WishlistCard
-                  items={wishlist}
-                  onRemove={removeFromWishlist}
-                  compact
+                  items={wishlistItems} // ✅ Pass the wishlist array
+                  onRemove={handleRemove}
+                  compact={false}
                 />
               </div>
             </div>

@@ -13,11 +13,13 @@ import ProductBadges from "@/components/ProductComp/ProductBadges";
 import ProductTabs from "@/components/ProductComp/ProductTabs";
 import BottomNav from "@/components/BottomNavbar";
 import Footer from "@/components/Footer";
-
+import { useSession } from "next-auth/react";
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
+
+const { data: session } = useSession();
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,7 @@ const handleAddToCart = (quantity: number) => {
   if (existingCart) {
     cart = JSON.parse(existingCart);
   }
+  
 
   // 2. Create the cart item matching your CartItemProps structure
   const cartItem = {
@@ -88,12 +91,34 @@ const handleAddToCart = (quantity: number) => {
 
   alert(`Added ${quantity} item(s) to cart!`);
 };
+const wishList={
+    user_id:session?.user?.id,
+    product_id:product?.product_id,
+  }
+const handleAddToWishlist = async () => {
+  // Check if user is logged in
+  if (!session?.user) {
+    alert("Please login to add to wishlist");
+    return;
+  }
 
+  // Check if product_id exists
+  if (!product.product_id) {
+    alert("Invalid product");
+    return;
+  }
 
-  const handleAddToWishlist = () => {
-    console.log("Adding to wishlist:", product);
-    // UI-only: wire your wishlist logic here
-  };
+  console.log("Adding to wishlist:", wishList);
+
+  try {
+    const response = await axios.post("/api/wishlist", wishList);  // ✅ Pass wishList data
+    console.log("✅ Success:", response.data);
+    alert("Added to wishlist!");
+  } catch (error: any) {
+    console.error("❌ Error:", error);
+    alert(error.response?.data?.error || "Failed to add to wishlist");
+  }
+};
 
   if (loading) {
     return (
