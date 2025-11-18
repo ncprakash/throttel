@@ -11,9 +11,8 @@ export type WishlistItem = {
   product_id: string;
   created_at: string;
   products: {
-
     product_id: string;
-   
+
     name: string;
     description: string;
     regular_price: number;
@@ -59,7 +58,9 @@ export default function WishlistCard({
     <Card className="border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_20px_rgba(255,255,255,0.05)]">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-white/90">Wishlist</h3>
-        <small className="text-xs text-white/60">{safeItems.length} items</small>
+        <small className="text-xs text-white/60">
+          {safeItems.length} items
+        </small>
       </div>
 
       {safeItems.length === 0 ? (
@@ -67,10 +68,16 @@ export default function WishlistCard({
           <p className="text-xs text-white/60">No items in wishlist</p>
         </div>
       ) : (
-        <ul className={`space-y-3 ${compact ? "text-sm max-h-96 overflow-y-auto" : ""}`}>
+        <ul
+          className={`space-y-3 ${
+            compact ? "text-sm max-h-96 overflow-y-auto" : ""
+          }`}
+        >
           {safeItems.map((item) => {
             const product = item.products;
-            const primaryImage = product?.product_images?.find((img) => img.is_primary);
+            const primaryImage = product?.product_images?.find(
+              (img) => img.is_primary
+            );
             const price = product?.sale_price || product?.regular_price || 0;
             const inStock = (product?.stock_quantity || 0) > 0;
 

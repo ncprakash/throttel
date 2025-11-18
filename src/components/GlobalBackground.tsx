@@ -29,10 +29,18 @@ export default function GlobalBackground() {
   return (
     <div
       aria-hidden
-      className="fixed inset-0 -z-50 bg-center bg-cover pointer-events-none transition-opacity duration-700"
+      className="
+      fixed inset-0 -z-50
+      bg-center bg-cover bg-no-repeat
+      pointer-events-none 
+      transition-opacity duration-700
+    "
       style={{
         backgroundImage: `url('${bg}')`,
-        opacity: 0.1,
+        opacity: 0.18,
+        width: "100vw",
+        height: "100vh",
+        minHeight: "100vh",
       }}
     />
   );
