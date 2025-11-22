@@ -348,9 +348,6 @@ export default function ProductDetailPage() {
           }
         `}</style>
       </div>
-
-      <BottomNav />
-      <Footer />
     </>
   );
 }
