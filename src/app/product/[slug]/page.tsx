@@ -186,23 +186,13 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-black text-white pb-32">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Breadcrumb */}
-          <div className="mb-6 flex items-center gap-2 text-sm text-[rgba(255,255,255,0.6)]">
-            <button onClick={() => router.push("/")} className="crumb-btn">
-              Home
-            </button>
-            <span>/</span>
-            <button onClick={() => router.push("/shop")} className="crumb-btn">
-              Parts
-            </button>
-            <span>/</span>
+          <div className="mb-6">
             <button
-              onClick={() => router.push("/shop?category=exhaust")}
-              className="crumb-btn"
+              onClick={() => router.push("/shop")}
+              className="px-4 py-2 rounded-xl text-sm bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] transition"
             >
-              Exhaust
+              ← Back to Shop
             </button>
-            <span>/</span>
-            <span className="text-white truncate">{product.name}</span>
           </div>
 
           {/* Main Product Section */}

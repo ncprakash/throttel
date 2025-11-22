@@ -1,3 +1,4 @@
+// components/EnterOTP.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -13,14 +14,15 @@ type Props = {
 
 function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
   const [values, setValues] = useState<string[]>(() => Array(length).fill(""));
+  // keep explicit nullables and indexable array
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  // Fixed: Get email from URL parameter named "otpemail"
+
+  // Get email from URL parameter named "otpemail"
   const email = searchParams.get("otpemail");
 
   useEffect(() => {
@@ -49,7 +51,10 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, i: number) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    i: number
+  ) => {
     const key = e.key;
     if (key === "Backspace") {
       if (values[i]) {
@@ -70,7 +75,10 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const paste = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
+    const paste = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, length);
     if (!paste) return;
     const next = Array(length).fill("");
     for (let i = 0; i < paste.length; i++) next[i] = paste[i];
@@ -81,7 +89,7 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
 
   async function handleVerify(code: string) {
     if (!code || code.length !== length) return;
-    
+
     if (!email) {
       setError("Email not found in URL");
       return;
@@ -90,11 +98,11 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
     setError(null);
     setSuccess(null);
     setIsSubmitting(true);
-    
+
     try {
-      const res = await axios.post("/api/verify-otp", { 
+      const res = await axios.post("/api/verify-otp", {
         otp: code,
-        email: email 
+        email: email,
       });
 
       if (res?.data?.ok || res?.status === 200) {
@@ -105,7 +113,11 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || err.response?.data?.error || "Verification failed");
+        setError(
+          err.response?.data?.message ||
+            err.response?.data?.error ||
+            "Verification failed"
+        );
       } else {
         setError("An unexpected error occurred");
       }
@@ -117,15 +129,29 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
   return (
     <div className={`w-full max-w-md mx-auto ${className}`}>
       <div className="text-center mb-4">
-        <h2 className="text-lg font-bold tracking-tight">Enter verification code</h2>
-        <p className="text-xs text-white/70">We sent a {length}-digit code to {email || "your email"}</p>
+        <h2 className="text-lg font-bold tracking-tight">
+          Enter verification code
+        </h2>
+        <p className="text-xs text-white/70">
+          We sent a {length}-digit code to {email || "your email"}
+        </p>
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); handleVerify(values.join("")); }} onPaste={handlePaste} className="flex gap-3 justify-center">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleVerify(values.join(""));
+        }}
+        onPaste={handlePaste}
+        className="flex gap-3 justify-center"
+      >
         {values.map((val, i) => (
           <input
             key={i}
-            ref={(el) => (inputsRef.current[i] = el)}
+            // <-- important fix: use block body so callback returns void (not the assigned element)
+            ref={(el) => {
+              inputsRef.current[i] = el;
+            }}
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={1}
@@ -139,16 +165,35 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
       </form>
 
       <div className="mt-4 flex items-center justify-between text-xs">
-        <button type="button" onClick={() => { setValues(Array(length).fill("")); inputsRef.current[0]?.focus(); onResend?.(); setError(null); setSuccess(null); }} className="text-sm font-medium text-white/70 hover:text-white/90">
+        <button
+          type="button"
+          onClick={() => {
+            setValues(Array(length).fill(""));
+            inputsRef.current[0]?.focus();
+            onResend?.();
+            setError(null);
+            setSuccess(null);
+          }}
+          className="text-sm font-medium text-white/70 hover:text-white/90"
+        >
           Resend code
         </button>
-        <button type="button" onClick={() => handleVerify(values.join(""))} className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-50" disabled={values.some((v) => v === "") || isSubmitting}>
+        <button
+          type="button"
+          onClick={() => handleVerify(values.join(""))}
+          className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-50"
+          disabled={values.some((v) => v === "") || isSubmitting}
+        >
           {isSubmitting ? "Verifying..." : "Verify"}
         </button>
       </div>
 
-      {error && <p className="mt-3 text-center text-sm text-red-400">{error}</p>}
-      {success && <p className="mt-3 text-center text-sm text-green-400">{success}</p>}
+      {error && (
+        <p className="mt-3 text-center text-sm text-red-400">{error}</p>
+      )}
+      {success && (
+        <p className="mt-3 text-center text-sm text-green-400">{success}</p>
+      )}
     </div>
   );
 }

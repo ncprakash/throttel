@@ -1,22 +1,21 @@
 // app/api/orders/create/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import Razorpay from "razorpay";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+// Helper to build supabase client lazily
+function createSupabaseClient() {
+  const { createClient } = require("@supabase/supabase-js");
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error("SUPABASE env vars missing (NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)");
+  }
+  return createClient(url, key);
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const {
       user_id,
       customer_name,
@@ -38,14 +37,23 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!user_id || !customer_email || !items || items.length === 0) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     // Generate unique order number
     const order_number = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+    // Create supabase client (lazy)
+    let supabase;
+    try {
+      supabase = createSupabaseClient();
+    } catch (err: any) {
+      console.error("Supabase client error:", err?.message ?? err);
+      return NextResponse.json(
+        { error: "Server misconfiguration: Supabase keys missing" },
+        { status: 500 }
+      );
+    }
 
     // Create or get shipping address
     const { data: shippingAddr, error: addrError } = await supabase
@@ -110,9 +118,7 @@ export async function POST(request: NextRequest) {
       total_price: item.total_price,
     }));
 
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
+    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
 
     if (itemsError) {
       console.error("Order items error:", itemsError);
@@ -130,15 +136,32 @@ export async function POST(request: NextRequest) {
     });
 
     // Create Razorpay order if payment method is razorpay
-    let razorpayOrder = null;
+    let razorpayOrder: any = null;
     if (payment_method === "razorpay") {
+      // Guard envs and instantiate inside handler to avoid build-time evaluation
+      const keyId = process.env.RAZORPAY_KEY_ID;
+      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+      if (!keyId || !keySecret) {
+        console.error("Razorpay keys missing");
+        return NextResponse.json(
+          { error: "Payment gateway not configured. Missing RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET." },
+          { status: 500 }
+        );
+      }
+
+      // require inside handler to avoid ESM init at build-time
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const Razorpay = require("razorpay");
+      const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+
       razorpayOrder = await razorpay.orders.create({
-        amount: Math.round(total_amount * 100), // Convert to paise
+        amount: Math.round(total_amount * 100), // amount in paise
         currency: "INR",
         receipt: order_number,
         notes: {
           order_id: order.order_id,
-          order_number: order_number,
+          order_number,
           customer_name,
           customer_email,
         },
@@ -147,9 +170,7 @@ export async function POST(request: NextRequest) {
       // Update order with Razorpay order ID
       await supabase
         .from("orders")
-        .update({
-          notes: JSON.stringify({ razorpay_order_id: razorpayOrder.id }),
-        })
+        .update({ notes: JSON.stringify({ razorpay_order_id: razorpayOrder.id }) })
         .eq("order_id", order.order_id);
     }
 
@@ -163,9 +184,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error("API Error:", error);
-    return NextResponse.json(
-      { error: "Internal server error", details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error", details: error.message }, { status: 500 });
   }
 }

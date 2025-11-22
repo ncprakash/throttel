@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {supabase} from "@/lib/supabase"
+import { supabase } from '@/lib/supabase';
 
+type MaybePromiseParams<T> = T | Promise<T>;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: MaybePromiseParams<{ slug: string }> }
 ) {
   try {
-    // Await params before accessing slug
-    const { slug } = await params;
+    const params = (context.params && typeof (context.params as any).then === 'function')
+      ? await (context.params as Promise<{ slug: string }>)
+      : (context.params as { slug: string });
 
-    // Fetch product with all related data using joins
+    const { slug } = params;
+    if (!slug) return NextResponse.json({ error: 'Missing slug' }, { status: 400 });
+
     const { data: product, error } = await supabase
       .from('products')
       .select(`
@@ -24,40 +28,28 @@ export async function GET(
       .eq('is_active', true)
       .single();
 
-    if (error || !product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
-    }
+    if (error || !product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
-    // Sort images by display_order and set primary image first
-    if (product.images) {
+    if (Array.isArray(product.images)) {
       product.images.sort((a: any, b: any) => {
-        if (a.is_primary) return -1;
-        if (b.is_primary) return 1;
-        return a.display_order - b.display_order;
+        if (a.is_primary && !b.is_primary) return -1;
+        if (!a.is_primary && b.is_primary) return 1;
+        return (a.display_order ?? 0) - (b.display_order ?? 0);
       });
     }
 
-    // Filter active variants only
-    if (product.variants) {
+    if (Array.isArray(product.variants)) {
       product.variants = product.variants.filter((v: any) => v.is_active);
     }
 
-    // Get compatibility info (fit_for field for your frontend)
-    if (product.compatibility && product.compatibility.length > 0) {
-      product.fit_for = product.compatibility[0].bike_model;
-      product.brand = product.compatibility[0].bike_brand;
+    if (Array.isArray(product.compatibility) && product.compatibility.length > 0) {
+      product.fit_for = product.compatibility[0].bike_model ?? null;
+      product.brand = product.compatibility[0].bike_brand ?? null;
     }
 
     return NextResponse.json(product, { status: 200 });
-
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error('Error fetching product by slug:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

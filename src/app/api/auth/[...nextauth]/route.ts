@@ -47,7 +47,7 @@ export const authOptions = {
         return {
           id: user.user_id,
           email: user.email,
-          phone: user.phone ?? null,
+          phone: normalizePhone(user.phone),
           name: `${user.first_name} ${user.last_name}`,
           role: user.role,
         };
