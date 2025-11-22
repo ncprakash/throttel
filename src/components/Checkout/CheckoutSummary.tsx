@@ -3,20 +3,32 @@
 
 import { useState } from "react";
 
+type ShippingMethod = "standard" | "express";
+
 type Props = {
   subtotal: number;
   shipping: number;
+  tax: number;
   total: number;
   itemCount: number;
-  shippingMethod: "standard" | "express";
-  onChangeShipping: (method: "standard" | "express") => void;
-  onPlaceOrder: (paymentMethod: string) => void;
+  shippingMethod: ShippingMethod;
+  onChangeShipping: (method: ShippingMethod) => void;
+  onPlaceOrder: (paymentMethod: string) => void | Promise<void>;
   placingOrder: boolean;
 };
+
+const formatCurrency = (value: number) =>
+  typeof Intl !== "undefined"
+    ? new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+      }).format(value)
+    : `₹${value.toFixed(2)}`;
 
 export default function CheckoutSummary({
   subtotal,
   shipping,
+  tax,
   total,
   itemCount,
   shippingMethod,
@@ -33,27 +45,38 @@ export default function CheckoutSummary({
       <div className="space-y-3 mb-6">
         <div className="flex justify-between text-sm">
           <span className="text-white/60">Subtotal ({itemCount} items)</span>
-          <span>₹{subtotal.toFixed(2)}</span>
+          <span>{formatCurrency(subtotal)}</span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-white/60">Shipping</span>
-          <span>₹{shipping.toFixed(2)}</span>
+          <span>{formatCurrency(shipping)}</span>
+        </div>
+
+        <div className="flex justify-between text-sm">
+          <span className="text-white/60">Tax (GST)</span>
+          <span>{formatCurrency(tax)}</span>
         </div>
 
         <div className="border-t border-white/10 pt-3">
           <div className="flex justify-between font-semibold text-lg">
             <span>Total</span>
-            <span>₹{total.toFixed(2)}</span>
+            <span>{formatCurrency(total)}</span>
           </div>
         </div>
       </div>
 
       {/* Shipping Method */}
       <div className="mb-6">
-        <label className="text-sm text-white/60 mb-2 block">Shipping Method</label>
+        <label className="text-sm text-white/60 mb-2 block">
+          Shipping Method
+        </label>
         <div className="space-y-2">
-          <label className="flex items-center gap-3 p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition">
+          <label
+            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-white/10 transition ${
+              shippingMethod === "standard" ? "bg-white/5" : "bg-transparent"
+            }`}
+          >
             <input
               type="radio"
               name="shipping"
@@ -64,10 +87,18 @@ export default function CheckoutSummary({
               <div className="font-medium">Standard Shipping</div>
               <div className="text-xs text-white/60">5-7 business days</div>
             </div>
-            <span className="text-sm">₹80</span>
+            <span className="text-sm">
+              {formatCurrency(
+                shippingMethod === "standard" ? shipping : shipping
+              )}
+            </span>
           </label>
 
-          <label className="flex items-center gap-3 p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition">
+          <label
+            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-white/10 transition ${
+              shippingMethod === "express" ? "bg-white/5" : "bg-transparent"
+            }`}
+          >
             <input
               type="radio"
               name="shipping"
@@ -78,14 +109,20 @@ export default function CheckoutSummary({
               <div className="font-medium">Express Shipping</div>
               <div className="text-xs text-white/60">2-3 business days</div>
             </div>
-            <span className="text-sm">₹80</span>
+            <span className="text-sm">
+              {formatCurrency(
+                shippingMethod === "express" ? shipping : shipping
+              )}
+            </span>
           </label>
         </div>
       </div>
 
       {/* Payment Method */}
       <div className="mb-6">
-        <label className="text-sm text-white/60 mb-2 block">Payment Method</label>
+        <label className="text-sm text-white/60 mb-2 block">
+          Payment Method
+        </label>
         <div className="space-y-2">
           <label className="flex items-center gap-3 p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition">
             <input
