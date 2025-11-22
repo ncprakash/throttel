@@ -4,6 +4,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Image from "next/image";
+import { toast } from "sonner";
 
 type Category = { category_id: string; name: string };
 
@@ -238,7 +239,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     const totalImages = imageFiles.length + arr.length;
     
     if (totalImages > 8) {
-      alert("You can only upload up to 8 images");
+      toast("You can only upload up to 8 images");
       return;
     }
     

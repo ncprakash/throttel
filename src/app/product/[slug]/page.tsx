@@ -11,8 +11,7 @@ import ProductVariants from "@/components/ProductComp/ProductVariants";
 import ProductActions from "@/components/ProductComp/ProductActions";
 import ProductBadges from "@/components/ProductComp/ProductBadges";
 import ProductTabs from "@/components/ProductComp/ProductTabs";
-import BottomNav from "@/components/BottomNavbar";
-import Footer from "@/components/Footer";
+import { toast } from "sonner"
 import { useSession } from "next-auth/react";
 
 export default function ProductDetailPage() {
@@ -93,7 +92,7 @@ export default function ProductDetailPage() {
     // 5. Save updated cart back to localStorage - USE SAME KEY AS CART PAGE
     localStorage.setItem("cartItems", JSON.stringify(cart));
 
-    alert(`Added ${quantity} item(s) to cart!`);
+  ;
   };
 
   const wishList = {
@@ -104,23 +103,23 @@ export default function ProductDetailPage() {
   const handleAddToWishlist = async () => {
     // Check if user is logged in
     if (!session?.user) {
-      alert("Please login to add to wishlist");
+      toast("Please login to add to wishlist");
       return;
     }
 
     // Check if product_id exists
     if (!product?.product_id) {
-      alert("Invalid product");
+      toast("Invalid product");
       return;
     }
 
     try {
       const response = await axios.post("/api/wishlist", wishList);
       console.log("✅ Success:", response.data);
-      alert("Added to wishlist!");
+      toast("Added to wishlist!");
     } catch (error: any) {
       console.error("❌ Error:", error);
-      alert(error.response?.data?.error || "Failed to add to wishlist");
+      toast(error.response?.data?.error || "Failed to add to wishlist");
     }
   };
 
@@ -248,7 +247,7 @@ export default function ProductDetailPage() {
 
                 <div className="mt-4">
                   <ProductBadges
-                    stockQuantity={product.stock_quantity}
+                   
                     warrantyMonths={product.warranty_months}
                   />
                 </div>

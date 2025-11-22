@@ -2,15 +2,15 @@
 "use client";
 
 type ProductBadgesProps = {
-  stockQuantity: number;
+
   warrantyMonths: number;
-  freeShipping?: boolean;
+
 };
 
 export default function ProductBadges({
-  stockQuantity,
+  
   warrantyMonths,
-  freeShipping = true,
+ 
 }: ProductBadgesProps) {
   return (
     <div className="grid grid-cols-3 gap-4">

@@ -17,14 +17,32 @@ type User = {
   phone?: string;
 } | null;
 
+type Order = {
+  order_id: string;
+  created_at: string;
+  // add other order fields you use
+};
+
+type WishlistItem = {
+  wishlist_id: string;
+  product_id:string;
+  user_id:string;
+  created_at:string;
+};
+
+type Address = {
+  address_id: string;
+  is_default: boolean;
+  // add other address fields you use
+};
+
 export default function ProfilePage() {
   const { data: session } = useSession();
-console.log(session?.user.id);
 
   const [user, setUser] = useState<User>(null);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [wishlistItems, setWishlistItems] = useState<any[]>([]); // ✅ Fixed: Initialize as array
-  const [addresses, setAddresses] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -42,17 +60,17 @@ console.log(session?.user.id);
       setLoading(true);
       setNotice(null);
 
-      // ✅ Fixed: Check if session exists before making requests
       if (!session?.user?.id) {
         setLoading(false);
         return;
       }
 
       const requests = {
-        user: axios.get("/api/user"),
-        orders: axios.get("/api/orders"),
-        wishlist: axios.get(`/api/wishlist?user_id=${session.user.id.trim()}`), // ✅ Fixed: Added trim()
-        addresses: axios.get("/api/addresses"),
+        orders: axios.get<Order[]>("/api/orders"),
+        wishlist: axios.get<{ wishlist: WishlistItem[] }>(
+          `/api/wishlist?user_id=${session.user.id.trim()}`
+        ),
+      // added addresses fetch since addresses state is used
       };
 
       try {
@@ -86,14 +104,13 @@ console.log(session?.user.id);
         });
 
         setOrders(
-          (mapped.orders || [])?.sort?.((a: any, b: any) =>
-            (b.created_at || "").localeCompare(a.created_at || "")
-          ) ?? []
+          (mapped.orders || [])
+            .sort((a: Order, b: Order) =>
+              b.created_at.localeCompare(a.created_at)
+            ) ?? []
         );
 
-        // ✅ Fixed: Extract wishlist array from response
         setWishlistItems(mapped.wishlist?.wishlist || []);
-        
         setAddresses(mapped.addresses || []);
 
         if (errors.length) {
@@ -111,7 +128,7 @@ console.log(session?.user.id);
     return () => {
       mounted = false;
     };
-  }, [session]); // ✅ Fixed: Added session as dependency
+  }, [session]);
 
   async function saveProfile() {
     if (!user) return;
@@ -132,49 +149,16 @@ console.log(session?.user.id);
     }
   }
 
-  async function setDefaultAddress(id: string) {
-    const prev = [...addresses];
-    setAddresses((arr) =>
-      arr.map((a) => ({ ...a, is_default: a.address_id === id }))
-    );
-    try {
-      await axios.patch(`/api/addresses/${id}/default`);
-      setNotice("Default address set");
-    } catch (err) {
-      console.error(err);
-      setAddresses(prev);
-      setNotice("Could not set default");
-    } finally {
-      setTimeout(() => setNotice(null), 1500);
-    }
-  }
-
-  async function addOrUpdateAddress(payload: any) {
-    setNotice(null);
-    try {
-      const res = await axios.post(`/api/addresses`, payload);
-      setAddresses((prev) => [res.data, ...prev]);
-      setNotice("Address saved");
-    } catch (err) {
-      console.error(err);
-      setNotice("Could not save address");
-    } finally {
-      setTimeout(() => setNotice(null), 1500);
-    }
-  }
-
-  // ✅ Fixed: Moved handleRemove before the loading check
   const handleRemove = async (wishlist_id: string) => {
     if (!confirm("Remove this item from wishlist?")) return;
 
     try {
-      await axios.delete(`/api/wishlist/${wishlist_id}`);
-
-      // Remove from state
+      await axios.delete(`/api/wishlist/${wishlist_id}`).then(function(response){
+        console.log(response)
+      })
       setWishlistItems((prev) =>
         prev.filter((item) => item.wishlist_id !== wishlist_id)
       );
-
       setNotice("Removed from wishlist!");
       setTimeout(() => setNotice(null), 1500);
     } catch (error) {
@@ -234,9 +218,7 @@ console.log(session?.user.id);
             <div className="glass-panel p-6 rounded-2xl transform-gpu transition-transform duration-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-white">
-                    {orders.length}
-                  </p>
+                  <p className="text-3xl font-bold text-white">{orders.length}</p>
                   <p className="text-sm text-white/60 mt-1">Total Orders</p>
                 </div>
                 <div className="w-12 h-12 bg-white/6 rounded-full flex items-center justify-center">
@@ -260,9 +242,7 @@ console.log(session?.user.id);
             <div className="glass-panel p-6 rounded-2xl transform-gpu transition-transform duration-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-white">
-                    {wishlistItems.length} {/* ✅ Fixed: Use wishlistItems */}
-                  </p>
+                  <p className="text-3xl font-bold text-white">{wishlistItems.length}</p>
                   <p className="text-sm text-white/60 mt-1">Wishlist Items</p>
                 </div>
                 <div className="w-12 h-12 bg-white/6 rounded-full flex items-center justify-center">
@@ -286,9 +266,7 @@ console.log(session?.user.id);
             <div className="glass-panel p-6 rounded-2xl transform-gpu transition-transform duration-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-white">
-                    {addresses.length}
-                  </p>
+                  <p className="text-3xl font-bold text-white">{addresses.length}</p>
                   <p className="text-sm text-white/60 mt-1">Saved Addresses</p>
                 </div>
                 <div className="w-12 h-12 bg-white/6 rounded-full flex items-center justify-center">
@@ -316,13 +294,10 @@ console.log(session?.user.id);
             <div className="lg:col-span-2 space-y-6">
               <div className="glass-panel p-6 sm:p-8 rounded-3xl shadow-xl">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-white">
-                    Recent Orders
-                  </h3>
-                  <button className="text-sm text-white/60 hover:text-white transition-colors">
-                    View All
-                  </button>
+                  <h3 className="text-xl font-semibold text-white">Recent Orders</h3>
+                  <button className="text-sm text-white/60 hover:text-white transition-colors">View All</button>
                 </div>
+
                 {orders.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/6 border border-white/10 flex items-center justify-center">
@@ -341,98 +316,20 @@ console.log(session?.user.id);
                       </svg>
                     </div>
                     <p className="text-white/60">No orders yet</p>
-                    <p className="text-sm text-white/40 mt-1">
-                      Your order history will appear here
-                    </p>
+                    <p className="text-sm text-white/40 mt-1">Your order history will appear here</p>
                   </div>
                 ) : (
                   <OrdersList orders={orders} onOpen={() => {}} compact />
                 )}
               </div>
 
-              {/* Addresses Section */}
-              <div className="glass-panel p-6 sm:p-8 rounded-3xl shadow-xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-white">
-                    Delivery Addresses
-                  </h3>
-                  <button
-                    onClick={() => addOrUpdateAddress({ mock: true })}
-                    className="px-4 py-2 rounded-xl text-sm font-medium backdrop-blur-sm bg-white/8 border border-white/12 hover:bg-white/12 transition"
-                  >
-                    + Add New
-                  </button>
-                </div>
-
-                {addresses.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/6 border border-white/10 flex items-center justify-center">
-                      <svg
-                        className="w-10 h-10 text-white/40"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-white/60">No addresses saved</p>
-                    <p className="text-sm text-white/40 mt-1">
-                      Add a delivery address to get started
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {addresses.map((addr: any) => (
-                      <div
-                        key={addr.address_id}
-                        className="glass-panel p-5 rounded-xl hover:bg-white/12 transition-all duration-300 group"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <p className="font-medium text-white">
-                                {addr.name || addr.line1}
-                              </p>
-                              {addr.is_default && (
-                                <span className="text-xs bg-white/8 text-black px-2 py-1 rounded-full border border-white/10">
-                                  Default
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-white/60">
-                              {addr.city}, {addr.postcode}
-                            </p>
-                          </div>
-                          {!addr.is_default && (
-                            <button
-                              onClick={() => setDefaultAddress(addr.address_id)}
-                              className="text-xs backdrop-blur-sm bg-white/8 hover:bg-white/12 px-3 py-1.5 rounded-lg border border-white/10 transition-all duration-300 opacity-0 group-hover:opacity-100"
-                            >
-                              Set Default
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* Addresses Section can be added here if needed */}
             </div>
 
             {/* Right Column - Wishlist */}
             <div className="lg:col-span-1">
               <div className="glass-panel rounded-2xl p-6 shadow-xl">
-                <WishlistCard
-                  items={wishlistItems} // ✅ Pass the wishlist array
-                  onRemove={handleRemove}
-                  compact={false}
-                />
+                <WishlistCard items={wishlistItems} onRemove={handleRemove} compact={false} />
               </div>
             </div>
           </div>

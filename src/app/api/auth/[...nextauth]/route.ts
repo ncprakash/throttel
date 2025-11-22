@@ -11,7 +11,7 @@ interface AuthUser {
   role: string;
 }
 
-const handler = NextAuth({
+export const authOptions = {
   session: { strategy: "jwt" },
 
   providers: [
@@ -27,25 +27,23 @@ const handler = NextAuth({
           throw new Error("Email and password are required");
         }
 
-        // Look up user in Supabase
-        const { data: user, error } = await supabase
+        const { data: user } = await supabase
           .from("users")
           .select("*")
           .eq("email", credentials.email)
           .single();
 
         if (!user) throw new Error("User not found");
-
-        // Ensure verified
         if (!user.is_verified) {
           throw new Error("Please verify your email before logging in");
         }
 
-        // Validate password
-        const isMatch = await bcrypt.compare(credentials.password, user.password_hash);
+        const isMatch = await bcrypt.compare(
+          credentials.password,
+          user.password_hash
+        );
         if (!isMatch) throw new Error("Invalid email or password");
 
-        // Return safe user object
         return {
           id: user.user_id,
           email: user.email,
@@ -59,23 +57,21 @@ const handler = NextAuth({
 
   callbacks: {
     async jwt({ token, user }) {
-      // On initial login, store all user info in token
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.phone = user.phone ?? null;
-        token.name = user.name;
-        token.email = user.email;
+        token.id = (user as AuthUser).id;
+        token.role = (user as AuthUser).role;
+        token.phone = (user as AuthUser).phone ?? null;
+        token.name = (user as AuthUser).name;
+        token.email = (user as AuthUser).email;
       }
       return token;
     },
 
     async session({ session, token }) {
-      // Map token properties into session.user explicitly
       session.user = {
         id: token.id as string,
         role: token.role as string,
-        phone: token.phone ?? null,
+        phone: (token.phone as string | null) ?? null,
         name: token.name as string,
         email: token.email as string,
       };
@@ -88,6 +84,8 @@ const handler = NextAuth({
   },
 
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

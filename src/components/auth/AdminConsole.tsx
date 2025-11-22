@@ -3,7 +3,7 @@
 
 import { FormEvent, useState,  } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import { signIn } from "next-auth/react";
 import FormInput from "./FormInpute"
 import SubmitButton from "./SubmitButton"
 import AlertMessage from  "./AlertMessage"
@@ -16,45 +16,28 @@ export default function AdminConsole() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+;
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+  e.preventDefault();
+  setError(null);
+  setIsSubmitting(true);
 
-    try {
-      const response = await axios.post(
-        "/api/admin",
-        {
-          email: formData.email.trim(),
-          password: formData.password,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+  const result = await signIn("credentials", {
+    redirect: false,
+    email: formData.email.trim(),
+    password: formData.password,
+  });
 
-      if (response.data.ok) {
-        setIsAuthenticated(true);
-        // Redirect to admin dashboard
-        router.push("/admin/dashboard");
-      }
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(
-          err.response?.data?.message ||
-            err.response?.data?.error ||
-            "Admin authentication failed"
-        );
-      } else {
-        setError("An unexpected error occurred");
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  setIsSubmitting(false);
 
+  if (result?.error) {
+    setError(result.error);
+  } else {
+    // On success, you can check session and redirect
+    router.push("/admin");
+  }
+};
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <FormInput
