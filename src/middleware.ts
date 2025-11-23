@@ -1,5 +1,9 @@
-// middleware.ts
-export { default } from "next-auth/middleware";
+import type { NextRequestWithAuth } from "next-auth/middleware";
+import nextAuthMiddleware from "next-auth/middleware";
+
+export function middleware(request: NextRequestWithAuth) {
+  return nextAuthMiddleware(request);
+}
 
 export const config = {
   matcher: [

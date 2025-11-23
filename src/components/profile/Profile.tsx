@@ -23,12 +23,28 @@ type Order = {
   // add other order fields you use
 };
 
-type WishlistItem = {
+type WishlistItem = 
+{
   wishlist_id: string;
-  product_id:string;
-  user_id:string;
-  created_at:string;
-};
+  user_id: string;
+  product_id: string;
+  created_at: string;
+  products: {
+    product_id: string;
+    name: string;
+    description: string;
+    regular_price: number;
+    sale_price: number;
+    stock_quantity: number;
+    product_images: Array<{
+      image_url: string;
+      alt_text: string;
+      is_primary: boolean;
+    }>;
+  };
+}
+
+
 
 type Address = {
   address_id: string;

@@ -12,7 +12,6 @@ export type WishlistItem = {
   created_at: string;
   products: {
     product_id: string;
-
     name: string;
     description: string;
     regular_price: number;
@@ -25,6 +24,7 @@ export type WishlistItem = {
     }>;
   };
 };
+
 
 type WishlistCardProps = {
   items: WishlistItem[];

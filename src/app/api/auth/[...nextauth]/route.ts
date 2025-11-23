@@ -1,4 +1,5 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions, Session, User } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { supabase } from "@/lib/supabase";
@@ -11,8 +12,10 @@ interface AuthUser {
   role: string;
 }
 
-export const authOptions = {
-  session: { strategy: "jwt" },
+export const authOptions: AuthOptions = {
+  session: {
+    strategy: "jwt",
+  },
 
   providers: [
     CredentialsProvider({
@@ -47,7 +50,7 @@ export const authOptions = {
         return {
           id: user.user_id,
           email: user.email,
-          phone: normalizePhone(user.phone),
+          phone: user.phone ?? null,
           name: `${user.first_name} ${user.last_name}`,
           role: user.role,
         };
@@ -56,7 +59,7 @@ export const authOptions = {
   ],
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.id = (user as AuthUser).id;
         token.role = (user as AuthUser).role;
@@ -67,14 +70,14 @@ export const authOptions = {
       return token;
     },
 
-    async session({ session, token }) {
-      session.user = {
-        id: token.id as string,
-        role: token.role as string,
-        phone: (token.phone as string | null) ?? null,
-        name: token.name as string,
-        email: token.email as string,
-      };
+    async session({ session, token }: { session: Session; token: JWT }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.phone = (token.phone as string | null) ?? null;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
+      }
       return session;
     },
   },
