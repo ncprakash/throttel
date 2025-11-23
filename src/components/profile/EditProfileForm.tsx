@@ -1,4 +1,3 @@
-// components/EditProfileForm.tsx
 "use client";
 import React from "react";
 
@@ -41,21 +40,13 @@ export default function EditProfileForm({
 
       <div className="grid grid-cols-2 gap-3">
         <input
-          className="
-            p-3 rounded-lg bg-white/5 border border-white/10 text-white 
-            placeholder-white/40 outline-none 
-            focus:bg-white/10 focus:border-white/30 transition
-          "
+          className="p-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 outline-none focus:bg-white/10 focus:border-white/30 transition"
           placeholder="First name"
           value={value.first_name}
           onChange={handleChange("first_name")}
         />
         <input
-          className="
-            p-3 rounded-lg bg-white/5 border border-white/10 text-white
-            placeholder-white/40 outline-none 
-            focus:bg-white/10 focus:border-white/30 transition
-          "
+          className="p-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 outline-none focus:bg-white/10 focus:border-white/30 transition"
           placeholder="Last name"
           value={value.last_name}
           onChange={handleChange("last_name")}
@@ -63,11 +54,7 @@ export default function EditProfileForm({
       </div>
 
       <input
-        className="
-          p-3 rounded-lg bg-white/5 border border-white/10 text-white
-          placeholder-white/40 outline-none mt-3 
-          focus:bg-white/10 focus:border-white/30 transition
-        "
+        className="p-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/40 outline-none mt-3 focus:bg-white/10 focus:border-white/30 transition"
         placeholder="Phone"
         value={value.phone}
         onChange={handleChange("phone")}
@@ -75,22 +62,15 @@ export default function EditProfileForm({
 
       <div className="flex gap-2 mt-4">
         <button
-          className="
-            px-4 py-2 rounded-lg bg-white/10 text-white
-            hover:bg-white/20 transition 
-            disabled:opacity-50 disabled:cursor-not-allowed
-          "
-          onClick={() => void onSave()}
+          className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={ onSave}
           disabled={saving}
         >
           {saving ? "Saving…" : "Save"}
         </button>
 
         <button
-          className="
-            px-4 py-2 rounded-lg border border-white/20 text-white/80
-            hover:bg-white/10 hover:text-white transition
-          "
+          className="px-4 py-2 rounded-lg border border-white/20 text-white/80 hover:bg-white/10 hover:text-white transition"
           onClick={onClose}
         >
           Cancel

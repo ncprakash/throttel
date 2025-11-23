@@ -1,22 +1,52 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+
+type UserType = {
+  user_id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  email: string;
+  phone?: string | null;
+  name?: string | null;
+};
 
 export default function ProfileHeader({ onEdit }: { onEdit: () => void }) {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  const [user, setUser] = useState<UserType | null>(null);
+    console.log(session?.user?.id)
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth");
     }
   }, [status, router]);
 
-  if (status === "loading" || !session?.user) return null;
+  useEffect(() => {
+    if (!session?.user) return;
 
-  const user = session.user;
+    async function fetchUserData() {
+      try {
+        // Safely extract user_id - adjust as needed if below fails
+        const userId = session?.user?.id
+        if (!userId) return;
+
+        const response = await axios.get(`/api/users/${userId}`);
+
+        setUser(response.data.user as UserType);
+      } catch (err) {
+        console.error("Failed to fetch user data", err);
+      }
+    }
+
+    fetchUserData();
+  }, [onEdit, session?.user]);
+
+  if (status === "loading" || !user) return null;
 
   return (
     <div className="relative overflow-hidden backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 shadow-[0_0_25px_rgba(255,255,255,0.08)]">
@@ -29,24 +59,17 @@ export default function ProfileHeader({ onEdit }: { onEdit: () => void }) {
             {/* USER INFO */}
             <div className="min-w-0">
               <h2 className="text-2xl font-semibold leading-tight truncate text-white">
-                {user.name ?? "MOCK NAME"}
+                {`${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || "MOCK NAME"}
               </h2>
-              <p className="text-xs text-white/60 truncate mt-1">
-                {user.email}
-              </p>
+              <p className="text-xs text-white/60 truncate mt-1">{user.email}</p>
+              {user.phone && <p className="text-xs text-white/60 mt-1">Phone: {user.phone}</p>}
             </div>
 
             {/* ACTION BUTTONS */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <button
                 onClick={onEdit}
-                className="
-                  px-4 py-2 text-sm rounded-lg border border-white/20 
-                  bg-white/10 text-white backdrop-blur-md
-                  shadow-[0_0_10px_rgba(255,255,255,0.05)]
-                  transition duration-300 
-                  hover:bg-white/20 hover:scale-105 hover:shadow-[0_0_16px_rgba(255,255,255,0.1)]
-                "
+                className="px-4 py-2 text-sm rounded-lg border border-white/20 bg-white/10 text-white backdrop-blur-md shadow-[0_0_10px_rgba(255,255,255,0.05)] transition duration-300 hover:bg-white/20 hover:scale-105 hover:shadow-[0_0_16px_rgba(255,255,255,0.1)]"
                 type="button"
                 aria-label="Edit profile"
               >
@@ -54,31 +77,14 @@ export default function ProfileHeader({ onEdit }: { onEdit: () => void }) {
               </button>
 
               <button
-                onClick={() => signOut()}
-                className="
-                  px-4 py-2 text-sm rounded-lg border border-white/20 
-                  bg-transparent text-white backdrop-blur-md
-                  shadow-[0_0_10px_rgba(255,255,255,0.05)]
-                  transition duration-300 
-                  hover:bg-white/10 hover:scale-105 hover:shadow-[0_0_16px_rgba(255,255,255,0.1)]
-                "
+                onClick={() => signOut({ callbackUrl: "/auth" })}
+                className="px-4 py-2 text-sm rounded-lg border border-white/20 bg-transparent text-white backdrop-blur-md shadow-[0_0_10px_rgba(255,255,255,0.05)] transition duration-300 hover:bg-white/10 hover:scale-105 hover:shadow-[0_0_16px_rgba(255,255,255,0.1)]"
                 type="button"
                 aria-label="Logout"
               >
                 Logout
               </button>
             </div>
-          </div>
-
-          {/* MEMBER TAG */}
-          <div
-            className="
-              mt-3 inline-block text-xs text-white/60 
-              px-3 py-1.5 rounded-full border border-white/10 
-              bg-white/5 backdrop-blur-sm
-            "
-          >
-            Member since — demo
           </div>
         </div>
       </div>

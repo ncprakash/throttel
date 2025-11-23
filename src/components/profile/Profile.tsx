@@ -146,24 +146,29 @@ export default function ProfilePage() {
     };
   }, [session]);
 
-  async function saveProfile() {
-    if (!user) return;
-    setSaving(true);
-    setNotice(null);
-    try {
-      const payload = { ...form };
-      await axios.put(`/api/user/${user.user_id}`, payload);
-      setUser((s) => (s ? { ...s, ...payload } : s));
-      setEditing(false);
-      setNotice("Profile updated successfully");
-    } catch (err) {
-      console.error(err);
-      setNotice("Save failed");
-    } finally {
-      setSaving(false);
-      setTimeout(() => setNotice(null), 2000);
-    }
+ async function saveProfile() {
+   alert("hwllpea");
+  if (!session?.user?.id) return;
+  setSaving(true);
+  setNotice(null);
+   
+  try {
+    const payload = { ...form };
+    await axios.patch(`/api/users/${session?.user?.id}`, payload);
+    setUser((s) => (s ? { ...s, ...payload } : s));
+    setEditing(false);
+    setNotice("Profile updated successfully");
+    console.log("Saving profile with data:", payload);
+
+  } catch (err) {
+    console.error(err);
+    setNotice("Save failed");
+  } finally {
+    setSaving(false);
+    setTimeout(() => setNotice(null), 2000);
   }
+}
+
 
   const handleRemove = async (wishlist_id: string) => {
     if (!confirm("Remove this item from wishlist?")) return;
