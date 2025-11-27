@@ -36,7 +36,7 @@ export default function CheckoutPage() {
     shipping_country: "India",
   });
 
-  // Check authentication
+  // Authentication check + prefill
   useEffect(() => {
     if (status === "loading") return;
     
@@ -46,7 +46,6 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Pre-fill form with user data
     setFormValues((prev) => ({
       ...prev,
       customer_name: session.user.name || prev.customer_name,
@@ -54,14 +53,13 @@ export default function CheckoutPage() {
     }));
   }, [session, status, router]);
 
-  // Load cart from localStorage
+  // Load cart
   useEffect(() => {
     const loadCart = () => {
       try {
         const storedCart = localStorage.getItem("cartItems");
         if (storedCart) {
-          const parsedCart = JSON.parse(storedCart);
-          setCartItems(parsedCart || []);
+          setCartItems(JSON.parse(storedCart) || []);
         } else {
           setCartItems([]);
         }
@@ -72,7 +70,6 @@ export default function CheckoutPage() {
         setLoading(false);
       }
     };
-
     loadCart();
   }, []);
 
@@ -84,21 +81,34 @@ export default function CheckoutPage() {
   }, 0);
 
   const shipping = shippingMethod === "express" ? 150 : 80;
-  const tax = subtotal * 0.18; // 18% GST
+  const tax = subtotal * 0.18;
   const total = subtotal + shipping + tax;
 
-  // Handle Razorpay Payment
+  // Razorpay Payment Handler
   const handleRazorpayPayment = async (orderData: any) => {
-    const options = {
+    console.log("🔥 Razorpay data:", orderData);
+
+    if (!window.Razorpay) {
+      toast.error("Payment gateway not ready. Please refresh.");
+      setPlacingOrder(false);
+      return;
+    }
+
+    if (!orderData.razorpay_order_id) {
+      toast.error("Payment order failed. Please try again.");
+      setPlacingOrder(false);
+      return;
+    }
+
+    const options: any = {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       amount: orderData.amount,
-      currency: orderData.currency,
-      name: "Your Store Name",
-      description: "Order Payment",
+      currency: orderData.currency || "INR",
+      name: "Throtter",
+      description: `Order #${orderData.order_id.slice(-8).toUpperCase()}`,
       order_id: orderData.razorpay_order_id,
-      handler: async function (response: any) {
+      handler: async (response: any) => {
         try {
-          // Verify payment
           const verifyRes = await fetch("/api/orders/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -113,7 +123,6 @@ export default function CheckoutPage() {
           const verifyData = await verifyRes.json();
 
           if (verifyData.success) {
-            // Clear cart
             localStorage.removeItem("cartItems");
             toast.success("Payment successful!");
             router.push(`/order/confirmation/${orderData.order_id}`);
@@ -121,8 +130,9 @@ export default function CheckoutPage() {
             toast.error("Payment verification failed");
           }
         } catch (error) {
-          console.error("Payment verification error:", error);
           toast.error("Payment verification failed");
+        } finally {
+          setPlacingOrder(false);
         }
       },
       prefill: {
@@ -130,111 +140,112 @@ export default function CheckoutPage() {
         email: formValues.customer_email,
         contact: formValues.customer_phone,
       },
-      theme: {
-        color: "#000000",
-      },
+      theme: { color: "#000000" },
+      modal: {
+        ondismiss: () => {
+          setPlacingOrder(false);
+          toast.info("Payment cancelled");
+        }
+      }
     };
 
-    const razorpay = new window.Razorpay(options);
-    razorpay.open();
-
-    razorpay.on("payment.failed", function (response: any) {
-      toast.error("Payment failed. Please try again.");
-      console.error("Payment failed:", response.error);
-    });
-  };
-
-  // Handle Place Order
-  const handlePlaceOrder = async (paymentMethod: string) => {
-    // Validate form
-    if (!formValues.customer_name || !formValues.customer_email || !formValues.customer_phone) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    if (cartItems.length === 0) {
-      toast.error("Your cart is empty");
-      router.push("/cart");
-      return;
-    }
-
-    if (!session?.user) {
-      toast.error("Please sign in to continue");
-      router.push("/auth");
-      return;
-    }
-
-    setPlacingOrder(true);
-
     try {
-      // Prepare order payload
-      const orderPayload = {
-        user_id: session.user.id,
-        customer_name: formValues.customer_name,
-        customer_email: formValues.customer_email,
-        customer_phone: formValues.customer_phone,
-        shipping_address: formValues.shipping_address,
-        shipping_city: formValues.shipping_city,
-        shipping_state: formValues.shipping_state,
-        shipping_postal_code: formValues.shipping_postal_code,
-        shipping_country: formValues.shipping_country,
-        payment_method: paymentMethod,
-        shipping_method: shippingMethod,
-        items: cartItems.map(item => ({
-          product_id: item.product.product_id,
-          variant_id: item.variant?.variant_id || null,
-          product_name: item.product.name,
-          variant_name: item.variant?.name || null,
-          quantity: item.quantity,
-          unit_price: item.product.sale_price || item.product.regular_price,
-          total_price: (item.product.sale_price || item.product.regular_price) * item.quantity,
-        })),
-        subtotal: subtotal,
-        shipping_charges: shipping,
-        tax_amount: tax,
-        total_amount: total,
-      };
-
-      // Create order in backend
-      const response = await fetch("/api/orders/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderPayload),
+      const razorpay = new window.Razorpay(options);
+      razorpay.on("payment.failed", (response: any) => {
+        setPlacingOrder(false);
+        toast.error("Payment failed");
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create order");
-      }
-
-      console.log("Order created:", data);
-
-      // If payment method is Razorpay, open checkout
-      if (paymentMethod === "razorpay") {
-        handleRazorpayPayment(data);
-      } else {
-        // For COD or other methods
-        localStorage.removeItem("cartItems");
-        toast.success("Order placed successfully!");
-        router.push(`/order/confirmation/${data.order_id}`);
-      }
-    } catch (error: any) {
-      console.error("Order creation failed:", error);
-      toast.error(error.message || "Failed to place order");
-    } finally {
+      razorpay.open();
+      console.log("✅ Razorpay opened");
+    } catch (error) {
       setPlacingOrder(false);
+      toast.error("Failed to open payment");
     }
   };
+
+  // Single Place Order - RAZORPAY ONLY
+  const handlePlaceOrder = async () => {
+  console.log("[handlePlaceOrder] Started");
+
+  if (!formValues.customer_name || !formValues.customer_email || !formValues.customer_phone) {
+    console.warn("[handlePlaceOrder] Missing required customer info");
+    toast.error("Please fill all required fields");
+    return;
+  }
+
+  if (cartItems.length === 0) {
+    console.warn("[handlePlaceOrder] Cart is empty");
+    toast.error("Cart is empty");
+    return;
+  }
+
+  setPlacingOrder(true);
+  console.log("[handlePlaceOrder] PlacingOrder set to true");
+
+  try {
+    const orderPayload = {
+      user_id: session!.user.id,
+      customer_name: formValues.customer_name,
+      customer_email: formValues.customer_email,
+      customer_phone: formValues.customer_phone,
+      shipping_address: formValues.shipping_address,
+      shipping_city: formValues.shipping_city,
+      shipping_state: formValues.shipping_state,
+      shipping_postal_code: formValues.shipping_postal_code,
+      shipping_country: formValues.shipping_country,
+      payment_method: "razorpay",
+      shipping_method: shippingMethod,
+      items: cartItems.map((item: any) => ({
+        product_id: item.product.product_id,
+        variant_id: item.variant?.variant_id || null,
+        product_name: item.product.name,
+        variant_name: item.variant?.name || null,
+        quantity: item.quantity,
+        unit_price: item.product.sale_price || item.product.regular_price,
+        total_price: (item.product.sale_price || item.product.regular_price) * item.quantity,
+      })),
+      subtotal,
+      shipping_charges: shipping,
+      tax_amount: tax,
+      total_amount: total,
+    };
+
+    console.log("[handlePlaceOrder] Order payload prepared:", orderPayload);
+
+    const response = await fetch("/api/orders/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderPayload),
+    });
+
+    const data = await response.json();
+
+    console.log("[handlePlaceOrder] API response:", data);
+
+    if (!response.ok) {
+      throw new Error(data.error || "Order creation failed");
+    }
+
+    console.log("✅ Order created successfully:", data);
+
+    await handleRazorpayPayment(data);
+    
+    // Optionally reset placingOrder state here or in handleRazorpayPayment after payment success/failure
+
+  } catch (error: any) {
+    console.error("[handlePlaceOrder] Order failed:", error);
+    toast.error(error.message || "Order failed");
+    setPlacingOrder(false);
+  }
+};
+
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center">
-        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-[rgba(255,255,255,0.16)] border-t-white rounded-full animate-spin" />
-            <p className="text-white">Preparing checkout...</p>
-          </div>
+      <div className="min-h-screen bg-transparent flex items-center justify-center p-8">
+        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-12 text-center">
+          <div className="w-16 h-16 border-4 border-[rgba(255,255,255,0.16)] border-t-white rounded-full animate-spin mx-auto mb-6" />
+          <p className="text-white text-xl">Preparing checkout...</p>
         </div>
       </div>
     );
@@ -242,13 +253,13 @@ export default function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center">
-        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-8 text-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center p-8">
+        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-12 text-center max-w-md mx-auto">
           <h2 className="text-2xl font-bold text-white mb-4">Your cart is empty</h2>
-          <p className="text-white/60 mb-6">Add items to your cart before checking out</p>
+          <p className="text-white/60 mb-8">Add motorcycle accessories to continue</p>
           <button
             onClick={() => router.push("/shop")}
-            className="px-6 py-3 rounded-lg bg-white text-black font-semibold hover:bg-white/90 transition"
+            className="px-8 py-4 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition-all shadow-xl"
           >
             Continue Shopping
           </button>
@@ -259,56 +270,60 @@ export default function CheckoutPage() {
 
   return (
     <>
-      {/* Load Razorpay Script */}
-      <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="lazyOnload"
-      />
+   <Script
+  src="https://checkout.razorpay.com/v1/checkout.js"
+  strategy="afterInteractive"  // ✅ Already correct
+  onLoad={() => {
+    console.log("✅ Razorpay script LOADED");
+    // Force window.Razorpay to be available
+    if (window.Razorpay) {
+      console.log("✅ window.Razorpay available:", window.Razorpay);
+    }
+  }}
+  onError={() => {
+    console.error("❌ Razorpay script FAILED");
+    toast.error("Payment gateway unavailable");
+  }}
+/>
+
       
       <div className="min-h-screen bg-transparent text-white pb-32">
-        <div className="max-w-7xl mx-auto px-4 py-10">
-          <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold">Checkout</h1>
-            <p className="text-[rgba(255,255,255,0.6)] mt-1">
-              Secure checkout — review & place your order
-            </p>
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+              Checkout
+            </h1>
+            <p className="text-xl text-white/60 mt-2">Secure payment with Razorpay</p>
             {session?.user && (
-              <p className="text-sm text-white/60 mt-2">
-                Logged in as: {session.user.email}
-              </p>
+              <p className="text-sm text-white/50 mt-2">Logged in: {session.user.email}</p>
             )}
           </div>
 
           <div className="grid lg:grid-cols-[1fr_420px] gap-8 items-start">
-            {/* LEFT: Shipping Form */}
+            {/* Shipping Form */}
             <div className="space-y-6">
-              <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-2xl p-6">
-                <h2 className="text-lg font-semibold mb-4">Shipping & Contact</h2>
-                <CheckoutForm 
-                  formValues={formValues}
-                  onChange={setFormValues}
-                />
+              <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-3xl p-8">
+                <h2 className="text-2xl font-bold mb-6">Shipping & Contact</h2>
+                <CheckoutForm formValues={formValues} onChange={setFormValues} />
               </div>
             </div>
 
-            {/* RIGHT: Summary + Items */}
-            <div className="space-y-6 lg:sticky lg:top-4">
+            {/* Summary + Items */}
+            <div className="space-y-6 lg:sticky lg:top-6">
               <CheckoutSummary
                 subtotal={subtotal}
                 shipping={shipping}
                 tax={tax}
                 total={total}
                 itemCount={cartItems.length}
-                onChangeShipping={(m) => setShippingMethod(m)}
+                onChangeShipping={setShippingMethod}
                 shippingMethod={shippingMethod}
                 onPlaceOrder={handlePlaceOrder}
                 placingOrder={placingOrder}
               />
-
-              <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-2xl p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Order Items ({cartItems.length})
-                </h3>
+              
+              <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-3xl p-8">
+                <h3 className="text-xl font-bold mb-6">Order Items ({cartItems.length})</h3>
                 <OrderReview items={cartItems} />
               </div>
             </div>

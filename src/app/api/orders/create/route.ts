@@ -1,189 +1,97 @@
 // app/api/orders/create/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import Razorpay from "razorpay";
+import { supabase } from "@/lib/supabase";
 
-// Helper to build supabase client lazily
-function createSupabaseClient() {
-  const { createClient } = require("@supabase/supabase-js");
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("SUPABASE env vars missing (NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)");
-  }
-  return createClient(url, key);
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
+
+function generateOrderNumber() {
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `ORD-${timestamp}-${random}`;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log("💳 Creating Razorpay order:", body.total_amount);
 
     const {
-      user_id,
-      customer_name,
-      customer_email,
-      customer_phone,
-      shipping_address,
-      shipping_city,
-      shipping_state,
-      shipping_postal_code,
-      shipping_country,
-      payment_method,
-      shipping_method,
-      items,
-      subtotal,
-      shipping_charges,
-      tax_amount,
-      total_amount,
+      user_id, customer_name, customer_email, customer_phone, shipping_address,
+      shipping_city, shipping_state, shipping_postal_code, shipping_country,
+      shipping_method, items, subtotal, shipping_charges, tax_amount, total_amount
     } = body;
 
-    // Validate required fields
-    if (!user_id || !customer_email || !items || items.length === 0) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // Validation
+    if (!customer_email || !customer_name || !items?.length) {
+      return NextResponse.json({ error: "Invalid order data" }, { status: 400 });
     }
 
-    // Generate unique order number
-    const order_number = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    // 1. Create Supabase order
+    const orderNumber = generateOrderNumber();
+    const orderData = {
+      order_number: orderNumber,
+      user_id: user_id || null,
+      status: "pending",
+      payment_method: "razorpay",
+      payment_status: "pending",
+      subtotal: Number(subtotal),
+      shipping_charges: Number(shipping_charges),
+      tax_amount: Number(tax_amount),
+      total_amount: Number(total_amount),
+      notes: `${customer_name}, ${customer_email}, ${customer_phone || ''}, ${shipping_address || ''}`,
+    };
 
-    // Create supabase client (lazy)
-    let supabase;
-    try {
-      supabase = createSupabaseClient();
-    } catch (err: any) {
-      console.error("Supabase client error:", err?.message ?? err);
-      return NextResponse.json(
-        { error: "Server misconfiguration: Supabase keys missing" },
-        { status: 500 }
-      );
-    }
-
-    // Create or get shipping address
-    const { data: shippingAddr, error: addrError } = await supabase
-      .from("addresses")
-      .insert({
-        user_id,
-        address_line1: shipping_address,
-        city: shipping_city,
-        state: shipping_state,
-        postal_code: shipping_postal_code,
-        country: shipping_country,
-        is_default: false,
-      })
-      .select()
-      .single();
-
-    if (addrError) {
-      console.error("Address creation error:", addrError);
-      return NextResponse.json(
-        { error: "Failed to create address", details: addrError.message },
-        { status: 500 }
-      );
-    }
-
-    // Create order in database
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .insert({
-        user_id,
-        order_number,
-        status: "pending",
-        payment_method,
-        payment_status: "pending",
-        subtotal,
-        shipping_charges,
-        tax_amount,
-        discount_amount: 0,
-        total_amount,
-        shipping_address_id: shippingAddr.address_id,
-        billing_address_id: shippingAddr.address_id,
-      })
+      .insert(orderData)
       .select()
       .single();
 
-    if (orderError) {
-      console.error("Order creation error:", orderError);
-      return NextResponse.json(
-        { error: "Failed to create order", details: orderError.message },
-        { status: 500 }
-      );
+    if (orderError || !order) {
+      return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
     }
 
-    // Insert order items
+    // 2. ALWAYS Create Razorpay order
+   const razorpayOrder = await razorpay.orders.create({
+  amount: Math.round(total_amount * 100),
+  currency: "INR",
+  receipt: order.order_number,  // <-- Use order_number (string like ORD-... < 40 chars)
+  notes: { order_id: order.order_id, customer_name, customer_email },
+});
+
+
+    console.log("✅ Razorpay order:", razorpayOrder.id);
+
+    // 3. Create order items
     const orderItems = items.map((item: any) => ({
       order_id: order.order_id,
-      product_id: item.product_id,
-      variant_id: item.variant_id,
+      product_id: item.product_id || null,
+      variant_id: item.variant_id || null,
       product_name: item.product_name,
-      variant_name: item.variant_name,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      total_price: item.total_price,
+      variant_name: item.variant_name || null,
+      quantity: Number(item.quantity),
+      unit_price: Number(item.unit_price),
+      total_price: Number(item.total_price),
     }));
 
-    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+    await supabase.from("order_items").insert(orderItems);
 
-    if (itemsError) {
-      console.error("Order items error:", itemsError);
-      return NextResponse.json(
-        { error: "Failed to create order items", details: itemsError.message },
-        { status: 500 }
-      );
-    }
-
-    // Create initial tracking entry
-    await supabase.from("order_tracking").insert({
-      order_id: order.order_id,
-      status: "order_created",
-      message: "Order has been created",
-    });
-
-    // Create Razorpay order if payment method is razorpay
-    let razorpayOrder: any = null;
-    if (payment_method === "razorpay") {
-      // Guard envs and instantiate inside handler to avoid build-time evaluation
-      const keyId = process.env.RAZORPAY_KEY_ID;
-      const keySecret = process.env.RAZORPAY_KEY_SECRET;
-
-      if (!keyId || !keySecret) {
-        console.error("Razorpay keys missing");
-        return NextResponse.json(
-          { error: "Payment gateway not configured. Missing RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET." },
-          { status: 500 }
-        );
-      }
-
-      // require inside handler to avoid ESM init at build-time
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const Razorpay = require("razorpay");
-      const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
-
-      razorpayOrder = await razorpay.orders.create({
-        amount: Math.round(total_amount * 100), // amount in paise
-        currency: "INR",
-        receipt: order_number,
-        notes: {
-          order_id: order.order_id,
-          order_number,
-          customer_name,
-          customer_email,
-        },
-      });
-
-      // Update order with Razorpay order ID
-      await supabase
-        .from("orders")
-        .update({ notes: JSON.stringify({ razorpay_order_id: razorpayOrder.id }) })
-        .eq("order_id", order.order_id);
-    }
-
+    // 4. PERFECT Response for frontend
     return NextResponse.json({
       success: true,
       order_id: order.order_id,
-      order_number: order.order_number,
-      razorpay_order_id: razorpayOrder?.id,
-      amount: razorpayOrder?.amount,
-      currency: razorpayOrder?.currency || "INR",
+      razorpay_order_id: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      order,
     });
+
   } catch (error: any) {
-    console.error("API Error:", error);
-    return NextResponse.json({ error: "Internal server error", details: error.message }, { status: 500 });
+    console.error("❌ Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
