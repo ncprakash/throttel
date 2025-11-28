@@ -5,6 +5,7 @@ import { useState } from "react";
 import SignInForm from "@/components/auth/SignInForm";
 import SignUpForm from "@/components/auth/SignUpForm";
 import AdminConsole from "@/components/auth/AdminConsole";
+import Footer from "@/components/Footer";
 
 type TabType = "signin" | "signup" | "admin";
 
@@ -52,6 +53,7 @@ export default function AuthPage() {
           Protected by industry-grade encryption
         </p>
       </div>
+      {/* <Footer /> */}
     </section>
   );
 }

@@ -1,10 +1,29 @@
 // components/Footer.tsx
 export default function Footer() {
   const links = {
-    shop: ['Exhaust Systems', 'Air Intakes', 'ECU Tuners', 'Brakes', 'Suspension', 'All Products'],
-    support: ['Contact Us', 'Shipping Info', 'Returns', 'Warranty', 'Track Order', 'FAQs'],
-    company: ['About Us', 'Our Story', 'Careers', 'Press', 'Blog', 'Partners'],
-    legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Accessibility'],
+    shop: [
+      "Exhaust Systems",
+      "Air Intakes",
+      "ECU Tuners",
+      "Brakes",
+      "Suspension",
+      "All Products",
+    ],
+    support: [
+      "Contact Us",
+      "Shipping Info",
+      "Returns",
+      "Warranty",
+      "Track Order",
+      "FAQs",
+    ],
+    company: ["About Us", "Our Story", "Careers", "Press", "Blog", "Partners"],
+    legal: [
+      "Privacy Policy",
+      "Terms of Service",
+      "Cookie Policy",
+      "Accessibility",
+    ],
   };
 
   return (
@@ -16,13 +35,17 @@ export default function Footer() {
           <div className="md:col-span-2">
             <h2 className="text-3xl font-black text-white mb-4 tracking-tight">
               THROTTLE
-              <span className="block text-white/30 text-xl font-light">FORGED CUSTOMS</span>
+              <span className="block text-white/30 text-xl font-light">
+                FORGED CUSTOMS
+              </span>
             </h2>
             <p className="text-white/60 text-sm font-light leading-relaxed mb-6 max-w-sm">
-              Premium performance parts for riders who demand excellence. Precision-engineered components trusted by professionals worldwide.
+              Premium performance parts for riders who demand excellence.
+              Precision-engineered components trusted by professionals
+              worldwide.
             </p>
             <div className="flex space-x-4">
-              {['instagram', 'facebook', 'twitter', 'youtube'].map((social) => (
+              {["instagram", "facebook", "twitter", "youtube"].map((social) => (
                 <a
                   key={social}
                   href="#"
@@ -38,11 +61,16 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Shop</h3>
+            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+              Shop
+            </h3>
             <ul className="space-y-3">
               {links.shop.map((link) => (
                 <li key={link}>
-                  <a href="#" className="text-white/60 hover:text-white text-sm font-light transition-colors">
+                  <a
+                    href="#"
+                    className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                  >
                     {link}
                   </a>
                 </li>
@@ -51,11 +79,16 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Support</h3>
+            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+              Support
+            </h3>
             <ul className="space-y-3">
               {links.support.map((link) => (
                 <li key={link}>
-                  <a href="#" className="text-white/60 hover:text-white text-sm font-light transition-colors">
+                  <a
+                    href="#"
+                    className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                  >
                     {link}
                   </a>
                 </li>
@@ -64,11 +97,16 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Company</h3>
+            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+              Company
+            </h3>
             <ul className="space-y-3">
               {links.company.map((link) => (
                 <li key={link}>
-                  <a href="#" className="text-white/60 hover:text-white text-sm font-light transition-colors">
+                  <a
+                    href="#"
+                    className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                  >
                     {link}
                   </a>
                 </li>
@@ -78,21 +116,39 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
+        {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-white/40 text-sm font-light">
               © 2025 Throttle Forged Customs. All rights reserved.
             </p>
+
+            {/* Updated Legal Links */}
             <div className="flex space-x-6">
-              {links.legal.map((link) => (
-                <a
-                  key={link}
-                  href="#"
-                  className="text-white/40 hover:text-white text-sm font-light transition-colors"
-                >
-                  {link}
-                </a>
-              ))}
+              <a
+                href="/terms"
+                className="text-white/40 hover:text-white text-sm font-light transition-colors"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="/terms"
+                className="text-white/40 hover:text-white text-sm font-light transition-colors"
+              >
+                Terms of Service
+              </a>
+              <a
+                href="/terms"
+                className="text-white/40 hover:text-white text-sm font-light transition-colors"
+              >
+                Cookie Policy
+              </a>
+              <a
+                href="/accessibility"
+                className="text-white/40 hover:text-white text-sm font-light transition-colors"
+              >
+                Accessibility
+              </a>
             </div>
           </div>
         </div>

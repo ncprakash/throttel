@@ -11,8 +11,9 @@ import ProductVariants from "@/components/ProductComp/ProductVariants";
 import ProductActions from "@/components/ProductComp/ProductActions";
 import ProductBadges from "@/components/ProductComp/ProductBadges";
 import ProductTabs from "@/components/ProductComp/ProductTabs";
-import { toast } from "sonner"
+import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import Footer from "@/components/Footer";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -91,8 +92,6 @@ export default function ProductDetailPage() {
 
     // 5. Save updated cart back to localStorage - USE SAME KEY AS CART PAGE
     localStorage.setItem("cartItems", JSON.stringify(cart));
-
-  ;
   };
 
   const wishList = {
@@ -236,10 +235,7 @@ export default function ProductDetailPage() {
                 )}
 
                 <div className="mt-4">
-                  <ProductBadges
-                   
-                    warrantyMonths={product.warranty_months}
-                  />
+                  <ProductBadges warrantyMonths={product.warranty_months} />
                 </div>
 
                 <div className="mt-6">
@@ -336,6 +332,7 @@ export default function ProductDetailPage() {
             backface-visibility: hidden;
           }
         `}</style>
+        <Footer />
       </div>
     </>
   );

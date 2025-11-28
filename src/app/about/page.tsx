@@ -6,6 +6,7 @@ import ImagePanel from "@/components/about/ImagePanel";
 import TeamGrid from "@/components/about/TeamGrid";
 import Stats from "@/components/about/Stats";
 import React from "react";
+import Footer from "@/components/Footer";
 
 export default function AboutPage() {
   return (
@@ -101,6 +102,7 @@ export default function AboutPage() {
 
         <CTA />
       </main>
+      <Footer />
     </div>
   );
 }

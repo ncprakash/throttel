@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 type CartSummaryProps = {
   subtotal: number;
   shipping: number;
-
   total: number;
   itemCount: number;
 };
@@ -14,7 +13,6 @@ type CartSummaryProps = {
 export default function CartSummary({
   subtotal,
   shipping,
-  
   total,
   itemCount,
 }: CartSummaryProps) {
@@ -31,24 +29,27 @@ export default function CartSummary({
             Subtotal ({itemCount} items)
           </span>
           <span className="text-white font-semibold">
-            Rs{subtotal.toFixed(2)}
+            ₹{subtotal.toLocaleString("en-IN")}
           </span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-[rgba(255,255,255,0.6)]">Shipping</span>
-          <span className="text-[rgba(34,197,94,1)] font-semibold">
-            {shipping === 0 ? "FREE" : `Rs${shipping.toFixed(2)}`}
-          </span>
-        </div>
 
-      
+          {shipping === 0 ? (
+            <span className="text-[rgba(34,197,94,1)] font-semibold">FREE</span>
+          ) : (
+            <span className="text-[rgba(34,197,94,1)] font-semibold">
+              ₹{shipping.toLocaleString("en-IN")}
+            </span>
+          )}
+        </div>
 
         <div className="border-t border-[rgba(255,255,255,0.06)] pt-3 mt-3">
           <div className="flex justify-between">
             <span className="text-lg font-bold text-white">Total</span>
             <span className="text-2xl font-bold text-white">
-              Rs{total.toFixed(2)}
+              ₹{total.toLocaleString("en-IN")}
             </span>
           </div>
         </div>
@@ -62,10 +63,7 @@ export default function CartSummary({
             placeholder="Promo code"
             className="flex-1 backdrop-blur-md bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-lg px-4 py-3 text-sm text-white placeholder-[rgba(255,255,255,0.4)] focus:outline-none focus:ring-2 focus:ring-[rgba(255,255,255,0.04)] transition-colors"
           />
-          <button
-            className="backdrop-blur-md bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.10)] border border-[rgba(255,255,255,0.08)] px-4 py-3 rounded-lg text-sm text-white font-semibold transition-all"
-            aria-label="Apply promo code"
-          >
+          <button className="backdrop-blur-md bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.10)] border border-[rgba(255,255,255,0.08)] px-4 py-3 rounded-lg text-sm text-white font-semibold transition-all">
             Apply
           </button>
         </div>
@@ -75,7 +73,6 @@ export default function CartSummary({
       <button
         onClick={() => router.push("/checkout")}
         className="w-full backdrop-blur-md bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] text-white font-bold py-3 rounded-xl transition-all hover:scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.4)] flex items-center justify-center gap-2"
-        aria-label="Proceed to checkout"
       >
         <span>Proceed to Checkout</span>
         <svg
@@ -83,7 +80,6 @@ export default function CartSummary({
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          aria-hidden
         >
           <path
             strokeLinecap="round"
@@ -103,7 +99,6 @@ export default function CartSummary({
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              aria-hidden
             >
               <path
                 strokeLinecap="round"
@@ -121,7 +116,6 @@ export default function CartSummary({
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              aria-hidden
             >
               <path
                 strokeLinecap="round"
