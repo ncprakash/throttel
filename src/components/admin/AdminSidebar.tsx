@@ -3,6 +3,8 @@
 
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
+ 
+import { signOut } from "next-auth/react";
 
 type NavItem = {
   id: string;
@@ -11,6 +13,7 @@ type NavItem = {
   icon?: React.ReactNode;
 };
 
+ 
 export default function AdminSidebar({
   compact = false,
 }: {
@@ -18,7 +21,10 @@ export default function AdminSidebar({
 }) {
   const router = useRouter();
   const pathname = usePathname() ?? "";
-
+ const handleSignOut = async () => {
+    await signOut({ redirect: false }); // don't let next-auth redirect
+    router.push("/profile"); // or "/auth" if you prefer
+  };
   const items: NavItem[] = [
     {
       id: "products",
@@ -188,15 +194,18 @@ export default function AdminSidebar({
           })}
         </nav>
 
-        <div className="mt-6 border-t border-white/6 pt-4 text-sm text-white/60">
-          <div>Signed in as admin</div>
-          <div className="mt-2 flex gap-2">
-            <button className="px-3 py-1 rounded-md backdrop-blur-sm bg-white/8">
-              Invite
-            </button>
-            <button className="px-3 py-1 rounded-md">Sign out</button>
-          </div>
-        </div>
+         <div className="mt-6 border-t border-white/6 pt-4 text-sm text-white/60">
+      <div>Signed in as admin</div>
+      <div className="mt-2 flex gap-2">
+    
+        <button
+          className="px-3 py-1 rounded-md"
+          onClick={handleSignOut}
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
       </div>
     </aside>
   );

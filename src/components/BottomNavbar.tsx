@@ -1,3 +1,6 @@
+// components/BottomNav.tsx
+"use client";
+
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -8,13 +11,125 @@ export default function BottomNav() {
   const [cartCount, setCartCount] = useState(0);
   const { data: session } = useSession();
 
-  const role = session?.user?.role;
+  const role = session?.user?.role; // adjust if your role field differs
   const profilePath = role === "admin" ? "/admin" : "/profile";
 
-  // ...
+  useEffect(() => {
+    const updateCartCount = () => {
+      try {
+        const cartItems = localStorage.getItem("cartItems");
+        if (cartItems) {
+          const items = JSON.parse(cartItems);
+          const totalCount = Array.isArray(items)
+            ? items.reduce((sum, item) => sum + (item.quantity || 1), 0)
+            : 0;
+          setCartCount(totalCount);
+        } else {
+          setCartCount(0);
+        }
+      } catch (error) {
+        console.error("Error reading cart from localStorage:", error);
+        setCartCount(0);
+      }
+    };
+
+    updateCartCount();
+    window.addEventListener("storage", updateCartCount);
+    window.addEventListener("cartUpdated", updateCartCount);
+
+    return () => {
+      window.removeEventListener("storage", updateCartCount);
+      window.removeEventListener("cartUpdated", updateCartCount);
+    };
+  }, []);
 
   const navItems = [
-    // ...home, shop, garage, about
+    {
+      id: "home",
+      path: "/",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          />
+        </svg>
+      ),
+      label: "Home",
+    },
+    {
+      id: "shop",
+      path: "/shop",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+          />
+        </svg>
+      ),
+      label: "Shop",
+    },
+    {
+      id: "garage",
+      path: "/cart",
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 10V3L4 14h7v7l9-11h-7z"
+          />
+        </svg>
+      ),
+      label: "Garage",
+      isCenter: true,
+      showBadge: true,
+    },
+    {
+      id: "about",
+      path: "/about",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+          />
+        </svg>
+      ),
+      label: "About",
+    },
     {
       id: "profile",
       path: profilePath,
@@ -40,12 +155,12 @@ export default function BottomNav() {
 
   const handleNavClick = (itemId: string, path: string) => {
     if (itemId === "profile") {
-      // no session at all → go to auth
+      // no user at all → send to auth
       if (!session?.user) {
         router.push("/auth");
         return;
       }
-      // user exists → go to profile/admin based on role
+      // user exists → admin vs normal
       router.push(profilePath);
       return;
     }
