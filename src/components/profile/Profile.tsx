@@ -162,9 +162,7 @@ export default function ProfilePage() {
         const rawAddresses = mapped.addresses ?? null;
         const addressesData = Array.isArray(rawAddresses) ? rawAddresses : [];
         setAddresses(
-          addressesData.filter(
-            (addr): addr is Address => !!addr?.address_id
-          )
+          addressesData.filter((addr): addr is Address => !!addr?.address_id)
         );
 
         if (errors.length > 0) {
@@ -233,7 +231,9 @@ export default function ProfilePage() {
         <div className="glass-panel p-12 rounded-3xl shadow-2xl text-center max-w-md">
           <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-6" />
           <p className="text-xl font-semibold text-white">Loading profile...</p>
-          <p className="text-white/60 mt-2">Fetching your orders and wishlist</p>
+          <p className="text-white/60 mt-2">
+            Fetching your orders and wishlist
+          </p>
         </div>
       </div>
     );
@@ -271,7 +271,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="glass-panel p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
@@ -323,32 +323,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-
-            <div className="glass-panel p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-4xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
-                    {addresses.length}
-                  </p>
-                  <p className="text-white/60 mt-2 font-medium">Addresses</p>
-                </div>
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-2xl flex items-center justify-center border border-white/20">
-                  <svg
-                    className="w-8 h-8 text-blue-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Main Content */}
@@ -357,7 +331,9 @@ export default function ProfilePage() {
             <div className="lg:col-span-2">
               <div className="glass-panel p-8 rounded-3xl shadow-2xl">
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-bold text-white">Recent Orders</h2>
+                  <h2 className="text-2xl font-bold text-white">
+                    Recent Orders
+                  </h2>
                   <button className="text-lg font-semibold text-white/70 hover:text-white transition-all">
                     View All
                   </button>
@@ -380,10 +356,12 @@ export default function ProfilePage() {
                         />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">No orders yet</h3>
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      No orders yet
+                    </h3>
                     <p className="text-white/50 max-w-md mx-auto">
-                      Your motorcycle accessories orders will appear here once you make your
-                      first purchase
+                      Your motorcycle accessories orders will appear here once
+                      you make your first purchase
                     </p>
                   </div>
                 ) : (
@@ -395,7 +373,11 @@ export default function ProfilePage() {
             {/* Wishlist */}
             <div className="lg:col-span-1">
               <div className="glass-panel sticky top-6 p-6 rounded-3xl shadow-2xl">
-                <WishlistCard items={wishlistItems} onRemove={handleRemove} compact={false} />
+                <WishlistCard
+                  items={wishlistItems}
+                  onRemove={handleRemove}
+                  compact={false}
+                />
               </div>
             </div>
           </div>
