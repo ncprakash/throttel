@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 
 const products = [
@@ -9,8 +10,9 @@ const products = [
     subtitle: "Lightweight Performance Exhaust",
     description: "this is a demo product",
     price: "₹250",
+    // use the actual Cloudinary URL (not the internal _next/image optimizer URL)
     image:
-      "_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdklhtflzr%2Fimage%2Fupload%2Fv1764347595%2Fproducts%2Fcrtxzuzzlztjlimumgev.jpg&w=1920&q=75",
+      "https://res.cloudinary.com/dklhtflzr/image/upload/v1764347595/products/crtxzuzzlztjlimumgev.jpg",
     link: "/product/guage",
   },
   {
@@ -170,9 +172,11 @@ export default function FeaturedCollections() {
                 <div className="space-y-6">
                   <div className="w-full h-44 md:h-48 bg-white/6 rounded-xl overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
                     {/* image — replace with next/image if using Next.js */}
-                    <img
+                  <Image
                       src={p.image}
                       alt={p.title}
+                      width={1200}
+                      height={800}
                       className="object-cover w-full h-full"
                     />
                   </div>

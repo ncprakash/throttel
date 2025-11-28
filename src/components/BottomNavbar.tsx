@@ -2,12 +2,15 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-
+import { useSession } from "next-auth/react";
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [cartCount, setCartCount] = useState(0);
+  const { data: session } = useSession();
+  const role = session?.user?.role; // adjust to how you store role
 
+  const profilePath = role === "admin" ? "/admin" : "/profile";
   useEffect(() => {
     // Function to update cart count from localStorage
     const updateCartCount = () => {
@@ -131,9 +134,9 @@ export default function BottomNav() {
       ),
       label: "About",
     },
-    {
+     {
       id: "profile",
-      path: "/profile",
+      path: profilePath,
       icon: (
         <svg
           className="w-5 h-5"
@@ -151,7 +154,7 @@ export default function BottomNav() {
         </svg>
       ),
       label: "Profile",
-    },
+    }
   ];
 
   return (
