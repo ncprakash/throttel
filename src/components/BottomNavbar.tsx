@@ -54,6 +54,7 @@ export default function BottomNav() {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden
         >
           <path
             strokeLinecap="round"
@@ -74,6 +75,7 @@ export default function BottomNav() {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden
         >
           <path
             strokeLinecap="round"
@@ -94,6 +96,7 @@ export default function BottomNav() {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden
         >
           <path
             strokeLinecap="round"
@@ -116,6 +119,7 @@ export default function BottomNav() {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden
         >
           <path
             strokeLinecap="round"
@@ -136,6 +140,7 @@ export default function BottomNav() {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden
         >
           <path
             strokeLinecap="round"
@@ -157,37 +162,49 @@ export default function BottomNav() {
             {navItems.map((item) => {
               const isActive = pathname === item.path;
 
+              // Determine classes for each item
+              const baseSizeClass = item.isCenter ? "w-14 h-14" : "w-12 h-12";
+              const roundedAndLayout = "rounded-full flex items-center justify-center transition-all duration-500 relative group";
+
+              // Special: Garage should always appear as a white pill with black icon
+              if (item.id === "garage") {
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => router.push(item.path)}
+                    aria-label={item.label}
+                    className={`${baseSizeClass} ${roundedAndLayout} bg-white text-black shadow-lg shadow-white/20`}
+                  >
+                    {item.icon}
+
+                    {/* Cart Badge */}
+                    {item.showBadge && cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-lg shadow-red-500/50 border-2 border-white">
+                        {cartCount > 99 ? "99+" : cartCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              }
+
+              // Non-garage items: respect active/inactive styling
               return (
                 <button
                   key={item.id}
                   onClick={() => router.push(item.path)}
+                  aria-label={item.label}
                   className={`
-                    relative group
-                    ${item.isCenter ? "w-14 h-14" : "w-12 h-12"}
-                    rounded-full flex items-center justify-center
-                    transition-all duration-500
+                    ${baseSizeClass} ${roundedAndLayout}
                     ${
                       isActive
                         ? "bg-white text-black scale-110"
                         : "text-white/60 hover:text-white hover:bg-white/10"
                     }
-                    ${
-                      item.isCenter
-                        ? "bg-white text-black shadow-lg shadow-white/20"
-                        : ""
-                    }
                   `}
                 >
                   {item.icon}
 
-                  {/* Cart Badge */}
-                  {item.showBadge && cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-lg shadow-red-500/50 border-2 border-white">
-                      {cartCount > 99 ? "99+" : cartCount}
-                    </span>
-                  )}
-
-                  {/* Active Indicator */}
+                  {/* Active indicator for non-center items */}
                   {isActive && !item.isCenter && (
                     <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
                       <div className="w-1 h-1 bg-white rounded-full"></div>
@@ -196,9 +213,7 @@ export default function BottomNav() {
 
                   {/* Tooltip */}
                   <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl px-3 py-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 whitespace-nowrap">
-                    <span className="text-white text-xs font-light">
-                      {item.label}
-                    </span>
+                    <span className="text-white text-xs font-light">{item.label}</span>
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/90 border-r border-b border-white/10 rotate-45"></div>
                   </div>
                 </button>

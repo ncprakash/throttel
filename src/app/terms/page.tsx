@@ -3,6 +3,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Footer from "@/components/Footer";
 
 function Section({
   id,
@@ -320,6 +321,8 @@ export default function TermsPage() {
           </div>
         </aside>
       </div>
+
+      <Footer />
     </main>
   );
 }

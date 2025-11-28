@@ -1,3 +1,4 @@
+// components/ProductGrid.tsx
 "use client";
 
 import Image from "next/image";
@@ -75,10 +76,14 @@ export default function ProductGrid({ products, viewMode }: ProductGridProps) {
 const Badge = ({ fits }: { fits: boolean }) => (
   <div
     className={`backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-semibold text-white flex items-center gap-2 transition-all ${
-      fits ? "bg-white/10 border border-white/12" : "bg-white/6 border border-white/12"
+      fits
+        ? "bg-white/10 border border-white/12"
+        : "bg-white/6 border border-white/12"
     }`}
     role="status"
-    aria-label={fits ? "Compatible with your bike" : "Not compatible with your bike"}
+    aria-label={
+      fits ? "Compatible with your bike" : "Not compatible with your bike"
+    }
   >
     {fits ? <FaCheck className="w-3 h-3" /> : <FaTimes className="w-3 h-3" />}
     {fits ? "Compatible" : "Not Compatible"}
@@ -113,16 +118,28 @@ const StockIndicator = ({ stock }: { stock: number }) => {
     <div className="flex items-center gap-3 text-sm">
       <div
         className={`w-2.5 h-2.5 rounded-full shadow-sm ${
-          isOutOfStock ? "bg-white/20 animate-pulse" : isLowStock ? "bg-white/60" : "bg-white/80"
+          isOutOfStock
+            ? "bg-white/20 animate-pulse"
+            : isLowStock
+            ? "bg-white/60"
+            : "bg-white/80"
         }`}
         aria-hidden="true"
       />
       <span
         className={`font-medium ${
-          isOutOfStock ? "text-white/40" : isLowStock ? "text-white/60" : "text-white/80"
+          isOutOfStock
+            ? "text-white/40"
+            : isLowStock
+            ? "text-white/60"
+            : "text-white/80"
         }`}
       >
-        {isOutOfStock ? "Out of Stock" : isLowStock ? `Only ${stock} left` : `In Stock (${stock}+)`}
+        {isOutOfStock
+          ? "Out of Stock"
+          : isLowStock
+          ? `Only ${stock} left`
+          : `In Stock (${stock}+)`}
       </span>
     </div>
   );
@@ -141,10 +158,14 @@ const Price = ({
 
   return (
     <div className="flex items-baseline gap-3 flex-wrap">
-      <span className="text-2xl font-bold text-white">${price.toFixed(2)}</span>
+      <span className="text-2xl font-bold text-white">
+        ₹{price.toLocaleString("en-IN")}
+      </span>
       {originalPrice && (
         <>
-          <span className="text-base text-white/40 line-through">${originalPrice.toFixed(2)}</span>
+          <span className="text-base text-white/40 line-through">
+            ₹{originalPrice.toLocaleString("en-IN")}
+          </span>
           {discountPercent > 0 && (
             <span className="text-xs font-medium bg-white/8 px-2 py-0.5 rounded-full text-white/90 border border-white/12">
               Save {discountPercent}%
@@ -194,7 +215,9 @@ function ProductCard({
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const discountPercent = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100
+      )
     : 0;
 
   const handleWishlistClick = async (e: React.MouseEvent) => {
@@ -206,13 +229,15 @@ function ProductCard({
     }
 
     try {
-    await axios.post("/api/wishlist", {
-  user_id: session.user.id,
-  product_id: product.id,
-});
+      await axios.post("/api/wishlist", {
+        user_id: session.user.id,
+        product_id: product.id,
+      });
 
       onToggleWishlist();
-      toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist");
+      toast.success(
+        isWishlisted ? "Removed from wishlist" : "Added to wishlist"
+      );
     } catch {
       toast.error("Failed to update wishlist");
     }
@@ -257,7 +282,9 @@ function ProductCard({
             onClick={navigateToProduct}
           >
             <div className="absolute inset-0 bg-white/6 rounded-xl overflow-hidden">
-              {!imageLoaded && <div className="absolute inset-0 bg-white/8 animate-pulse" />}
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-white/8 animate-pulse" />
+              )}
               <Image
                 src={product.image}
                 alt={product.name}
@@ -270,7 +297,10 @@ function ProductCard({
               />
             </div>
             <div className="absolute top-3 right-3 z-20">
-              <WishlistBtn isWishlisted={isWishlisted} onClick={handleWishlistClick} />
+              <WishlistBtn
+                isWishlisted={isWishlisted}
+                onClick={handleWishlistClick}
+              />
             </div>
           </div>
 
@@ -295,7 +325,10 @@ function ProductCard({
             </div>
 
             <div className="flex items-end justify-between gap-4 flex-wrap">
-              <Price price={product.price} originalPrice={product.originalPrice} />
+              <Price
+                price={product.price}
+                originalPrice={product.originalPrice}
+              />
               <AddToCartBtn stock={product.stock} onClick={handleAddToCart} />
             </div>
           </div>
@@ -313,7 +346,9 @@ function ProductCard({
         className="relative aspect-square bg-white/6 cursor-pointer overflow-hidden"
         onClick={navigateToProduct}
       >
-        {!imageLoaded && <div className="absolute inset-0 bg-white/8 animate-pulse" />}
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-white/8 animate-pulse" />
+        )}
         <Image
           src={product.image}
           alt={product.name}
@@ -336,7 +371,10 @@ function ProductCard({
         </div>
 
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-          <WishlistBtn isWishlisted={isWishlisted} onClick={handleWishlistClick} />
+          <WishlistBtn
+            isWishlisted={isWishlisted}
+            onClick={handleWishlistClick}
+          />
         </div>
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">

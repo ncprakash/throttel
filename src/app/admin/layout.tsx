@@ -3,12 +3,17 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import type { ReactNode } from "react";
 import { auth } from "@/auth"; // your NextAuth server helper
 import { redirect } from "next/navigation";
+import Footer from "@/components/Footer";
 
 export const metadata = {
   title: "Throttel Admin",
 };
 
-export default async function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const session = await auth();
 
   // Redirect if no session or user is not admin
@@ -31,6 +36,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

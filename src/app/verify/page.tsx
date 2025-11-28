@@ -1,6 +1,7 @@
 // app/verify/page.tsx  (server)
 import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
+import Footer from "@/components/Footer";
 
 // dynamic import is optional; direct import also works because VerifyClient is client-only.
 // Using direct import:
@@ -12,6 +13,8 @@ export default function Page() {
       <Suspense fallback={<div>Loading...</div>}>
         <VerifyClient />
       </Suspense>
+
+      <Footer />
     </main>
   );
 }

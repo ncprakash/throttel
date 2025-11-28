@@ -7,6 +7,7 @@ import ShopHeader from "@/components/shopComp/Header";
 import ProductGrid from "@/components/shopComp/productCard";
 import BottomNav from "@/components/BottomNavbar";
 import { FaTimes } from "react-icons/fa";
+import Footer from "@/components/Footer";
 
 export default function ShopPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -111,7 +112,6 @@ export default function ShopPage() {
                     Filtering by:
                   </span>
                   <div className="backdrop-blur-md bg-white/6 border border-white/12 px-4 py-2 rounded-xl text-white font-medium flex items-center gap-3">
-                   
                     <span className="truncate max-w-xs">{searchFilter}</span>
                     <button
                       onClick={() => setSearchFilter("")}
@@ -222,6 +222,7 @@ export default function ShopPage() {
       </div>
 
       <BottomNav />
+      <Footer />
     </div>
   );
 }

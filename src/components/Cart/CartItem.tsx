@@ -46,14 +46,12 @@ export default function CartItem({
   };
 
   const handleRemove = () => {
-    // use opacity + max-height for a transform-free collapse
     setRemoving(true);
     setTimeout(() => onRemove(item.cart_item_id), 300);
   };
 
   return (
     <div
-      // note: NO transform / scale classes here
       className={`backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-4 sm:p-6 hover:bg-[rgba(255,255,255,0.08)] transition-all overflow-hidden
         ${removing ? "opacity-0 max-h-0 p-0" : "opacity-100 max-h-[2000px]"}
       `}
@@ -75,7 +73,6 @@ export default function CartItem({
 
         {/* Product Info */}
         <div className="flex-1 flex flex-col justify-between">
-          {/* Top Section */}
           <div>
             <h3
               className="text-lg font-semibold text-white mb-2 line-clamp-2 hover:text-[rgba(255,255,255,0.9)] transition-colors cursor-pointer"
@@ -98,7 +95,7 @@ export default function CartItem({
             )}
           </div>
 
-          {/* Bottom Section - Price & Actions */}
+          {/* Bottom Section */}
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
             {/* Quantity Controls */}
             <div className="flex items-center gap-3">
@@ -150,20 +147,24 @@ export default function CartItem({
               </div>
             </div>
 
-            {/* Price & Remove */}
+            {/* Price Display */}
             <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
               <div className="text-right">
                 <div className="text-2xl font-bold text-white">
-                  ${totalPrice.toFixed(2)}
+                  ₹{totalPrice.toLocaleString("en-IN")}
                 </div>
+
                 {item.product.sale_price && (
                   <div className="text-sm text-[rgba(255,255,255,0.4)] line-through">
-                    ${(item.product.regular_price * quantity).toFixed(2)}
+                    ₹
+                    {(item.product.regular_price * quantity).toLocaleString(
+                      "en-IN"
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Remove Button (B/W only) */}
+              {/* Remove Button */}
               <button
                 onClick={handleRemove}
                 className="p-2 backdrop-blur-md bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.12)] border border-[rgba(255,255,255,0.08)] rounded-lg transition-all group"
