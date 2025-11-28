@@ -167,7 +167,11 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
   console.log("[handlePlaceOrder] Started");
 
-  if (!formValues.customer_name || !formValues.customer_email || !formValues.customer_phone) {
+  if (
+    !formValues.customer_name ||
+    !formValues.customer_email ||
+    !formValues.customer_phone
+  ) {
     console.warn("[handlePlaceOrder] Missing required customer info");
     toast.error("Please fill all required fields");
     return;
@@ -202,7 +206,9 @@ export default function CheckoutPage() {
         variant_name: item.variant?.name || null,
         quantity: item.quantity,
         unit_price: item.product.sale_price || item.product.regular_price,
-        total_price: (item.product.sale_price || item.product.regular_price) * item.quantity,
+        total_price:
+          (item.product.sale_price || item.product.regular_price) *
+          item.quantity,
       })),
       subtotal,
       shipping_charges: shipping,
@@ -212,6 +218,7 @@ export default function CheckoutPage() {
 
     console.log("[handlePlaceOrder] Order payload prepared:", orderPayload);
 
+    // 1) Create main order (in `orders` table) + Razorpay order
     const response = await fetch("/api/orders/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -220,7 +227,7 @@ export default function CheckoutPage() {
 
     const data = await response.json();
 
-    console.log("[handlePlaceOrder] API response:", data);
+    console.log("[handlePlaceOrder] /api/orders/create response:", data);
 
     if (!response.ok) {
       throw new Error(data.error || "Order creation failed");
@@ -228,16 +235,54 @@ export default function CheckoutPage() {
 
     console.log("✅ Order created successfully:", data);
 
-    await handleRazorpayPayment(data);
-    
-    // Optionally reset placingOrder state here or in handleRazorpayPayment after payment success/failure
+    // data should contain: { order_id, order_number, amount, currency, razorpay_order_id }
 
+    // 2) Insert order_items rows into `public.order_items`
+    const itemsPayload = cartItems.map((item: any) => ({
+      order_id: data.order_id, // from /api/orders/create result
+      product_id: item.product.product_id,
+      variant_id: item.variant?.variant_id || null,
+      product_name: item.product.name,
+      variant_name: item.variant?.name || null,
+      quantity: item.quantity,
+      unit_price: item.product.sale_price || item.product.regular_price,
+      total_price:
+        (item.product.sale_price || item.product.regular_price) *
+        item.quantity,
+    }));
+
+    console.log(
+      "[handlePlaceOrder] order_items payload prepared:",
+      itemsPayload
+    );
+
+    const itemsRes = await fetch("/api/order-items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(itemsPayload),
+    });
+
+    const itemsData = await itemsRes.json();
+
+    console.log("[handlePlaceOrder] /api/order-items response:", itemsData);
+
+    if (!itemsRes.ok) {
+      throw new Error(itemsData.error || "Failed to create order items");
+    }
+
+    console.log("✅ Order items created successfully");
+
+    // 3) Start Razorpay payment for this order
+    await handleRazorpayPayment({
+      ...data, // order_id, order_number, amount, currency, razorpay_order_id
+    });
   } catch (error: any) {
     console.error("[handlePlaceOrder] Order failed:", error);
     toast.error(error.message || "Order failed");
     setPlacingOrder(false);
   }
 };
+
 
 
   if (status === "loading" || loading) {

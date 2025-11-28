@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
         name: body.name,
         slug: body.slug,
         description: body.description || null,
-        parent_id: body.parent_id || null,
+      
         is_active: body.is_active ?? true,
       })
       .select()

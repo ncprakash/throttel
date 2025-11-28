@@ -1,4 +1,3 @@
-// components/admin/CategoriesManager.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -8,21 +7,39 @@ import { FaPlus, FaTrash, FaSync } from "react-icons/fa";
 type Category = {
   category_id: string;
   name: string;
+  slug: string;
+  description: string | null;
+  is_active: boolean;
+  created_at?: string;
 };
 
 export default function CategoriesManager() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
-  const [newName, setNewName] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // form state
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
+  const [isActive, setIsActive] = useState(true);
+
+  function slugify(value: string) {
+    return value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  }
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
       const res = await axios.get("/api/admin/categories");
-      const payload = res.data.categories ?? res.data ?? [];
+      const payload: Category[] = res.data.categories ?? res.data ?? [];
       setCategories(payload);
     } catch (err) {
       console.error("Failed to load categories", err);
@@ -36,16 +53,36 @@ export default function CategoriesManager() {
     load();
   }, []);
 
-  async function createCategory() {
-   
-   
+  async function createCategory(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+
+    const trimmedName = name.trim();
+    const trimmedSlug = slug.trim();
+
+    if (!trimmedName || !trimmedSlug) {
+      setError("Name and slug are required");
+      return;
+    }
+
     setSaving(true);
+    setError(null);
+
     try {
-      const res = await axios.post("/api/admin/categories");
-      const created = res.data.category ?? res.data;
-      // optimistic update
-      setCategories((s) => [created, ...s]);
-      setNewName("");
+      const res = await axios.post("/api/admin/categories", {
+        name: trimmedName,
+        slug: trimmedSlug,
+        description: description.trim() || null,
+        is_active: isActive,
+      });
+
+      const created: Category = res.data.category ?? res.data;
+      setCategories((prev) => [created, ...prev]);
+
+      // reset form
+      setName("");
+      setSlug("");
+      setDescription("");
+      setIsActive(true);
     } catch (err) {
       console.error("Create failed", err);
       setError("Could not create category");
@@ -60,11 +97,13 @@ export default function CategoriesManager() {
       !confirm(
         "Delete this category? This will not remove products automatically."
       )
-    )
+    ) {
       return;
-    // optimistic UI: remove locally then call API
+    }
+
     const prev = categories;
     setCategories((s) => s.filter((c) => c.category_id !== id));
+
     try {
       await axios.delete(`/api/admin/categories/${id}`);
     } catch (err) {
@@ -81,7 +120,7 @@ export default function CategoriesManager() {
         <div>
           <h2 className="text-xl font-bold">Categories</h2>
           <p className="text-sm text-white/60">
-            Create and remove product categories
+            Create and manage product categories
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -94,28 +133,76 @@ export default function CategoriesManager() {
         </div>
       </div>
 
-      <div className="glass-panel p-4 rounded-2xl border border-white/10">
-        <div className="flex gap-2 items-center">
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="New category name"
-            className="flex-1 px-3 py-2 rounded-md bg-transparent border border-white/10"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") createCategory();
-            }}
-          />
-          <button
-            onClick={createCategory}
-            disabled={saving || !newName.trim()}
-            className="px-4 py-2 rounded-md bg-white text-black flex items-center gap-2"
-          >
-            <FaPlus /> Add
-          </button>
-        </div>
+      <div className="glass-panel p-4 rounded-2xl border border-white/10 space-y-4">
+        {/* FORM */}
+        <form onSubmit={createCategory} className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-white/60 mb-1">
+                Name *
+              </label>
+              <input
+                value={name}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setName(v);
+                  setSlug(slugify(v)); // auto-generate slug from name
+                }}
+                placeholder="Category name"
+                className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
+              />
+            </div>
 
-        {error && <div className="mt-3 text-sm text-rose-400">{error}</div>}
+            <div>
+              <label className="block text-xs text-white/60 mb-1">
+                Slug *
+              </label>
+              <input
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder="category-slug"
+                className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
+              />
+            </div>
+          </div>
 
+          <div>
+            <label className="block text-xs text-white/60 mb-1">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional description"
+              className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10 min-h-[80px]"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <label className="flex items-center gap-2 text-sm text-white/80">
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+                className="h-4 w-4"
+              />
+              Active
+            </label>
+
+            <button
+              type="submit"
+              disabled={saving || !name.trim() || !slug.trim()}
+              className="px-4 py-2 rounded-md bg-white text-black flex items-center gap-2 disabled:opacity-60"
+            >
+              <FaPlus />
+              {saving ? "Saving..." : "Add Category"}
+            </button>
+          </div>
+        </form>
+
+        {error && <div className="mt-1 text-sm text-rose-400">{error}</div>}
+
+        {/* LIST */}
         <div className="mt-4">
           {loading ? (
             <div className="text-white/60 py-6 text-center">Loading...</div>
@@ -133,7 +220,11 @@ export default function CategoriesManager() {
                   <div>
                     <div className="font-medium">{c.name}</div>
                     <div className="text-xs text-white/60">
-                      id: {c.category_id.slice(0, 8)}
+                      slug: {c.slug}
+                    </div>
+                    <div className="text-xs text-white/40">
+                      id: {c.category_id.slice(0, 8)} ·{" "}
+                      {c.is_active ? "Active" : "Inactive"}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

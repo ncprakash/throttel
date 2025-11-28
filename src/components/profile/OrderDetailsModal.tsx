@@ -1,17 +1,30 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Badge from "./Badge";
 
-export default function OrderDetailsModal({
-  open,
-  order,
-  onClose,
-}: {
+type OrderItem = {
+  name: string;
+  qty: number;
+  price: number;
+};
+
+type Order = {
+  order_number: string;
+  created_at?: string;
+  status?: string;
+  total_amount: number;
+  items: OrderItem[];
+};
+
+type OrderDetailsModalProps = {
   open: boolean;
-  order?: any | null;
+  order?: Order | null;
   onClose: () => void;
-}) {
+};
+
+export default function OrderDetailsModal({ open, order, onClose }: OrderDetailsModalProps) {
   if (!open || !order) return null;
+
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
@@ -25,12 +38,9 @@ export default function OrderDetailsModal({
             <h3 className="text-lg font-bold text-white">{`Order ${order.order_number}`}</h3>
             <div className="text-xs text-white/60">
               Placed:{" "}
-              {order.created_at
-                ? new Date(order.created_at).toLocaleString()
-                : "—"}
+              {order.created_at ? new Date(order.created_at).toLocaleString() : "—"}
             </div>
           </div>
-
           <div>
             <button
               className="px-3 py-1 rounded-lg bg-white/10 text-white hover:bg-white/20 transition"
@@ -46,7 +56,7 @@ export default function OrderDetailsModal({
           <div>
             <h4 className="text-sm font-semibold text-white/90">Items</h4>
             <ul className="mt-3 space-y-3 text-sm">
-              {(order.items || []).map((it: any, idx: number) => (
+              {(order.items || []).map((it: OrderItem, idx: number) => (
                 <li
                   key={idx}
                   className="flex items-center justify-between bg-white/3 p-3 rounded-lg border border-white/6"
@@ -72,10 +82,8 @@ export default function OrderDetailsModal({
                 className={`
                   inline-flex items-center rounded-full px-3 py-1 text-sm
                   ${
-                    order.status
-                      ? order.status === "delivered"
-                        ? "bg-green-700/15 text-green-200 border border-green-700/10"
-                        : "bg-white/6 text-white/80 border border-white/8"
+                    order.status === "delivered"
+                      ? "bg-green-700/15 text-green-200 border border-green-700/10"
                       : "bg-white/6 text-white/80 border border-white/8"
                   }
                 `}
@@ -89,3 +97,42 @@ export default function OrderDetailsModal({
     </div>
   );
 }
+
+// Example usage - mapping backend order to this component's props
+/*
+const backendOrder = {
+  order_number: "ORD-1764262050531-439",
+  created_at: "2025-11-27T16:47:31.46924",
+  status: "pending",
+  total_amount: 353.76,
+  order_items: [
+      {
+          quantity: 1,
+          unit_price: 232,
+          total_price: 232,
+          product_name: "asdasd",
+          variant_name: null
+      }
+  ]
+};
+
+const mappedOrder = {
+  order_number: backendOrder.order_number,
+  created_at: backendOrder.created_at,
+  status: backendOrder.status,
+  total_amount: backendOrder.total_amount,
+  items: backendOrder.order_items.map((item: any) => ({
+    name: item.product_name,
+    qty: item.quantity,
+    price: item.total_price, // or unit_price based on preference
+  })),
+};
+
+// Render modal passing mappedOrder:
+/*
+<OrderDetailsModal
+  open={isModalOpen}
+  order={mappedOrder}
+  onClose={closeModalFunction}
+/>
+*/

@@ -21,7 +21,7 @@ export async function GET(
           total_price
         )
       `)
-      .eq("order_id", id)
+      .eq("user_id", id)
       .single();
 
     if (error || !order) {

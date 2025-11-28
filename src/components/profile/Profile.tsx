@@ -20,11 +20,13 @@ type User = {
 type Order = {
   order_id: string;
   created_at: string;
-  // add other order fields you use
+  order_number?: string;
+  status?: string;
+  total_amount?: number;
+  payment_status?: string;
 };
 
-type WishlistItem = 
-{
+type WishlistItem = {
   wishlist_id: string;
   user_id: string;
   product_id: string;
@@ -42,14 +44,11 @@ type WishlistItem =
       is_primary: boolean;
     }>;
   };
-}
-
-
+};
 
 type Address = {
   address_id: string;
   is_default: boolean;
-  // add other address fields you use
 };
 
 export default function ProfilePage() {
@@ -72,21 +71,21 @@ export default function ProfilePage() {
   useEffect(() => {
     let mounted = true;
 
-    (async () => {
-      setLoading(true);
-      setNotice(null);
-
+    const fetchData = async () => {
       if (!session?.user?.id) {
-        setLoading(false);
+        if (mounted) setLoading(false);
         return;
       }
 
+      const userId = session.user.id.trim();
+      setLoading(true);
+      setNotice(null);
+
       const requests = {
-        orders: axios.get<Order[]>("/api/orders"),
-        wishlist: axios.get<{ wishlist: WishlistItem[] }>(
-          `/api/wishlist?user_id=${session.user.id.trim()}`
-        ),
-      // added addresses fetch since addresses state is used
+        orders: axios.get(`/api/orders/${userId}`),
+        wishlist: axios.get(`/api/wishlist?user_id=${userId}`),
+        addresses: axios.get(`/api/addresses?user_id=${userId}`),
+        userData: axios.get(`/api/users/${userId}`),
       };
 
       try {
@@ -98,20 +97,20 @@ export default function ProfilePage() {
         const mapped: Record<string, any> = {};
         const errors: string[] = [];
 
-        results.forEach((r, idx) => {
+        results.forEach((result, idx) => {
           const key = entries[idx][0];
-          if (r.status === "fulfilled") {
-            mapped[key] = r.value.data;
+          if (result.status === "fulfilled") {
+            const responseData = result.value?.data ?? result.value ?? null;
+            mapped[key] = responseData;
           } else {
-            const err = r.reason;
-            const status = err?.response?.status;
-            const url = err?.config?.url;
-            errors.push(`${key} (${url}) -> ${status ?? "network error"}`);
+            const err = result.reason;
+            errors.push(`${key}: ${err?.message || "network error"}`);
             mapped[key] = null;
           }
         });
 
-        const userData = mapped.user ?? null;
+        // Set user data
+        const userData = mapped.userData ?? null;
         setUser(userData);
         setForm({
           first_name: userData?.first_name || "",
@@ -119,84 +118,122 @@ export default function ProfilePage() {
           phone: userData?.phone || "",
         });
 
-        setOrders(
-          (mapped.orders || [])
-            .sort((a: Order, b: Order) =>
-              b.created_at.localeCompare(a.created_at)
-            ) ?? []
+        // Handle orders response which may be single order object or array
+        const rawOrders = mapped.orders ?? null;
+        let ordersData: Order[] = [];
+
+        if (
+          rawOrders &&
+          typeof rawOrders === "object" &&
+          !Array.isArray(rawOrders) &&
+          rawOrders.order_id
+        ) {
+          // Single order object
+          ordersData = [rawOrders];
+        } else if (Array.isArray(rawOrders)) {
+          ordersData = rawOrders;
+        } else if (rawOrders?.orders && Array.isArray(rawOrders.orders)) {
+          ordersData = rawOrders.orders;
+        }
+
+        // Filter and sort valid orders
+        const validOrders = ordersData.filter(
+          (item): item is Order =>
+            !!item &&
+            typeof item === "object" &&
+            item.order_id &&
+            item.created_at
         );
 
-        setWishlistItems(mapped.wishlist?.wishlist || []);
-        setAddresses(mapped.addresses || []);
+        setOrders(
+          validOrders.sort((a: Order, b: Order) =>
+            b.created_at.localeCompare(a.created_at)
+          )
+        );
 
-        if (errors.length) {
-          setNotice(`Some data failed to load: ${errors.join(", ")}`);
+        // Wishlist items
+        const rawWishlist = mapped.wishlist ?? null;
+        const wishlistData = Array.isArray(rawWishlist?.wishlist)
+          ? rawWishlist.wishlist
+          : [];
+        setWishlistItems(wishlistData);
+
+        // Addresses
+        const rawAddresses = mapped.addresses ?? null;
+        const addressesData = Array.isArray(rawAddresses) ? rawAddresses : [];
+        setAddresses(
+          addressesData.filter(
+            (addr): addr is Address => !!addr?.address_id
+          )
+        );
+
+        if (errors.length > 0) {
+          setNotice(`Some data failed: ${errors.join(", ")}`);
           console.warn("Profile data load errors:", errors);
         }
       } catch (err) {
-        console.error("Unexpected error loading profile data", err);
-        setNotice("Could not load remote data — demo UI only.");
+        console.error("Profile fetch error:", err);
+        if (mounted) {
+          setNotice("Failed to load profile data");
+        }
       } finally {
         if (mounted) setLoading(false);
       }
-    })();
+    };
+
+    fetchData();
 
     return () => {
       mounted = false;
     };
   }, [session]);
 
- async function saveProfile() {
-   alert("hwllpea");
-  if (!session?.user?.id) return;
-  setSaving(true);
-  setNotice(null);
-   
-  try {
-    const payload = { ...form };
-    await axios.patch(`/api/users/${session?.user?.id}`, payload);
-    setUser((s) => (s ? { ...s, ...payload } : s));
-    setEditing(false);
-    setNotice("Profile updated successfully");
-    console.log("Saving profile with data:", payload);
+  async function saveProfile() {
+    if (!session?.user?.id) return;
 
-  } catch (err) {
-    console.error(err);
-    setNotice("Save failed");
-  } finally {
-    setSaving(false);
-    setTimeout(() => setNotice(null), 2000);
+    setSaving(true);
+    setNotice(null);
+
+    try {
+      const payload = { ...form };
+      await axios.patch(`/api/users/${session.user.id}`, payload);
+      setUser((prev) => (prev ? { ...prev, ...payload } : prev));
+      setEditing(false);
+      setNotice("Profile updated successfully!");
+      console.log("Profile saved:", payload);
+    } catch (err: any) {
+      console.error("Save failed:", err);
+      setNotice(err?.response?.data?.error || "Save failed");
+    } finally {
+      setSaving(false);
+      setTimeout(() => setNotice(null), 3000);
+    }
   }
-}
-
 
   const handleRemove = async (wishlist_id: string) => {
     if (!confirm("Remove this item from wishlist?")) return;
 
     try {
-      await axios.delete(`/api/wishlist/${wishlist_id}`).then(function(response){
-        console.log(response)
-      })
+      await axios.delete(`/api/wishlist/${wishlist_id}`);
       setWishlistItems((prev) =>
         prev.filter((item) => item.wishlist_id !== wishlist_id)
       );
       setNotice("Removed from wishlist!");
-      setTimeout(() => setNotice(null), 1500);
     } catch (error) {
-      console.error("Failed to remove:", error);
+      console.error("Remove failed:", error);
       setNotice("Failed to remove from wishlist");
-      setTimeout(() => setNotice(null), 1500);
+    } finally {
+      setTimeout(() => setNotice(null), 2000);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center">
-        <div className="glass-panel p-8 rounded-2xl shadow-2xl">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
-            <p className="text-white text-sm">Loading your profile...</p>
-          </div>
+      <div className="min-h-screen bg-transparent flex items-center justify-center p-8">
+        <div className="glass-panel p-12 rounded-3xl shadow-2xl text-center max-w-md">
+          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-6" />
+          <p className="text-xl font-semibold text-white">Loading profile...</p>
+          <p className="text-white/60 mt-2">Fetching your orders and wishlist</p>
         </div>
       </div>
     );
@@ -208,19 +245,18 @@ export default function ProfilePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
           {/* Notification Toast */}
           {notice && (
-            <div className="fixed top-6 right-6 z-50">
-              <div className="glass-panel px-6 py-3 rounded-xl shadow">
+            <div className="fixed top-6 right-6 z-50 animate-in slide-in-from-top-2 duration-300">
+              <div className="glass-panel px-6 py-3 rounded-xl shadow-2xl border border-white/10">
                 <p className="text-sm text-white">{notice}</p>
               </div>
             </div>
           )}
 
-          {/* Profile Header Section */}
-          <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-xl transition-shadow duration-300">
+          {/* Profile Header */}
+          <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl">
             <ProfileHeader onEdit={() => setEditing(!editing)} />
-
             {editing && (
-              <div className="mt-6 pt-6 border-t border-white/8">
+              <div className="mt-8 pt-6 border-t border-white/10">
                 <EditProfileForm
                   open={editing}
                   user={user}
@@ -234,17 +270,19 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {/* Quick Stats Overview */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="glass-panel p-6 rounded-2xl transform-gpu transition-transform duration-200">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="glass-panel p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-white">{orders.length}</p>
-                  <p className="text-sm text-white/60 mt-1">Total Orders</p>
+                  <p className="text-4xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+                    {orders.length}
+                  </p>
+                  <p className="text-white/60 mt-2 font-medium">Total Orders</p>
                 </div>
-                <div className="w-12 h-12 bg-white/6 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl flex items-center justify-center border border-white/20">
                   <svg
-                    className="w-6 h-6 text-white/70"
+                    className="w-8 h-8 text-orange-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -260,15 +298,17 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="glass-panel p-6 rounded-2xl transform-gpu transition-transform duration-200">
+            <div className="glass-panel p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-white">{wishlistItems.length}</p>
-                  <p className="text-sm text-white/60 mt-1">Wishlist Items</p>
+                  <p className="text-4xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+                    {wishlistItems.length}
+                  </p>
+                  <p className="text-white/60 mt-2 font-medium">Wishlist</p>
                 </div>
-                <div className="w-12 h-12 bg-white/6 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center border border-white/20">
                   <svg
-                    className="w-6 h-6 text-white/70"
+                    className="w-8 h-8 text-pink-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -284,15 +324,17 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="glass-panel p-6 rounded-2xl transform-gpu transition-transform duration-200">
+            <div className="glass-panel p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold text-white">{addresses.length}</p>
-                  <p className="text-sm text-white/60 mt-1">Saved Addresses</p>
+                  <p className="text-4xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+                    {addresses.length}
+                  </p>
+                  <p className="text-white/60 mt-2 font-medium">Addresses</p>
                 </div>
-                <div className="w-12 h-12 bg-white/6 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-2xl flex items-center justify-center border border-white/20">
                   <svg
-                    className="w-6 h-6 text-white/70"
+                    className="w-8 h-8 text-blue-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -309,21 +351,23 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Orders */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="glass-panel p-6 sm:p-8 rounded-3xl shadow-xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-white">Recent Orders</h3>
-                  <button className="text-sm text-white/60 hover:text-white transition-colors">View All</button>
+          {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Orders */}
+            <div className="lg:col-span-2">
+              <div className="glass-panel p-8 rounded-3xl shadow-2xl">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-bold text-white">Recent Orders</h2>
+                  <button className="text-lg font-semibold text-white/70 hover:text-white transition-all">
+                    View All
+                  </button>
                 </div>
 
                 {orders.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/6 border border-white/10 flex items-center justify-center">
+                  <div className="text-center py-16">
+                    <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center">
                       <svg
-                        className="w-10 h-10 text-white/40"
+                        className="w-12 h-12 text-white/30"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -331,25 +375,26 @@ export default function ProfilePage() {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
+                          strokeWidth={1.5}
                           d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                         />
                       </svg>
                     </div>
-                    <p className="text-white/60">No orders yet</p>
-                    <p className="text-sm text-white/40 mt-1">Your order history will appear here</p>
+                    <h3 className="text-xl font-semibold text-white mb-2">No orders yet</h3>
+                    <p className="text-white/50 max-w-md mx-auto">
+                      Your motorcycle accessories orders will appear here once you make your
+                      first purchase
+                    </p>
                   </div>
                 ) : (
                   <OrdersList orders={orders} onOpen={() => {}} compact />
                 )}
               </div>
-
-              {/* Addresses Section can be added here if needed */}
             </div>
 
-            {/* Right Column - Wishlist */}
+            {/* Wishlist */}
             <div className="lg:col-span-1">
-              <div className="glass-panel rounded-2xl p-6 shadow-xl">
+              <div className="glass-panel sticky top-6 p-6 rounded-3xl shadow-2xl">
                 <WishlistCard items={wishlistItems} onRemove={handleRemove} compact={false} />
               </div>
             </div>
