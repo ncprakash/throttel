@@ -5,16 +5,12 @@ import ProductForm from "@/components/admin/ProductForm";
 import ProductsQuickList from "@/components/admin/ProductsQuickList";
 import { useState } from "react";
 
-/**
- * Admin products page: left column - ProductForm, right column - ProductsQuickList
- * ProductForm will be remounted on edit via key prop.
- */
-
 export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
 
   return (
-    <div>
+    <div className="space-y-10">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Products</h1>
@@ -24,22 +20,25 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      {/* Product Form (full width) */}
+      <div className="w-full">
+        <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
           <ProductForm
             key={editingProduct?.product_id ?? "new"}
             product={editingProduct}
-            onSaved={(p) => {
-              setEditingProduct(null);
-              // optionally toast or refresh logic
-            }}
+            onSaved={() => setEditingProduct(null)}
             onCancel={() => setEditingProduct(null)}
           />
         </div>
+      </div>
 
-        <aside>
+      {/* Products List BELOW form */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3">All Products</h2>
+
+        <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
           <ProductsQuickList onEdit={(p) => setEditingProduct(p)} />
-        </aside>
+        </div>
       </div>
     </div>
   );
