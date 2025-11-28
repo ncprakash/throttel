@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 import FeaturedCollections from "./FeaturedCollection";
 import FitmentFinder from "./Fitmentfinder";
@@ -11,16 +12,39 @@ import ReviewsSection from "./ReviewSection";
 import NewsletterCTA from "./NewsLetterCTA";
 
 export default function InterleavedScrollExperience() {
+  const router = useRouter();
   // Animation states
-  const [stage, setStage] = useState(0); // 0: initial, 1: gear spin, 2: circle reveal, 3: text reveal, 4: complete
-  const [radius, setRadius] = useState(0);
+  const [stage, setStage] = useState(0); // 0: initial, 1: gear spin, 2: percentage count, 3: text reveal, 4: complete
+  const [percentage, setPercentage] = useState(0);
   const [gearRotation, setGearRotation] = useState(0);
   const [textReveal, setTextReveal] = useState(false);
   const [showHero, setShowHero] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const handleExploreClick = () => {
+    router.push("/shop");
+  };
+
   useEffect(() => {
+    // Check if animation has already been shown in this session
+   // Check if animation has already been shown in this session
+const alreadyAnimated = sessionStorage.getItem('throttle-animation-shown');
+
+// Mark animation as shown in sessionStorage
+sessionStorage.setItem('throttle-animation-shown', 'true');
+    
+    if (alreadyAnimated) {
+      // Skip animation and show final state directly
+      setHasAnimated(true);
+      setStage(4);
+      setPercentage(100);
+      setTextReveal(true);
+      setShowHero(true);
+      return;
+    }
+
     // Preload subtle mechanical sound
     audioRef.current = new Audio('/sounds/gear-engage.mp3');
     audioRef.current.volume = 0.3;
@@ -42,46 +66,132 @@ export default function InterleavedScrollExperience() {
         }
       }, 30);
 
-      // Stage 2: Circle reveal
+      // Stage 2: Percentage count animation
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      const revealDuration = 1200;
+      const countDuration = 1200;
       const startTime = Date.now();
       
-      const animateReveal = () => {
+      const animateCount = () => {
         const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / revealDuration, 1);
+        const progress = Math.min(elapsed / countDuration, 1);
         
-        // Ease-out curve
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const currentRadius = eased * 140;
+        // Ease-out curve for more realistic throttle feeling
+        const eased = 1 - Math.pow(1 - progress, 2);
+        const currentPercentage = Math.min(Math.floor(eased * 100), 100);
         
-        setRadius(currentRadius);
+        setPercentage(currentPercentage);
         
         if (progress < 1) {
-          requestAnimationFrame(animateReveal);
+          requestAnimationFrame(animateCount);
         } else {
           setStage(3);
           
-          // Stage 3: Text reveal with mechanical typewriter effect
+          // Stage 3: Text reveal after percentage completes
           setTimeout(() => {
             setTextReveal(true);
             setTimeout(() => {
               setStage(4);
               setShowHero(true);
+              setHasAnimated(true);
+              // Mark animation as shown in localStorage
+              localStorage.setItem('throttle-animation-shown', 'true');
             }, 800);
           }, 300);
         }
       };
       
-      animateReveal();
+      animateCount();
     };
 
     sequence();
   }, []);
 
+  // If animation was already shown, skip the loading overlay
+  if (hasAnimated) {
+    return (
+      <div className="relative bg-transparent">
+        {/* Static Background Image - No overlay */}
+        <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "url(/frames/render9_filled.png)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              backgroundAttachment: "fixed",
+              width: "100%",
+              height: "100%",
+            }}
+          />
+          <div className="absolute inset-0 bg-black/10" />
+        </div>
+
+        {/* Hero Content - Immediately visible */}
+        <div className="relative h-screen flex items-center justify-center z-10">
+          <div className="text-center px-6 max-w-5xl mx-auto opacity-100 translate-y-0">
+            {/* Badge */}
+            <div className="inline-flex items-center space-x-3 bg-white/10 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/20 mb-10 opacity-100 translate-y-0">
+              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+              <span className="text-white/90 text-xs font-light tracking-[0.3em] uppercase">
+                Race-Bred Performance Engineering
+              </span>
+            </div>
+
+            {/* Main title */}
+            <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black mb-8 tracking-tighter leading-[0.9]">
+              <span className="text-white opacity-100">
+                THROTTLE
+              </span>
+              <span className="block text-white/40 font-light text-3xl sm:text-4xl lg:text-5xl mt-3 tracking-tight opacity-100 translate-y-0">
+                FORGED CUSTOMS
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p className="text-lg sm:text-xl lg:text-2xl text-white/80 mb-14 leading-relaxed max-w-3xl mx-auto font-light tracking-wide opacity-100 translate-y-0">
+              Precision-engineered performance parts for riders who demand excellence
+            </p>
+
+            {/* CTA Button */}
+            <div className="opacity-100 translate-y-0">
+              <button 
+                onClick={handleExploreClick}
+                className="bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/20 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-2xl hover:shadow-white/10"
+              >
+                Explore Performance Parts
+              </button>
+            </div>
+
+            {/* Secondary Buttons */}
+         
+          </div>
+        </div>
+
+        {/* Sections */}
+        <div className="relative min-h-screen z-10">
+          <FeaturedCollections />
+        </div>
+        <div className="relative min-h-screen z-10">
+          <FitmentFinder />
+        </div>
+        <div className="relative z-10">
+          <USPStrip />
+        </div>
+        <div className="relative min-h-screen z-10">
+          <EditorialSection />
+        </div>
+        <div className="relative z-10">
+          <ReviewsSection />
+          <NewsletterCTA />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative bg-black/80">
+    <div className="relative bg-transparent">
       {/* Static Background Image */}
       <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
         <div
@@ -97,20 +207,20 @@ export default function InterleavedScrollExperience() {
           }}
         />
 
-        {/* Base tint */}
-        <div className="absolute inset-0 bg-black/30" />
+        {/* Reduced base tint - almost transparent */}
+        <div className="absolute inset-0 bg-black/10" />
 
-        {/* Animated gear overlay during initial sequence */}
+        {/* Animated gear and percentage overlay during initial sequence */}
         {stage < 4 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70">
+            {/* Gear icon */}
             <div 
-              className="relative z-20 transition-all duration-500"
+              className="relative z-20 transition-all duration-500 mb-8"
               style={{
                 opacity: stage >= 1 ? 1 : 0,
                 transform: `scale(${stage >= 1 ? 1 : 0.8}) rotate(${gearRotation}deg)`,
               }}
             >
-              {/* Gear icon */}
               <svg 
                 width="80" 
                 height="80" 
@@ -125,39 +235,60 @@ export default function InterleavedScrollExperience() {
               </svg>
             </div>
             
-            {/* Circle reveal mask */}
-            <div
-              className="absolute inset-0"
+            {/* Percentage display */}
+            <div 
+              className="relative z-20 text-center transition-all duration-300"
               style={{
-                background: `radial-gradient(
-                  circle at 50% 55%,
-                  transparent 0%,
-                  transparent ${radius}%,
-                  rgba(0,0,0,0.98) ${radius + 1}%,
-                  rgba(0,0,0,0.98) 140%
-                )`,
-                transition: stage === 2 ? 'none' : 'all 0.5s ease-out'
+                opacity: stage >= 2 ? 1 : 0,
+                transform: `scale(${stage >= 2 ? 1 : 0.9})`,
+              }}
+            >
+              {/* Large percentage number */}
+              <div className="text-6xl sm:text-7xl lg:text-8xl font-bold text-white mb-4 font-mono">
+                {percentage}%
+              </div>
+              
+              {/* Loading text */}
+              <div className="text-white/70 text-sm sm:text-base uppercase tracking-widest font-light">
+                {percentage < 100 ? "Throttle Engaged" : "Systems Online"}
+              </div>
+              
+              {/* Progress bar */}
+              <div className="w-48 sm:w-64 h-1 bg-white/20 rounded-full mt-6 mx-auto overflow-hidden">
+                <div 
+                  className="h-full bg-white rounded-full transition-all duration-200 ease-out"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+              
+              {/* RPM-style indicators */}
+              <div className="flex justify-between w-48 sm:w-64 mx-auto mt-2">
+                {[0, 25, 50, 75, 100].map((mark) => (
+                  <div key={mark} className="text-xs text-white/50 font-mono">
+                    {mark}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Background fade reveal */}
+            <div
+              className="absolute inset-0 transition-all duration-1000"
+              style={{
+                backgroundColor: `rgba(0,0,0,${0.7 - (percentage / 100) * 0.7})`,
               }}
             />
           </div>
         )}
 
-        {/* Final background state */}
+        {/* Final background state - minimal tint */}
         {stage === 4 && (
-          <>
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `radial-gradient(
-                  circle at 50% 55%,
-                  transparent 0%,
-                  transparent 140%,
-                  rgba(0,0,0,0.96) 141%,
-                  rgba(0,0,0,0.96) 200%
-                )`,
-              }}
-            />
-          </>
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundColor: 'rgba(0,0,0,0.1)',
+            }}
+          />
         )}
       </div>
 
@@ -166,24 +297,24 @@ export default function InterleavedScrollExperience() {
         <div className={`text-center px-6 max-w-5xl mx-auto transition-all duration-1000 ${
           showHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
-          {/* Animated badge */}
-          <div className={`inline-flex items-center space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/10 mb-10 transition-all duration-700 delay-300 ${
+          {/* Animated badge - Glassomorphic */}
+          <div className={`inline-flex items-center space-x-3 bg-white/10 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/20 mb-10 transition-all duration-700 delay-300 ${
             showHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
-            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
             <span className="text-white/90 text-xs font-light tracking-[0.3em] uppercase">
               Race-Bred Performance Engineering
             </span>
           </div>
 
-          {/* Main title with typewriter effect */}
+          {/* Main title with typewriter effect - Black & White Theme */}
           <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black mb-8 tracking-tighter leading-[0.9]">
             <span className={`text-white inline-block transition-all duration-500 delay-500 ${
               textReveal ? 'opacity-100' : 'opacity-0'
             }`}>
               THROTTLE
             </span>
-            <span className={`block text-white/30 font-light text-3xl sm:text-4xl lg:text-5xl mt-3 tracking-tight transition-all duration-500 delay-700 ${
+            <span className={`block text-white/40 font-light text-3xl sm:text-4xl lg:text-5xl mt-3 tracking-tight transition-all duration-500 delay-700 ${
               textReveal ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
             }`}>
               FORGED CUSTOMS
@@ -191,17 +322,34 @@ export default function InterleavedScrollExperience() {
           </h1>
 
           {/* Description */}
-          <p className={`text-lg sm:text-xl lg:text-2xl text-white/70 mb-14 leading-relaxed max-w-3xl mx-auto font-light tracking-wide transition-all duration-500 delay-900 ${
+          <p className={`text-lg sm:text-xl lg:text-2xl text-white/80 mb-14 leading-relaxed max-w-3xl mx-auto font-light tracking-wide transition-all duration-500 delay-900 ${
             showHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
             Precision-engineered performance parts for riders who demand excellence
           </p>
 
-          {/* CTA Button */}
+          {/* CTA Button - Glassomorphic */}
           <div className={`transition-all duration-500 delay-1000 ${
             showHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
-            
+            <button 
+              onClick={handleExploreClick}
+              className="bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/20 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-2xl hover:shadow-white/10"
+            >
+              Explore Performance Parts
+            </button>
+          </div>
+
+          {/* Secondary Glassomorphic Buttons */}
+          <div className={`flex flex-col sm:flex-row gap-4 justify-center mt-8 transition-all duration-500 delay-1200 ${
+            showHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}>
+            <button className="bg-white/5 backdrop-blur-lg hover:bg-white/10 border border-white/15 text-white/90 px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 transform hover:scale-105">
+              View Collections
+            </button>
+            <button className="bg-white/5 backdrop-blur-lg hover:bg-white/10 border border-white/15 text-white/90 px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 transform hover:scale-105">
+              Custom Builds
+            </button>
           </div>
         </div>
       </div>
