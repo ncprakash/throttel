@@ -332,8 +332,8 @@ export default function ProductDetailPage() {
             backface-visibility: hidden;
           }
         `}</style>
-        <Footer />
       </div>
+      <Footer />
     </>
   );
 }
