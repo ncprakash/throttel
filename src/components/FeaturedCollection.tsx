@@ -5,13 +5,13 @@ import { useRef, useState, useEffect } from "react";
 const products = [
   {
     id: "p1",
-    title: "Racer-X Carbon Exhaust",
+    title: "guage",
     subtitle: "Lightweight Performance Exhaust",
-    description:
-      "Ultra-light carbon fiber muffler that frees 4% weight and improves throttle response.",
-    price: "₹14,999",
-    image: "/images/products/exhaust.jpg",
-    link: "/products/racer-x-carbon-exhaust",
+    description: "this is a demo product",
+    price: "₹250",
+    image:
+      "_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdklhtflzr%2Fimage%2Fupload%2Fv1764347595%2Fproducts%2Fcrtxzuzzlztjlimumgev.jpg&w=1920&q=75",
+    link: "/product/guage",
   },
   {
     id: "p2",

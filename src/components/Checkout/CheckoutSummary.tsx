@@ -93,28 +93,6 @@ export default function CheckoutSummary({
               )}
             </span>
           </label>
-
-          <label
-            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-white/10 transition ${
-              shippingMethod === "express" ? "bg-white/5" : "bg-transparent"
-            }`}
-          >
-            <input
-              type="radio"
-              name="shipping"
-              checked={shippingMethod === "express"}
-              onChange={() => onChangeShipping("express")}
-            />
-            <div className="flex-1">
-              <div className="font-medium">Express Shipping</div>
-              <div className="text-xs text-white/60">2-3 business days</div>
-            </div>
-            <span className="text-sm">
-              {formatCurrency(
-                shippingMethod === "express" ? shipping : shipping
-              )}
-            </span>
-          </label>
         </div>
       </div>
 
@@ -124,16 +102,6 @@ export default function CheckoutSummary({
           Payment Method
         </label>
         <div className="space-y-2">
-          <label className="flex items-center gap-3 p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition">
-            <input
-              type="radio"
-              name="payment"
-              checked={paymentMethod === "cod"}
-              onChange={() => setPaymentMethod("cod")}
-            />
-            <span>Cash on Delivery</span>
-          </label>
-
           <label className="flex items-center gap-3 p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition">
             <input
               type="radio"
