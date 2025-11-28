@@ -1,25 +1,29 @@
-// app/api/admin/products/[productId]/variants/route.ts
+// app/api/admin/products/[product_id]/variants/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { productId: string } }
-) {
-  try {
-    const { productId } = params;
-   
 
+type RouteParams = {
+  params: Promise<{
+    product_id: string;
+  }>;
+};
+
+// GET /api/admin/products/[product_id]/variants
+export async function GET(request: NextRequest, context: RouteParams) {
+  const { product_id } = await context.params; // <- await because it's a Promise
+
+  try {
     const { data, error } = await supabase
       .from("product_variants")
       .select("*")
-      .eq("product_id", productId)
+      .eq("product_id", product_id)
       .order("variant_name", { ascending: true });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ variants: data });
+    return NextResponse.json({ variants: data ?? [] });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "Failed to fetch variants" },
@@ -28,20 +32,17 @@ export async function GET(
   }
 }
 
-// POST - Create variant
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { productId: string } }
-) {
+// POST /api/admin/products/[product_id]/variants
+export async function POST(request: NextRequest, context: RouteParams) {
+  const { product_id } = await context.params;
+
   try {
-    const { productId } = params;
     const body = await request.json();
-    const supabase = await createClient();
 
     const { data, error } = await supabase
       .from("product_variants")
       .insert({
-        product_id: productId,
+        product_id,
         variant_name: body.variant_name,
         color: body.color || null,
         size: body.size || null,

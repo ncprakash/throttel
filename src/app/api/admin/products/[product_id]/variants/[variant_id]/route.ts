@@ -1,28 +1,34 @@
+// app/api/admin/products/[product_id]/variants/[variant_id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-// PATCH - Update variant
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { productId: string; variantId: string } }
-) {
+type RouteParams = {
+  params: Promise<{
+    product_id: string;
+    variant_id: string;
+  }>;
+};
+
+// PATCH /api/admin/products/[product_id]/variants/[variant_id]
+export async function PATCH(request: NextRequest, context: RouteParams) {
+  const { product_id, variant_id } = await context.params;
+
   try {
-    const { variantId } = params;
     const body = await request.json();
-   
 
     const { data, error } = await supabase
       .from("product_variants")
       .update({
         variant_name: body.variant_name,
-        color: body.color,
-        size: body.size,
-        sku: body.sku,
-        additional_price: body.additional_price,
-        stock_quantity: body.stock_quantity,
-        is_active: body.is_active,
+        color: body.color ?? null,
+        size: body.size ?? null,
+        sku: body.sku ?? null,
+        additional_price: body.additional_price ?? 0,
+        stock_quantity: body.stock_quantity ?? 0,
+        is_active: body.is_active ?? true,
       })
-      .eq("variant_id", variantId)
+      .eq("product_id", product_id)
+      .eq("variant_id", variant_id)
       .select()
       .single();
 
@@ -30,37 +36,10 @@ export async function PATCH(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ variant: data });
+    return NextResponse.json({ variant: data }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "Failed to update variant" },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE - Delete variant
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { productId: string; variantId: string } }
-) {
-  try {
-    const { variantId } = params;
-    const supabase = await createClient();
-
-    const { error } = await supabase
-      .from("product_variants")
-      .delete()
-      .eq("variant_id", variantId);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ message: "Variant deleted successfully" });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to delete variant" },
       { status: 500 }
     );
   }

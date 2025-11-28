@@ -141,8 +141,9 @@ export default function ProfilePage() {
           (item): item is Order =>
             !!item &&
             typeof item === "object" &&
-            item.order_id &&
-            item.created_at
+            // ensure these checks return boolean (not the raw string)
+            !!(item as any).order_id &&
+            !!(item as any).created_at
         );
 
         setOrders(
