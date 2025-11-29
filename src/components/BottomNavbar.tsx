@@ -1,24 +1,25 @@
 // components/BottomNav.tsx
 "use client";
+
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [cartCount, setCartCount] = useState(0);
   const { data: session } = useSession();
-  const role = session?.user?.role; // adjust to how you store role
 
+  const role = session?.user?.role; // adjust if your role field differs
   const profilePath = role === "admin" ? "/admin" : "/profile";
+
   useEffect(() => {
-    // Function to update cart count from localStorage
     const updateCartCount = () => {
       try {
         const cartItems = localStorage.getItem("cartItems");
         if (cartItems) {
           const items = JSON.parse(cartItems);
-          // Calculate total quantity of items
           const totalCount = Array.isArray(items)
             ? items.reduce((sum, item) => sum + (item.quantity || 1), 0)
             : 0;
@@ -32,13 +33,8 @@ export default function BottomNav() {
       }
     };
 
-    // Initial load
     updateCartCount();
-
-    // Listen for storage events (updates from other tabs)
     window.addEventListener("storage", updateCartCount);
-
-    // Custom event for same-tab updates
     window.addEventListener("cartUpdated", updateCartCount);
 
     return () => {
@@ -156,7 +152,7 @@ export default function BottomNav() {
         </svg>
       ),
       label: "Profile",
-    },
+    }
   ];
 
   return (
@@ -166,24 +162,19 @@ export default function BottomNav() {
           <div className="flex items-center space-x-2">
             {navItems.map((item) => {
               const isActive = pathname === item.path;
-
-              // Determine classes for each item
               const baseSizeClass = item.isCenter ? "w-14 h-14" : "w-12 h-12";
               const roundedAndLayout =
                 "rounded-full flex items-center justify-center transition-all duration-500 relative group";
 
-              // Special: Garage should always appear as a white pill with black icon
               if (item.id === "garage") {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => router.push(item.path)}
+                    onClick={() => handleNavClick(item.id, item.path)}
                     aria-label={item.label}
                     className={`${baseSizeClass} ${roundedAndLayout} bg-white text-black shadow-lg shadow-white/20`}
                   >
                     {item.icon}
-
-                    {/* Cart Badge */}
                     {item.showBadge && cartCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-lg shadow-red-500/50 border-2 border-white">
                         {cartCount > 99 ? "99+" : cartCount}
@@ -193,11 +184,10 @@ export default function BottomNav() {
                 );
               }
 
-              // Non-garage items: respect active/inactive styling
               return (
                 <button
                   key={item.id}
-                  onClick={() => router.push(item.path)}
+                  onClick={() => handleNavClick(item.id, item.path)}
                   aria-label={item.label}
                   className={`
                     ${baseSizeClass} ${roundedAndLayout}
@@ -210,18 +200,14 @@ export default function BottomNav() {
                 >
                   {item.icon}
 
-                  {/* Active indicator for non-center items */}
                   {isActive && !item.isCenter && (
                     <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
-                      <div className="w-1 h-1 bg-white rounded-full"></div>
+                      <div className="w-1 h-1 bg-white rounded-full" />
                     </div>
                   )}
 
-                  {/* Tooltip */}
                   <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl px-3 py-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 whitespace-nowrap">
-                    <span className="text-white text-xs font-light">
-                      {item.label}
-                    </span>
+                    <span className="text-white text-xs font-light">{item.label}</span>
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/90 border-r border-b border-white/10 rotate-45"></div>
                   </div>
                 </button>
@@ -230,11 +216,8 @@ export default function BottomNav() {
           </div>
         </div>
 
-        {/* Subtle Glow */}
-        <div className="absolute inset-0 bg-white/5 rounded-full blur-2xl -z-10"></div>
-
-        {/* Bottom Reflection */}
-        <div className="absolute top-full left-0 right-0 h-8 bg-gradient-to-b from-white/5 to-transparent rounded-full blur-xl -z-20"></div>
+        <div className="absolute inset-0 bg-white/5 rounded-full blur-2xl -z-10" />
+        <div className="absolute top-full left-0 right-0 h-8 bg-gradient-to-b from-white/5 to-transparent rounded-full blur-xl -z-20" />
       </div>
     </div>
   );
