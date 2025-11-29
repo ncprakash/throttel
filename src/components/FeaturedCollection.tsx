@@ -6,7 +6,7 @@ import { useRef, useState, useEffect } from "react";
 const products = [
   {
     id: "p1",
-    title: "guage",
+    title: "Guage",
     subtitle: "Lightweight Performance Exhaust",
     description: "this is a demo product",
     price: "₹250",
@@ -172,7 +172,7 @@ export default function FeaturedCollections() {
                 <div className="space-y-6">
                   <div className="w-full h-44 md:h-48 bg-white/6 rounded-xl overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
                     {/* image — replace with next/image if using Next.js */}
-                  <Image
+                    <Image
                       src={p.image}
                       alt={p.title}
                       width={1200}

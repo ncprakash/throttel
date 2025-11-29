@@ -4,10 +4,9 @@
 import { useState } from "react";
 import SignInForm from "@/components/auth/SignInForm";
 import SignUpForm from "@/components/auth/SignUpForm";
-import AdminConsole from "@/components/auth/AdminConsole";
 import Footer from "@/components/Footer";
 
-type TabType = "signin" | "signup" | "admin";
+type TabType = "signin" | "signup";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<TabType>("signin");
@@ -20,13 +19,11 @@ export default function AuthPage() {
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white mb-2">
               THROTTLE
             </h1>
-            <p className="text-sm text-white/70">
-              Access your account or manage the catalog
-            </p>
+            <p className="text-sm text-white/70">Access your account</p>
           </div>
 
           <div className="flex gap-2 mb-8 border-b border-white/10">
-            {(["signin", "signup", "admin"] as TabType[]).map((tab) => (
+            {(["signin", "signup"] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -39,14 +36,12 @@ export default function AuthPage() {
               >
                 {tab === "signin" && "Sign In"}
                 {tab === "signup" && "Create Account"}
-                {tab === "admin" && "Admin Console"}
               </button>
             ))}
           </div>
 
           {activeTab === "signin" && <SignInForm />}
           {activeTab === "signup" && <SignUpForm />}
-          {activeTab === "admin" && <AdminConsole />}
         </div>
 
         <p className="mt-8 text-center text-xs uppercase tracking-[0.35em] text-white/30">

@@ -72,42 +72,15 @@ export default function TermsPage() {
           <Section id="terms" title="Terms & Conditions">
             <div className="space-y-4 text-sm">
               <p>
-                By using this site and/or placing an order, you agree to be
-                bound by these Terms & Conditions. Please read them carefully.
-                If you do not agree, do not use the site.
+                Lifetime warranty is applicable only at the discretion of TFC
+                and strictly for verified manufacturing defects. Mild steel
+                products are excluded from lifetime warranty coverage. Any
+                damage caused by usage, handling, modification, or installation
+                is not covered. All claims must include an unedited video
+                recorded before installation, and TFC reserves the right to
+                approve, reject, or request additional proof before honoring any
+                warranty
               </p>
-
-              <ul className="list-disc pl-5 space-y-2">
-                <li>
-                  <strong>Eligibility:</strong> You must be at least 18 years
-                  old or have parental consent to make purchases.
-                </li>
-                <li>
-                  <strong>Account & Security:</strong> You are responsible for
-                  maintaining the confidentiality of your account credentials
-                  and for all activity that occurs under your account.
-                </li>
-                <li>
-                  <strong>Product Information:</strong> We try to display
-                  product details accurately, but specifications and
-                  availability may change.
-                </li>
-                <li>
-                  <strong>Pricing & Payments:</strong> All prices are shown in
-                  the site’s currency and may change without notice. Payment is
-                  processed via the payment provider you choose at checkout.
-                </li>
-                <li>
-                  <strong>Limitation of Liability:</strong> To the maximum
-                  extent permitted by law, we will not be liable for indirect or
-                  consequential losses arising from use of the site.
-                </li>
-                <li>
-                  <strong>Governing Law:</strong> These Terms are governed by
-                  the laws applicable where our business is incorporated (check
-                  our contact details).
-                </li>
-              </ul>
             </div>
           </Section>
 

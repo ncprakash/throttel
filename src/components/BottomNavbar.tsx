@@ -102,11 +102,13 @@ export default function BottomNav() {
           aria-hidden
         >
           <path
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={2}
-            d="M13 10V3L4 14h7v7l9-11h-7z"
+            d="M2 3h3l3 12h10l3-8H6"
           />
+          <circle cx="9" cy="19" r="1.5" />
+          <circle cx="18" cy="19" r="1.5" />
         </svg>
       ),
       label: "Garage",
@@ -134,7 +136,7 @@ export default function BottomNav() {
       ),
       label: "About",
     },
-     {
+    {
       id: "profile",
       path: profilePath,
       icon: (
@@ -154,7 +156,7 @@ export default function BottomNav() {
         </svg>
       ),
       label: "Profile",
-    }
+    },
   ];
 
   return (
@@ -167,7 +169,8 @@ export default function BottomNav() {
 
               // Determine classes for each item
               const baseSizeClass = item.isCenter ? "w-14 h-14" : "w-12 h-12";
-              const roundedAndLayout = "rounded-full flex items-center justify-center transition-all duration-500 relative group";
+              const roundedAndLayout =
+                "rounded-full flex items-center justify-center transition-all duration-500 relative group";
 
               // Special: Garage should always appear as a white pill with black icon
               if (item.id === "garage") {
@@ -216,7 +219,9 @@ export default function BottomNav() {
 
                   {/* Tooltip */}
                   <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl px-3 py-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 whitespace-nowrap">
-                    <span className="text-white text-xs font-light">{item.label}</span>
+                    <span className="text-white text-xs font-light">
+                      {item.label}
+                    </span>
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/90 border-r border-b border-white/10 rotate-45"></div>
                   </div>
                 </button>
