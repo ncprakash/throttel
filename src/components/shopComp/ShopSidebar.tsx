@@ -15,12 +15,6 @@ type Bike = {
   compatible?: boolean;
 };
 
-/**
- * ShopSidebar - loads compatible bike models per brand via /api/compatible when available
- * Props:
- *  - onSelectCategory?: (catNameOrId) => void
- *  - onSelectBike?: (bikeNameOrId) => void
- */
 export default function ShopSidebar({
   onSelectCategory,
   onSelectBike,
@@ -42,12 +36,8 @@ export default function ShopSidebar({
   const [brandsLoading, setBrandsLoading] = useState(false);
   const [brandsError, setBrandsError] = useState<string | null>(null);
 
-  // bikes cache per brandName (use brand.name as key since compatible endpoint filters by brand name)
+  // bikes per brand name, built from same /api/compatable data
   const [bikesByBrand, setBikesByBrand] = useState<Record<string, Bike[]>>({});
-  const [bikesLoadingFor, setBikesLoadingFor] = useState<string | null>(null);
-  const [bikesErrorFor, setBikesErrorFor] = useState<Record<string, string>>(
-    {}
-  );
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -67,120 +57,70 @@ export default function ShopSidebar({
     }
   }, []);
 
-  const fetchBrands = useCallback(async () => {
+  // Single call: build brands and their bike models from compatibility array
+  const fetchBrandsAndBikes = useCallback(async () => {
     setBrandsLoading(true);
     setBrandsError(null);
     try {
-      const res = await axios.get("/api/brands");
-      const data = res.data.brands || res.data || [];
-      setBrands(data);
+      const res = await axios.get("/api/compatable");
+      // expected: { success: true, compatibility: [...] }
+      const compat = res.data.compatibility || [];
+
+      const seenBrands = new Set<string>();
+      const brandList: Brand[] = [];
+      const bikesMap: Record<string, Bike[]> = {};
+
+      compat.forEach((row: any, i: number) => {
+        const brandName = row.bike_brand;
+        const modelName = row.bike_model;
+        if (!brandName) return;
+
+        const brandKey = String(brandName).trim();
+        // create brand entry if not seen
+        if (!seenBrands.has(brandKey)) {
+          seenBrands.add(brandKey);
+          brandList.push({
+            brand_id: row.bike_brand_id ?? `compat-${i}`,
+            name: brandKey,
+            slug: brandKey.toLowerCase(),
+          });
+          bikesMap[brandKey] = [];
+        }
+
+        if (modelName) {
+          const modelKey = String(modelName).trim();
+          // ensure bikesMap entry exists
+          if (!bikesMap[brandKey]) bikesMap[brandKey] = [];
+          // avoid duplicate models per brand
+          if (!bikesMap[brandKey].some((b) => b.name === modelKey)) {
+            bikesMap[brandKey].push({
+              bike_id: row.bike_id ?? `${brandKey}-${modelKey}`,
+              name: modelKey,
+              model: modelKey,
+              compatible: true,
+            });
+          }
+        }
+      });
+
+      setBrands(brandList);
+      setBikesByBrand(bikesMap);
     } catch (err: any) {
       console.error("Failed to load brands", err);
       setBrandsError("Failed to load brands");
       setBrands([]);
+      setBikesByBrand({});
     } finally {
       setBrandsLoading(false);
     }
   }, []);
-
-  /**
-   * NEW: fetch bikes for brand using compatibility endpoint first:
-   * 1) Try: /api/compatible?bike_brand=<brandName>
-   *    - expects rows with bike_model (or bike_model + bike_id)
-   *    - derive unique bike models and map to Bike[]
-   * 2) If that fails or returns nothing, fallback to /api/bikes?brand=<brandId>
-   */
-  const fetchBikesForBrand = useCallback(
-    async (brand: Brand) => {
-      if (!brand) return;
-      const key = brand.name || brand.brand_id;
-      if (!key) return;
-
-      // already loaded
-      if (bikesByBrand[key]) return;
-
-      setBikesLoadingFor(key);
-      setBikesErrorFor((s) => ({ ...s, [key]: "" }));
-
-      try {
-        // 1) Try compatibility endpoint (server-side filtered)
-        let compatResp = null;
-        try {
-          compatResp = await axios.get(
-            `/api/compatible?bike_brand=${encodeURIComponent(brand.name)}`
-          );
-        } catch (err) {
-          compatResp = null;
-        }
-
-        let bikes: Bike[] | null = null;
-
-        if (
-          compatResp &&
-          compatResp.data &&
-          Array.isArray(compatResp.data.compatibility)
-        ) {
-          // derive unique bike models from compatibility rows
-          const rows = compatResp.data.compatibility;
-          const seen = new Set<string>();
-          bikes = rows
-            .map((r: any, i: number) => {
-              const name = r.bike_model || r.model || r.bike_name;
-              if (!name) return null;
-              const keyName = String(name).trim();
-              if (seen.has(keyName)) return null;
-              seen.add(keyName);
-              return {
-                bike_id: r.bike_id ?? `${brand.brand_id}-${i}`,
-                name: keyName,
-                model: keyName,
-                compatible: true,
-              } as Bike;
-            })
-            .filter(Boolean) as Bike[];
-        }
-
-        // if no bikes from compat endpoint, fallback to /api/bikes?brand=<brand_id>
-        if (!bikes || bikes.length === 0) {
-          try {
-            const res = await axios.get(
-              `/api/bikes?brand=${encodeURIComponent(
-                brand.brand_id || brand.name
-              )}`
-            );
-            const allBikes = res.data.bikes || res.data || [];
-            // If bikes have 'compatible' flag, filter by it, else assume all (best-effort)
-            bikes = Array.isArray(allBikes)
-              ? (allBikes as any[]).filter((bk) =>
-                  typeof bk.compatible !== "undefined"
-                    ? Boolean(bk.compatible)
-                    : true
-                )
-              : [];
-          } catch (err) {
-            // if fallback failed, set empty array (we want to show "No compatible models")
-            bikes = [];
-          }
-        }
-
-        setBikesByBrand((s) => ({ ...s, [key]: bikes }));
-      } catch (err: any) {
-        console.error("Failed to load bikes for brand", key, err);
-        setBikesErrorFor((s) => ({ ...s, [key]: "Failed to load models" }));
-        setBikesByBrand((s) => ({ ...s, [key]: [] }));
-      } finally {
-        setBikesLoadingFor((id) => (id === key ? null : id));
-      }
-    },
-    [bikesByBrand]
-  );
 
   // load initial lists lazily
   useEffect(() => {
     if (openPanel === "categories" && categories == null && !catsLoading)
       fetchCategories();
     if (openPanel === "brands" && brands == null && !brandsLoading)
-      fetchBrands();
+      fetchBrandsAndBikes();
   }, [
     openPanel,
     categories,
@@ -188,7 +128,7 @@ export default function ShopSidebar({
     fetchCategories,
     brands,
     brandsLoading,
-    fetchBrands,
+    fetchBrandsAndBikes,
   ]);
 
   const handleSelectCategory = (c: Category) => {
@@ -201,14 +141,13 @@ export default function ShopSidebar({
     setDrawerOpen(false);
   };
 
-  // simple expandedBrands state to toggle expand/collapse per-brand
   const [expandedBrands, setExpandedBrands] = useState<Record<string, boolean>>(
     {}
   );
 
   return (
     <>
-      {/* mobile toggle (still present if you want the drawer) */}
+      {/* mobile toggle */}
       <div className="lg:hidden fixed bottom-6 left-6 z-[60]">
         <button
           onClick={() => setDrawerOpen((s) => !s)}
@@ -234,12 +173,6 @@ export default function ShopSidebar({
           />
         )}
 
-        {/* <-- KEY CHANGE:
-            - When drawerOpen is true: render as fixed drawer (same as before)
-            - When drawerOpen is false: render inline full-width on mobile (w-full)
-              and as a left column on lg (lg:w-72). This makes the sidebar visible
-              at the top on small screens without requiring the drawer to be opened.
-         */}
         <div
           className={`${
             drawerOpen
@@ -264,6 +197,7 @@ export default function ShopSidebar({
             </div>
 
             <div className="space-y-3">
+              {/* Categories */}
               <div>
                 <button
                   onClick={() =>
@@ -304,12 +238,15 @@ export default function ShopSidebar({
                         ))}
                       </ul>
                     ) : (
-                      <div className="text-sm text-white/60">No categories</div>
+                      <div className="text-sm text-white/60">
+                        No categories
+                      </div>
                     )}
                   </div>
                 )}
               </div>
 
+              {/* Brands + models (no extra API calls) */}
               <div>
                 <button
                   onClick={() =>
@@ -340,65 +277,43 @@ export default function ShopSidebar({
                       <div className="space-y-2">
                         {brands.map((b) => {
                           const key = b.name || b.brand_id;
-                          const bikes = bikesByBrand[key] ?? null;
-                          const isLoadingBikes = bikesLoadingFor === key;
-                          const bikesError = bikesErrorFor[key];
+                          const bikes = bikesByBrand[key] ?? [];
 
                           return (
                             <div key={key} className="space-y-1">
                               <div className="flex items-center justify-between">
                                 <button
                                   onClick={() => {
-                                    // toggle expand
                                     setExpandedBrands((s) => ({
                                       ...s,
                                       [key]: !s[key],
                                     }));
-                                    // fetch if expanding and not loaded
-                                    if (!bikes && !isLoadingBikes)
-                                      fetchBikesForBrand(b);
                                   }}
                                   className="text-left px-2 py-1 rounded-md w-full hover:bg-white/5 flex items-center justify-between"
                                 >
                                   <span className="truncate">{b.name}</span>
                                   <span className="text-white/50 text-xs">
-                                    {isLoadingBikes
-                                      ? "…"
-                                      : bikes
-                                      ? `${bikes.length}`
-                                      : ""}
+                                    {bikes.length || ""}
                                   </span>
                                 </button>
                               </div>
 
-                              {/* bikes under brand (render if expanded) */}
                               {expandedBrands[key] && (
                                 <div className="ml-3 mt-1 space-y-1">
-                                  {isLoadingBikes && !bikes && (
+                                  {bikes.length === 0 && (
                                     <div className="text-xs text-white/60">
-                                      Loading models…
+                                      No models
                                     </div>
                                   )}
-                                  {bikes && bikes.length === 0 && (
-                                    <div className="text-xs text-white/60">
-                                      No compatible models
-                                    </div>
-                                  )}
-                                  {bikes &&
-                                    bikes.map((bk) => (
-                                      <button
-                                        key={bk.bike_id ?? bk.name}
-                                        onClick={() => handleSelectBike(bk)}
-                                        className="w-full text-left px-3 py-1 rounded-md hover:bg-white/5 text-sm"
-                                      >
-                                        {bk.name}
-                                      </button>
-                                    ))}
-                                  {bikesError && (
-                                    <div className="text-xs text-red-400">
-                                      {bikesError}
-                                    </div>
-                                  )}
+                                  {bikes.map((bk) => (
+                                    <button
+                                      key={bk.bike_id ?? bk.name}
+                                      onClick={() => handleSelectBike(bk)}
+                                      className="w-full text-left px-3 py-1 rounded-md hover:bg-white/5 text-sm"
+                                    >
+                                      {bk.name}
+                                    </button>
+                                  ))}
                                 </div>
                               )}
                             </div>
@@ -406,7 +321,7 @@ export default function ShopSidebar({
                         })}
                       </div>
                     ) : (
-                      <div className="text-sm text-white/60">No brands</div>
+                      <div className="text-sm text:white/60">No brands</div>
                     )}
                   </div>
                 )}
@@ -418,8 +333,9 @@ export default function ShopSidebar({
                 onClick={() => {
                   setCategories(null);
                   setBrands(null);
+                  setBikesByBrand({});
                   fetchCategories();
-                  fetchBrands();
+                  fetchBrandsAndBikes();
                 }}
                 className="px-3 py-2 rounded-md bg-white/6 hover:bg-white/10 text-sm"
               >
@@ -430,7 +346,7 @@ export default function ShopSidebar({
                   onSelectCategory?.("");
                   onSelectBike?.("");
                 }}
-                className="px-3 py-2 rounded-md border border-white/6 text-sm"
+                className="px-3 py-2 rounded-md border border:white/6 text-sm"
               >
                 Clear filters
               </button>

@@ -2,47 +2,73 @@
 
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
+import axios from "axios";
 
-const products = [
-  {
-    id: "p1",
-    title: "Guage",
-    subtitle: "Lightweight Performance Exhaust",
-    description: "this is a demo product",
-    price: "₹250",
-    // use the actual Cloudinary URL (not the internal _next/image optimizer URL)
-    image:
-      "https://res.cloudinary.com/dklhtflzr/image/upload/v1764347595/products/crtxzuzzlztjlimumgev.jpg",
-    link: "/product/guage",
-  },
-  {
-    id: "p2",
-    title: "AeroGrip Racing Gloves",
-    subtitle: "Pro-fit, Breathable",
-    description:
-      "Tactile palm, reinforced knuckles and touchscreen-friendly fingertips for track days.",
-    price: "₹2,499",
-    image: "/images/products/gloves.jpg",
-    link: "/products/aerogrip-racing-gloves",
-  },
-  {
-    id: "p3",
-    title: "SwiftTrack Brake Pads",
-    subtitle: "High Friction Compound",
-    description:
-      "Race-proven compound gives consistent bite and fade resistance under heavy use.",
-    price: "₹4,199",
-    image: "/images/products/brake-pads.jpg",
-    link: "/products/swifttrack-brake-pads",
-  },
-];
+type ApiProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  originalPrice: number;
+  stock: number;
+  image: string;
+  compatibility: boolean;
+  compatibleWith: string[];
+  isFeatured: boolean;
+};
+
+type CardProduct = {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  price: string;
+  image: string;
+  link: string;
+};
+
+const formatINR = (value: number) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value);
 
 export default function FeaturedCollections() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [products, setProducts] = useState<CardProduct[]>([]);
 
   useEffect(() => {
-    // keep active indicator in sync with scroll position
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("/api/products");
+        const data = (res.data.products || []) as ApiProduct[];
+
+        const mapped: CardProduct[] = data.map((p) => ({
+          id: p.id,
+          title: p.name,
+          subtitle: p.compatibility
+            ? `Compatible with ${p.compatibleWith.join(", ")}`
+            : "Universal fit",
+          description: p.description,
+          price: formatINR(p.price),
+          image: p.image || "/placeholder.jpg",
+          link: `/product/${p.slug}`,
+        }));
+
+        setProducts(mapped);
+      } catch (err) {
+        console.error("Failed to load products", err);
+        setProducts([]);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
 
@@ -160,8 +186,6 @@ export default function FeaturedCollections() {
                 href={p.link}
                 className="group relative bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all duration-700 block h-full"
                 aria-label={`Open ${p.title} product page`}
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 <div className="absolute top-6 right-6">
                   <div className="bg-white text-black text-xs font-semibold px-3 py-1.5 rounded-full">
@@ -171,7 +195,6 @@ export default function FeaturedCollections() {
 
                 <div className="space-y-6">
                   <div className="w-full h-44 md:h-48 bg-white/6 rounded-xl overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
-                    {/* image — replace with next/image if using Next.js */}
                     <Image
                       src={p.image}
                       alt={p.title}
