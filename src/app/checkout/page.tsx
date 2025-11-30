@@ -23,7 +23,9 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
-  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
+  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">(
+    "standard"
+  );
 
   const [formValues, setFormValues] = useState({
     customer_name: "",
@@ -39,7 +41,7 @@ export default function CheckoutPage() {
   // Authentication check + prefill
   useEffect(() => {
     if (status === "loading") return;
-    
+
     if (!session?.user) {
       toast.error("Please sign in to continue");
       router.push("/auth");
@@ -145,8 +147,8 @@ export default function CheckoutPage() {
         ondismiss: () => {
           setPlacingOrder(false);
           toast.info("Payment cancelled");
-        }
-      }
+        },
+      },
     };
 
     try {
@@ -165,41 +167,81 @@ export default function CheckoutPage() {
 
   // Single Place Order - RAZORPAY ONLY
   const handlePlaceOrder = async () => {
-  console.log("[handlePlaceOrder] Started");
+    console.log("[handlePlaceOrder] Started");
 
-  if (
-    !formValues.customer_name ||
-    !formValues.customer_email ||
-    !formValues.customer_phone
-  ) {
-    console.warn("[handlePlaceOrder] Missing required customer info");
-    toast.error("Please fill all required fields");
-    return;
-  }
+    if (
+      !formValues.customer_name ||
+      !formValues.customer_email ||
+      !formValues.customer_phone
+    ) {
+      console.warn("[handlePlaceOrder] Missing required customer info");
+      toast.error("Please fill all required fields");
+      return;
+    }
 
-  if (cartItems.length === 0) {
-    console.warn("[handlePlaceOrder] Cart is empty");
-    toast.error("Cart is empty");
-    return;
-  }
+    if (cartItems.length === 0) {
+      console.warn("[handlePlaceOrder] Cart is empty");
+      toast.error("Cart is empty");
+      return;
+    }
 
-  setPlacingOrder(true);
-  console.log("[handlePlaceOrder] PlacingOrder set to true");
+    setPlacingOrder(true);
+    console.log("[handlePlaceOrder] PlacingOrder set to true");
 
-  try {
-    const orderPayload = {
-      user_id: session!.user.id,
-      customer_name: formValues.customer_name,
-      customer_email: formValues.customer_email,
-      customer_phone: formValues.customer_phone,
-      shipping_address: formValues.shipping_address,
-      shipping_city: formValues.shipping_city,
-      shipping_state: formValues.shipping_state,
-      shipping_postal_code: formValues.shipping_postal_code,
-      shipping_country: formValues.shipping_country,
-      payment_method: "razorpay",
-      shipping_method: shippingMethod,
-      items: cartItems.map((item: any) => ({
+    try {
+      const orderPayload = {
+        user_id: session!.user.id,
+        customer_name: formValues.customer_name,
+        customer_email: formValues.customer_email,
+        customer_phone: formValues.customer_phone,
+        shipping_address: formValues.shipping_address,
+        shipping_city: formValues.shipping_city,
+        shipping_state: formValues.shipping_state,
+        shipping_postal_code: formValues.shipping_postal_code,
+        shipping_country: formValues.shipping_country,
+        payment_method: "razorpay",
+        shipping_method: shippingMethod,
+        items: cartItems.map((item: any) => ({
+          product_id: item.product.product_id,
+          variant_id: item.variant?.variant_id || null,
+          product_name: item.product.name,
+          variant_name: item.variant?.name || null,
+          quantity: item.quantity,
+          unit_price: item.product.sale_price || item.product.regular_price,
+          total_price:
+            (item.product.sale_price || item.product.regular_price) *
+            item.quantity,
+        })),
+        subtotal,
+        shipping_charges: shipping,
+        tax_amount: tax,
+        total_amount: total,
+      };
+
+      console.log("[handlePlaceOrder] Order payload prepared:", orderPayload);
+
+      // 1) Create main order (in `orders` table) + Razorpay order
+      const response = await fetch("/api/orders/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const data = await response.json();
+
+      console.log("[handlePlaceOrder] /api/orders/create response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.error || "Order creation failed");
+      }
+
+      console.log("✅ Order created successfully:", data);
+
+      // data should contain: { order_id, order_number, amount, currency, razorpay_order_id }
+
+      // 2) Insert order_items rows into `public.order_items`
+      const itemsPayload = cartItems.map((item: any) => ({
+        order_id: data.order_id, // from /api/orders/create result
         product_id: item.product.product_id,
         variant_id: item.variant?.variant_id || null,
         product_name: item.product.name,
@@ -209,81 +251,39 @@ export default function CheckoutPage() {
         total_price:
           (item.product.sale_price || item.product.regular_price) *
           item.quantity,
-      })),
-      subtotal,
-      shipping_charges: shipping,
-      tax_amount: tax,
-      total_amount: total,
-    };
+      }));
 
-    console.log("[handlePlaceOrder] Order payload prepared:", orderPayload);
+      console.log(
+        "[handlePlaceOrder] order_items payload prepared:",
+        itemsPayload
+      );
 
-    // 1) Create main order (in `orders` table) + Razorpay order
-    const response = await fetch("/api/orders/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderPayload),
-    });
+      const itemsRes = await fetch("/api/order-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(itemsPayload),
+      });
 
-    const data = await response.json();
+      const itemsData = await itemsRes.json();
 
-    console.log("[handlePlaceOrder] /api/orders/create response:", data);
+      console.log("[handlePlaceOrder] /api/order-items response:", itemsData);
 
-    if (!response.ok) {
-      throw new Error(data.error || "Order creation failed");
+      if (!itemsRes.ok) {
+        throw new Error(itemsData.error || "Failed to create order items");
+      }
+
+      console.log("✅ Order items created successfully");
+
+      // 3) Start Razorpay payment for this order
+      await handleRazorpayPayment({
+        ...data, // order_id, order_number, amount, currency, razorpay_order_id
+      });
+    } catch (error: any) {
+      console.error("[handlePlaceOrder] Order failed:", error);
+      toast.error(error.message || "Order failed");
+      setPlacingOrder(false);
     }
-
-    console.log("✅ Order created successfully:", data);
-
-    // data should contain: { order_id, order_number, amount, currency, razorpay_order_id }
-
-    // 2) Insert order_items rows into `public.order_items`
-    const itemsPayload = cartItems.map((item: any) => ({
-      order_id: data.order_id, // from /api/orders/create result
-      product_id: item.product.product_id,
-      variant_id: item.variant?.variant_id || null,
-      product_name: item.product.name,
-      variant_name: item.variant?.name || null,
-      quantity: item.quantity,
-      unit_price: item.product.sale_price || item.product.regular_price,
-      total_price:
-        (item.product.sale_price || item.product.regular_price) *
-        item.quantity,
-    }));
-
-    console.log(
-      "[handlePlaceOrder] order_items payload prepared:",
-      itemsPayload
-    );
-
-    const itemsRes = await fetch("/api/order-items", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(itemsPayload),
-    });
-
-    const itemsData = await itemsRes.json();
-
-    console.log("[handlePlaceOrder] /api/order-items response:", itemsData);
-
-    if (!itemsRes.ok) {
-      throw new Error(itemsData.error || "Failed to create order items");
-    }
-
-    console.log("✅ Order items created successfully");
-
-    // 3) Start Razorpay payment for this order
-    await handleRazorpayPayment({
-      ...data, // order_id, order_number, amount, currency, razorpay_order_id
-    });
-  } catch (error: any) {
-    console.error("[handlePlaceOrder] Order failed:", error);
-    toast.error(error.message || "Order failed");
-    setPlacingOrder(false);
-  }
-};
-
-
+  };
 
   if (status === "loading" || loading) {
     return (
@@ -300,8 +300,12 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center p-8">
         <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-12 text-center max-w-md mx-auto">
-          <h2 className="text-2xl font-bold text-white mb-4">Your cart is empty</h2>
-          <p className="text-white/60 mb-8">Add motorcycle accessories to continue</p>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Your cart is empty
+          </h2>
+          <p className="text-white/60 mb-8">
+            Add motorcycle accessories to continue
+          </p>
           <button
             onClick={() => router.push("/shop")}
             className="px-8 py-4 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition-all shadow-xl"
@@ -315,32 +319,35 @@ export default function CheckoutPage() {
 
   return (
     <>
-   <Script
-  src="https://checkout.razorpay.com/v1/checkout.js"
-  strategy="afterInteractive"  // ✅ Already correct
-  onLoad={() => {
-    console.log("✅ Razorpay script LOADED");
-    // Force window.Razorpay to be available
-    if (window.Razorpay) {
-      console.log("✅ window.Razorpay available:", window.Razorpay);
-    }
-  }}
-  onError={() => {
-    console.error("❌ Razorpay script FAILED");
-    toast.error("Payment gateway unavailable");
-  }}
-/>
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="afterInteractive" // ✅ Already correct
+        onLoad={() => {
+          console.log("✅ Razorpay script LOADED");
+          // Force window.Razorpay to be available
+          if (window.Razorpay) {
+            console.log("✅ window.Razorpay available:", window.Razorpay);
+          }
+        }}
+        onError={() => {
+          console.error("❌ Razorpay script FAILED");
+          toast.error("Payment gateway unavailable");
+        }}
+      />
 
-      
       <div className="min-h-screen bg-transparent text-white pb-32">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="mb-12">
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
               Checkout
             </h1>
-            <p className="text-xl text-white/60 mt-2">Secure payment with Razorpay</p>
+            <p className="text-xl text-white/60 mt-2">
+              Secure payment with Razorpay
+            </p>
             {session?.user && (
-              <p className="text-sm text-white/50 mt-2">Logged in: {session.user.email}</p>
+              <p className="text-sm text-white/50 mt-2">
+                Logged in: {session.user.email}
+              </p>
             )}
           </div>
 
@@ -349,7 +356,10 @@ export default function CheckoutPage() {
             <div className="space-y-6">
               <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-3xl p-8">
                 <h2 className="text-2xl font-bold mb-6">Shipping & Contact</h2>
-                <CheckoutForm formValues={formValues} onChange={setFormValues} />
+                <CheckoutForm
+                  formValues={formValues}
+                  onChange={setFormValues}
+                />
               </div>
             </div>
 
@@ -358,7 +368,6 @@ export default function CheckoutPage() {
               <CheckoutSummary
                 subtotal={subtotal}
                 shipping={shipping}
-                tax={tax}
                 total={total}
                 itemCount={cartItems.length}
                 onChangeShipping={setShippingMethod}
@@ -366,9 +375,11 @@ export default function CheckoutPage() {
                 onPlaceOrder={handlePlaceOrder}
                 placingOrder={placingOrder}
               />
-              
+
               <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-3xl p-8">
-                <h3 className="text-xl font-bold mb-6">Order Items ({cartItems.length})</h3>
+                <h3 className="text-xl font-bold mb-6">
+                  Order Items ({cartItems.length})
+                </h3>
                 <OrderReview items={cartItems} />
               </div>
             </div>

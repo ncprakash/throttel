@@ -55,13 +55,13 @@ export default function OrderReview({ items }: { items: Item[] }) {
                 {it.product.name}
               </div>
               <div className="text-xs text-white/60">
-                {it.quantity} × ${price.toFixed(2)}
+                {it.quantity} × ₹{price.toFixed(2)}
               </div>
             </div>
 
             {/* Total */}
             <div className="text-sm font-semibold text-white">
-              ${(price * it.quantity).toFixed(2)}
+              ₹{(price * it.quantity).toFixed(2)}
             </div>
           </div>
         );
