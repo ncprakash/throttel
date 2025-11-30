@@ -1,4 +1,3 @@
-// components/Checkout/CheckoutSummary.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -30,11 +29,9 @@ export default function CheckoutSummary({
   couponLabel,
   discount = 0,
 }: Props) {
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">(
-    "online"
-  );
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
 
-  // ✔ LOCAL TOTAL CALCULATION
+  // Local total calculation
   const total = useMemo(() => {
     return Math.max(subtotal - discount + shipping, 0);
   }, [subtotal, discount, shipping]);
@@ -69,7 +66,7 @@ export default function CheckoutSummary({
         </div>
       </div>
 
-      {/* Standard Shipping */}
+      {/* Shipping Method */}
       <div className="mb-6">
         <label className="text-sm text-white/60 mb-2 block">
           Shipping Method
