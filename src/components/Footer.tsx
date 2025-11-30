@@ -1,4 +1,3 @@
-// components/Footer.tsx
 export default function Footer() {
   const links = {
     shop: [
@@ -17,7 +16,7 @@ export default function Footer() {
       "Track Order",
       "FAQs",
     ],
-    company: ["About Us", "Our Story", "Careers", "Press", "Blog", "Partners"],
+    company: ["About Us", "Our Story", "Blog"],
     legal: [
       "Privacy Policy",
       "Terms of Service",
@@ -59,7 +58,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Links */}
+          {/* Shop */}
           <div>
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
               Shop
@@ -68,7 +67,7 @@ export default function Footer() {
               {links.shop.map((link) => (
                 <li key={link}>
                   <a
-                    href="#"
+                    href={`/shop`}
                     className="text-white/60 hover:text-white text-sm font-light transition-colors"
                   >
                     {link}
@@ -78,6 +77,7 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Support */}
           <div>
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
               Support
@@ -86,7 +86,7 @@ export default function Footer() {
               {links.support.map((link) => (
                 <li key={link}>
                   <a
-                    href="#"
+                    href={`/support`}
                     className="text-white/60 hover:text-white text-sm font-light transition-colors"
                   >
                     {link}
@@ -96,6 +96,7 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Company */}
           <div>
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
               Company
@@ -104,7 +105,7 @@ export default function Footer() {
               {links.company.map((link) => (
                 <li key={link}>
                   <a
-                    href="#"
+                    href={`/about`}
                     className="text-white/60 hover:text-white text-sm font-light transition-colors"
                   >
                     {link}
@@ -115,7 +116,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">

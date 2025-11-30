@@ -10,8 +10,9 @@ import Footer from "@/components/Footer";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-transparent text-white">
-      <main className="max-w-6xl mx-auto px-6 py-10 space-y-16">
+    // added overflow-x-hidden to prevent mobile horizontal scroll
+    <div className="min-h-screen bg-transparent text-white overflow-x-hidden">
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 md:px-8 py-10 space-y-16">
         <Hero />
 
         <section className="grid lg:grid-cols-3 gap-10 items-start">
