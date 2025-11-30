@@ -1,3 +1,10 @@
+import {
+  FaInstagram,
+  FaFacebookF,
+  FaYoutube,
+  FaEnvelope,
+} from "react-icons/fa";
+
 export default function Footer() {
   const links = {
     shop: [
@@ -38,23 +45,49 @@ export default function Footer() {
                 FORGED CUSTOMS
               </span>
             </h2>
+
             <p className="text-white/60 text-sm font-light leading-relaxed mb-6 max-w-sm">
               Premium performance parts for riders who demand excellence.
               Precision-engineered components trusted by professionals
               worldwide.
             </p>
-            <div className="flex space-x-4">
-              {["instagram", "facebook", "twitter", "youtube"].map((social) => (
-                <a
-                  key={social}
-                  href="#"
-                  className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all duration-300 flex items-center justify-center group"
-                >
-                  <span className="text-white/60 group-hover:text-white transition-colors text-xs uppercase">
-                    {social[0]}
-                  </span>
-                </a>
-              ))}
+
+            {/* FINAL Social Icons */}
+            <div className="flex items-center space-x-4 mt-4">
+              {/* Instagram */}
+              <a
+                href="https://www.instagram.com/throttleforgedcustoms?igsh=Z20weG54a2thNW85"
+                target="_blank"
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all"
+              >
+                <FaInstagram className="text-white/70 text-lg" />
+              </a>
+
+              {/* Facebook */}
+              <a
+                href="https://www.facebook.com/share/1ChYDgBod4/?mibextid=wwXIfr"
+                target="_blank"
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all"
+              >
+                <FaFacebookF className="text-white/70 text-lg" />
+              </a>
+
+              {/* YouTube */}
+              <a
+                href="https://youtube.com/@tfcustoms?si=fKFQ7A8Cwz77-o4J"
+                target="_blank"
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all"
+              >
+                <FaYoutube className="text-white/70 text-lg" />
+              </a>
+
+              {/* Mail */}
+              <a
+                href="mailto:Tforgedcustoms@gmail.com"
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all"
+              >
+                <FaEnvelope className="text-white/70 text-lg" />
+              </a>
             </div>
           </div>
 
@@ -123,7 +156,6 @@ export default function Footer() {
               © 2025 Throttle Forged Customs. All rights reserved.
             </p>
 
-            {/* Updated Legal Links */}
             <div className="flex space-x-6">
               <a
                 href="/terms"

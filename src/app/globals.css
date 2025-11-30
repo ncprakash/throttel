@@ -253,3 +253,81 @@ body * {
   -webkit-backdrop-filter: blur(18px) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45) !important;
 }
+
+/* ------------------------
+   iOS / iPhone stability fixes
+   ------------------------
+   These helpers are intentionally small and scoped so they won't affect
+   other parts of your site. They are used by the Interleaved hero
+   to avoid Safari/iOS repaint/flicker when using large background images
+   and transforms.
+*/
+
+/* If device supports -webkit-overflow-scrolling (iOS), force any bg-attachment utilities to behave like 'scroll'
+   This avoids unreliable 'background-attachment: fixed' emulation on iOS which causes flicker. */
+@supports (-webkit-overflow-scrolling: touch) {
+  .bg-fixed, .bg-attachment-fixed {
+    background-attachment: scroll !important;
+  }
+
+  /* Make heavy overlays lighter/less demanding on iOS */
+  .heavy-overlay {
+    background-color: rgba(0,0,0,0.15) !important;
+    transition: none !important;
+  }
+}
+
+/* Force the browser to use GPU compositing for the image element to avoid repaints */
+.bg-image-stabilize,
+.bg-image-stabilize img,
+.bg-image-stabilize::before {
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+/* gentle, GPU-only zoom animation (optional) */
+@keyframes subtleZoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+.subtle-zoom-onload {
+  animation: subtleZoom 18s linear infinite alternate;
+  will-change: transform;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+}
+
+/* small helper to hint that an element will be animated -> avoids repaint jank */
+.will-change-transform {
+  will-change: transform, opacity;
+}
+
+/* small utility to force object-fit rendering stabilization on images */
+.object-cover-stable {
+  -o-object-fit: cover;
+  object-fit: cover;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* If you want to temporarily disable intense overlay transitions on iOS during load */
+@supports (-webkit-overflow-scrolling: touch) {
+  .overlay-disable-anim {
+    transition: none !important;
+    will-change: auto !important;
+  }
+}
+
+/* keep old bg-zoom shorthand but ensure it uses transform only (GPU friendly) */
+.bg-zoom {
+  will-change: transform;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  animation: backgroundZoom 20s ease-in-out infinite alternate;
+}

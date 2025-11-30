@@ -28,11 +28,9 @@ export default function InterleavedScrollExperience() {
   };
 
   useEffect(() => {
-    // Check if animation has already been shown in this session
-    // Check if animation has already been shown in this session
     const alreadyAnimated = sessionStorage.getItem("throttle-animation-shown");
 
-    // Mark animation as shown in sessionStorage
+    // Mark animation as shown in sessionStorage (prevents re-run during same session)
     sessionStorage.setItem("throttle-animation-shown", "true");
 
     if (alreadyAnimated) {
@@ -62,7 +60,7 @@ export default function InterleavedScrollExperience() {
         if (rotation >= 360) {
           clearInterval(spinInterval);
           setStage(2);
-          audioRef.current?.play().catch(() => {}); // Ignore audio errors
+          audioRef.current?.play().catch(() => {});
         }
       }, 30);
 
@@ -94,7 +92,7 @@ export default function InterleavedScrollExperience() {
               setStage(4);
               setShowHero(true);
               setHasAnimated(true);
-              // Mark animation as shown in localStorage
+              // Mark animation as shown in localStorage (persist across sessions)
               localStorage.setItem("throttle-animation-shown", "true");
             }, 800);
           }, 300);
@@ -111,19 +109,14 @@ export default function InterleavedScrollExperience() {
   if (hasAnimated) {
     return (
       <div className="relative bg-transparent">
-        {/* Static Background Image - No overlay */}
+        {/* Static Background Image - replaced with <img> for iOS stability */}
         <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: "url(/frames/render1.png)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              backgroundAttachment: "fixed",
-              width: "100%",
-              height: "100%",
-            }}
+          <img
+            src="/frames/render1.png"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover -z-10 bg-image-stabilize subtle-zoom-onload"
+            style={{ transform: "translateZ(0)" }}
+            loading="eager"
           />
           <div className="absolute inset-0 bg-black/10" />
         </div>
@@ -162,8 +155,6 @@ export default function InterleavedScrollExperience() {
                 Explore Performance Parts
               </button>
             </div>
-
-            {/* Secondary Buttons */}
           </div>
         </div>
 
@@ -190,19 +181,14 @@ export default function InterleavedScrollExperience() {
 
   return (
     <div className="relative bg-transparent">
-      {/* Static Background Image */}
+      {/* Static Background Image - replaced with <img> for iOS stability */}
       <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
-        <div
-          className="absolute inset-0 animate-subtle-zoom"
-          style={{
-            backgroundImage: "url(/frames/render1.png)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            backgroundAttachment: "fixed",
-            width: "100%",
-            height: "100%",
-          }}
+        <img
+          src="/frames/render1.png"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover -z-10 bg-image-stabilize subtle-zoom-onload"
+          style={{ transform: "translateZ(0)" }}
+          loading="eager"
         />
 
         {/* Reduced base tint - almost transparent */}
