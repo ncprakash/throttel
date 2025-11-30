@@ -90,29 +90,29 @@ export default function BottomNav() {
       ),
       label: "Shop",
     },
-    {
-      id: "garage",
-      path: "/cart",
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M13 10V3L4 14h7v7l9-11h-7z"
-          />
-        </svg>
-      ),
-      label: "Garage",
-      isCenter: true,
-      showBadge: true,
-    },
+   {
+  id: "cart",
+  path: "/cart",
+  icon: (
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M3 3h2l1 4m0 0h13l-1.35 6.76a2 2 0 01-1.97 1.59H8.32a2 2 0 01-1.97-1.59L6 7zm3 13a1 1 0 100 2 1 1 0 000-2zm9 0a1 1 0 100 2 1 1 0 000-2z"
+      />
+    </svg>
+  ),
+  label: "Cart",
+  isCenter: true,
+  showBadge: true,
+},
     {
       id: "about",
       path: "/about",
