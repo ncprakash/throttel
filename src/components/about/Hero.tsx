@@ -5,7 +5,7 @@ export default function Hero() {
       <div className="grid lg:grid-cols-2 gap-6 items-center">
         <div className="p-8 lg:p-16">
           <h1 className="text-5xl font-extrabold leading-tight">
-            Throttel — thoughtful bike accessories
+            Throttle — thoughtful bike accessories
           </h1>
           <p className="mt-4 text-white/70 max-w-xl">
             Minimal, durable and engineered for the ride. We make accessories
@@ -32,7 +32,7 @@ export default function Hero() {
           <div className="w-full h-full bg-white/4 flex items-center justify-center">
             <img
               alt="bike accessories"
-              src="https://images.unsplash.com/photo-1518173946681-a56b1a4c6c9b?q=80&w=1200&auto=format&fit=crop"
+              src="http://tfcustoms.in/_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdklhtflzr%2Fimage%2Fupload%2Fv1764347595%2Fproducts%2Fcrtxzuzzlztjlimumgev.jpg&w=1920&q=75"
               className="w-full h-96 object-cover"
             />
           </div>
