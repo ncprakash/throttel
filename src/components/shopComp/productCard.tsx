@@ -1,4 +1,3 @@
-// components/ProductGrid.tsx
 "use client";
 
 import Image from "next/image";
@@ -243,6 +242,7 @@ function ProductCard({
     }
   };
 
+  // UPDATED: use same cartItems structure and key as detail/checkout
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -256,13 +256,44 @@ function ProductCard({
       return;
     }
 
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]") as string[];
-    if (!cart.includes(product.id)) {
-      cart.push(product.id);
-      localStorage.setItem("cart", JSON.stringify(cart));
+    try {
+      const existingCart = localStorage.getItem("cartItems");
+      let cart: any[] = existingCart ? JSON.parse(existingCart) : [];
+
+      // Build cart item matching your CartItemProps (no variant here)
+      const cartItem = {
+        cart_item_id: `cart_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
+        product: {
+          product_id: product.id,
+          name: product.name,
+          slug: product.slug,
+          image_url: product.image,
+          regular_price: product.originalPrice ?? product.price,
+          sale_price: product.originalPrice ? product.price : null,
+        },
+        variant: undefined,
+        quantity: 1,
+      };
+
+      const existingItemIndex = cart.findIndex(
+        (item: any) =>
+          item.product.product_id === cartItem.product.product_id &&
+          (!item.variant || !cartItem.variant)
+      );
+
+      if (existingItemIndex > -1) {
+        cart[existingItemIndex].quantity += 1;
+      } else {
+        cart.push(cartItem);
+      }
+
+      localStorage.setItem("cartItems", JSON.stringify(cart));
       toast.success("Added to cart");
-    } else {
-      toast("Item already in cart");
+    } catch (err) {
+      console.error("Failed to update cart:", err);
+      toast.error("Failed to update cart");
     }
   };
 
