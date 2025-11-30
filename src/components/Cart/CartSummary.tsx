@@ -56,18 +56,7 @@ export default function CartSummary({
       </div>
 
       {/* Promo Code */}
-      <div className="mb-6">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Promo code"
-            className="flex-1 backdrop-blur-md bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-lg px-4 py-3 text-sm text-white placeholder-[rgba(255,255,255,0.4)] focus:outline-none focus:ring-2 focus:ring-[rgba(255,255,255,0.04)] transition-colors"
-          />
-          <button className="backdrop-blur-md bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.10)] border border-[rgba(255,255,255,0.08)] px-4 py-3 rounded-lg text-sm text-white font-semibold transition-all">
-            Apply
-          </button>
-        </div>
-      </div>
+    
 
       {/* Checkout Button */}
       <button

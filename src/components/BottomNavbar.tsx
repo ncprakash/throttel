@@ -1,8 +1,8 @@
-// components/BottomNav.tsx
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
@@ -11,16 +11,15 @@ export default function BottomNav() {
   const role = session?.user?.role; // adjust to how you store role
 
   const profilePath = role === "admin" ? "/admin" : "/profile";
+
   useEffect(() => {
-    // Function to update cart count from localStorage
     const updateCartCount = () => {
       try {
         const cartItems = localStorage.getItem("cartItems");
         if (cartItems) {
           const items = JSON.parse(cartItems);
-          // Calculate total quantity of items
           const totalCount = Array.isArray(items)
-            ? items.reduce((sum, item) => sum + (item.quantity || 1), 0)
+            ? items.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
             : 0;
           setCartCount(totalCount);
         } else {
@@ -32,13 +31,8 @@ export default function BottomNav() {
       }
     };
 
-    // Initial load
     updateCartCount();
-
-    // Listen for storage events (updates from other tabs)
     window.addEventListener("storage", updateCartCount);
-
-    // Custom event for same-tab updates
     window.addEventListener("cartUpdated", updateCartCount);
 
     return () => {
@@ -90,29 +84,29 @@ export default function BottomNav() {
       ),
       label: "Shop",
     },
-   {
-  id: "cart",
-  path: "/cart",
-  icon: (
-    <svg
-      className="w-6 h-6"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M3 3h2l1 4m0 0h13l-1.35 6.76a2 2 0 01-1.97 1.59H8.32a2 2 0 01-1.97-1.59L6 7zm3 13a1 1 0 100 2 1 1 0 000-2zm9 0a1 1 0 100 2 1 1 0 000-2z"
-      />
-    </svg>
-  ),
-  label: "Cart",
-  isCenter: true,
-  showBadge: true,
-},
+    {
+      id: "cart",
+      path: "/cart",
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 3h2l1 4m0 0h13l-1.35 6.76a2 2 0 01-1.97 1.59H8.32a2 2 0 01-1.97-1.59L6 7zm3 13a1 1 0 100 2 1 1 0 000-2zm9 0a1 1 0 100 2 1 1 0 000-2z"
+          />
+        </svg>
+      ),
+      label: "Cart",
+      isCenter: true,
+      showBadge: true,
+    },
     {
       id: "about",
       path: "/about",
@@ -164,34 +158,11 @@ export default function BottomNav() {
           <div className="flex items-center space-x-2">
             {navItems.map((item) => {
               const isActive = pathname === item.path;
-
-              // Determine classes for each item
               const baseSizeClass = item.isCenter ? "w-14 h-14" : "w-12 h-12";
               const roundedAndLayout =
                 "rounded-full flex items-center justify-center transition-all duration-500 relative group";
+              const isCart = item.id === "cart";
 
-              // Special: Garage should always appear as a white pill with black icon
-              if (item.id === "garage") {
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => router.push(item.path)}
-                    aria-label={item.label}
-                    className={`${baseSizeClass} ${roundedAndLayout} bg-white text-black shadow-lg shadow-white/20`}
-                  >
-                    {item.icon}
-
-                    {/* Cart Badge */}
-                    {item.showBadge && cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-lg shadow-red-500/50 border-2 border-white">
-                        {cartCount > 99 ? "99+" : cartCount}
-                      </span>
-                    )}
-                  </button>
-                );
-              }
-
-              // Non-garage items: respect active/inactive styling
               return (
                 <button
                   key={item.id}
@@ -200,7 +171,9 @@ export default function BottomNav() {
                   className={`
                     ${baseSizeClass} ${roundedAndLayout}
                     ${
-                      isActive
+                      isCart
+                        ? "bg-white text-black shadow-lg shadow-white/20"
+                        : isActive
                         ? "bg-white text-black scale-110"
                         : "text-white/60 hover:text-white hover:bg-white/10"
                     }
@@ -208,8 +181,15 @@ export default function BottomNav() {
                 >
                   {item.icon}
 
+                  {/* Cart badge */}
+                  {isCart && item.showBadge && cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-lg shadow-red-500/50 border-2 border-white">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
+
                   {/* Active indicator for non-center items */}
-                  {isActive && !item.isCenter && (
+                  {isActive && !item.isCenter && !isCart && (
                     <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
                       <div className="w-1 h-1 bg-white rounded-full"></div>
                     </div>
@@ -228,10 +208,7 @@ export default function BottomNav() {
           </div>
         </div>
 
-        {/* Subtle Glow */}
         <div className="absolute inset-0 bg-white/5 rounded-full blur-2xl -z-10"></div>
-
-        {/* Bottom Reflection */}
         <div className="absolute top-full left-0 right-0 h-8 bg-gradient-to-b from-white/5 to-transparent rounded-full blur-xl -z-20"></div>
       </div>
     </div>

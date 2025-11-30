@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-const createTransport = () => {  // ← Fixed: createTransport
-  return nodemailer.createTransport({  // ← Fixed: createTransport
+const createTransport = () =>
+  nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: false,
+    port: Number(process.env.SMTP_PORT), // 465
+    secure: true,                        // true for 465
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
   });
-};
 
 export async function POST(request: NextRequest) {
   try {

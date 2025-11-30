@@ -5,12 +5,46 @@ import Philosophy from "@/components/about/Philosophy";
 import ImagePanel from "@/components/about/ImagePanel";
 import TeamGrid from "@/components/about/TeamGrid";
 import Stats from "@/components/about/Stats";
-import React from "react";
+import React, { useState } from "react";
 import Footer from "@/components/Footer";
 
 export default function AboutPage() {
+  const [trialEmail, setTrialEmail] = useState("");
+  const [trialLoading, setTrialLoading] = useState(false);
+  const [trialMessage, setTrialMessage] = useState<string | null>(null);
+  const [trialError, setTrialError] = useState<string | null>(null);
+
+  async function handleTrialSignup(e: React.FormEvent) {
+    e.preventDefault();
+    setTrialMessage(null);
+    setTrialError(null);
+    if (!trialEmail) return;
+
+    setTrialLoading(true);
+    try {
+      const res = await fetch("/api/newsLetter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trialEmail }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Subscription failed");
+      }
+
+      setTrialMessage(
+        "Thanks for joining our product trials. Check your inbox."
+      );
+      setTrialEmail("");
+    } catch (err: any) {
+      setTrialError(err?.message || "Something went wrong. Try again.");
+    } finally {
+      setTrialLoading(false);
+    }
+  }
+
   return (
-    // added overflow-x-hidden to prevent mobile horizontal scroll
     <div className="min-h-screen bg-transparent text-white overflow-x-hidden">
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 md:px-8 py-10 space-y-16">
         <Hero />
@@ -55,22 +89,40 @@ export default function AboutPage() {
           </div>
 
           <aside className="space-y-6">
+            {/* EMAIL → /api/newsletter */}
             <div className="glass-panel bg-white/10 p-6 rounded-2xl border border-white/8">
               <h4 className="text-lg font-semibold">Join product trials</h4>
               <p className="mt-3 text-white/70 text-sm">
                 Want to test a prototype? Sign up and we'll reach out for select
                 regional trials.
               </p>
-              <div className="mt-4 flex gap-3">
+              <form
+                onSubmit={handleTrialSignup}
+                className="mt-4 flex flex-col gap-3 sm:flex-row"
+              >
                 <input
                   aria-label="email"
                   placeholder="you@domain.com"
+                  type="email"
+                  required
+                  value={trialEmail}
+                  onChange={(e) => setTrialEmail(e.target.value)}
                   className="flex-1 px-3 py-2 bg-transparent border border-white/8 rounded-md text-white placeholder:text-white/50 focus:outline-none"
                 />
-                <button className="px-4 py-2 rounded-md backdrop-blur-sm bg-white/8 border border-white/12">
-                  Apply
+                <button
+                  type="submit"
+                  disabled={trialLoading}
+                  className="px-4 py-2 rounded-md backdrop-blur-sm bg-white/8 border border-white/12 disabled:opacity-60"
+                >
+                  {trialLoading ? "Applying..." : "Apply"}
                 </button>
-              </div>
+              </form>
+              {trialMessage && (
+                <p className="mt-2 text-xs text-green-400">{trialMessage}</p>
+              )}
+              {trialError && (
+                <p className="mt-2 text-xs text-red-400">{trialError}</p>
+              )}
             </div>
 
             <div className="glass-panel bg-white/10 p-6 rounded-2xl border border-white/8">

@@ -15,7 +15,7 @@ export default function NewsletterCTA() {
     setError('');
 
     try {
-      const response = await fetch('/api/newsletter', {
+      const response = await fetch('/api/newsLetter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
