@@ -1,19 +1,41 @@
-// components/NewsletterCTA.tsx
 'use client';
 import { useState } from 'react';
 
 export default function NewsletterCTA() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-      setTimeout(() => {
-        setEmail('');
-        setSubscribed(false);
-      }, 3000);
+    if (!email) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubscribed(true);
+        setTimeout(() => {
+          setEmail('');
+          setSubscribed(false);
+        }, 4000);
+      } else {
+        setError(data.error || 'Subscription failed');
+      }
+    } catch (err) {
+      setError('Network error. Try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,15 +72,20 @@ export default function NewsletterCTA() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
+                disabled={loading}
                 className="flex-1 bg-white/10 text-white border border-white/20 rounded-xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 font-light placeholder:text-white/40 backdrop-blur-xl"
               />
               <button 
                 type="submit"
-                className="bg-white text-black px-8 py-4 rounded-xl font-semibold hover:bg-white/90 transition-all duration-300 hover:scale-105 whitespace-nowrap shadow-lg"
+                disabled={loading}
+                className="bg-white text-black px-8 py-4 rounded-xl font-semibold hover:bg-white/90 transition-all duration-300 hover:scale-105 whitespace-nowrap shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
               >
-                Join Now
+                {loading ? 'Joining...' : 'Join Now'}
               </button>
             </div>
+            {error && (
+              <p className="text-red-400 text-sm mt-2 text-center">{error}</p>
+            )}
           </form>
         ) : (
           <div className="max-w-md mx-auto mb-8 py-4">

@@ -54,7 +54,7 @@ type Address = {
 export default function ProfilePage() {
   const { data: session } = useSession();
 
-  const [user, setUser] = useState<User>(null);
+    const [user, setUser] = useState<User>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -80,7 +80,7 @@ export default function ProfilePage() {
       const userId = session.user.id.trim();
       setLoading(true);
       setNotice(null);
-
+        console.log("userName",session?.user?.name)
       const requests = {
         orders: axios.get(`/api/orders/${userId}`),
         wishlist: axios.get(`/api/wishlist?user_id=${userId}`),
@@ -252,7 +252,7 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
-
+          
           {/* Profile Header */}
           <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl">
             <ProfileHeader onEdit={() => setEditing(!editing)} />
