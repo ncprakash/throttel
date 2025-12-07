@@ -93,26 +93,38 @@ export default function CategoriesManager() {
   }
 
   async function removeCategory(id: string) {
-    if (
-      !confirm(
-        "Delete this category? This will not remove products automatically."
-      )
-    ) {
-      return;
-    }
-
-    const prev = categories;
-    setCategories((s) => s.filter((c) => c.category_id !== id));
-
-    try {
-      await axios.delete(`/api/admin/categories/${id}`);
-    } catch (err) {
-      console.error("Delete failed", err);
-      setCategories(prev);
-      setError("Delete failed");
-      setTimeout(() => setError(null), 2000);
-    }
+  if (!confirm("Delete this category? This will not remove products automatically.")) {
+    return;
   }
+
+  setError(null); // Clear previous errors
+  const prev = [...categories]; // Copy for rollback
+
+  try {
+    // Optimistic update
+    setCategories((s) => s.filter((c) => c.category_id !== id));
+    
+    const res = await axios.delete(`/api/admin/categories/${id}`);
+    
+    if (res.data.error) {
+      throw new Error(res.data.error);
+    }
+    
+    console.log("✅ Deleted:", res.data);
+  } catch (err: any) {
+    console.error("Delete failed:", err);
+    
+    // Rollback optimistic update
+    setCategories(prev);
+    
+    // Show specific error message
+    const errorMsg = err.response?.data?.error || err.message || "Delete failed";
+    setError(errorMsg);
+    
+    setTimeout(() => setError(null), 5000);
+  }
+}
+
 
   return (
     <div className="space-y-4">
