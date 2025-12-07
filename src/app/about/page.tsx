@@ -1,131 +1,97 @@
 "use client";
+
 import Hero from "@/components/about/Hero";
-import CTA from "@/components/about/CTA";
-import Philosophy from "@/components/about/Philosophy";
-import ImagePanel from "@/components/about/ImagePanel";
 import TeamGrid from "@/components/about/TeamGrid";
-import Stats from "@/components/about/Stats";
-import React, { useState } from "react";
 import Footer from "@/components/Footer";
+import React from "react";
 
 export default function AboutPage() {
-  const [trialEmail, setTrialEmail] = useState("");
-  const [trialLoading, setTrialLoading] = useState(false);
-  const [trialMessage, setTrialMessage] = useState<string | null>(null);
-  const [trialError, setTrialError] = useState<string | null>(null);
-
-  async function handleTrialSignup(e: React.FormEvent) {
-    e.preventDefault();
-    setTrialMessage(null);
-    setTrialError(null);
-    if (!trialEmail) return;
-
-    setTrialLoading(true);
-    try {
-      const res = await fetch("/api/newsLetter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trialEmail }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Subscription failed");
-      }
-
-      setTrialMessage(
-        "Thanks for joining our product trials. Check your inbox."
-      );
-      setTrialEmail("");
-    } catch (err: any) {
-      setTrialError(err?.message || "Something went wrong. Try again.");
-    } finally {
-      setTrialLoading(false);
-    }
-  }
-
   return (
     <div className="min-h-screen bg-transparent text-white overflow-x-hidden">
-      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 md:px-8 py-10 space-y-16">
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 md:px-8 py-10 space-y-12">
         <Hero />
 
-        <section className="grid lg:grid-cols-3 gap-10 items-start">
-          <div className="lg:col-span-2 space-y-8">
-            <Philosophy />
+        {/* Card-based Brand Story */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <article className="glass-panel bg-white/6 p-6 rounded-2xl border border-white/8 shadow-md">
+            <h3 className="text-xl font-semibold mb-3">How we started</h3>
+            <p className="text-sm text-white/80 leading-relaxed">
+              TFC wasn’t born in a boardroom — it started on the road. Two
+              riding friends, connected by late-night rides and the constant
+              hunt for better performance, realised motorcycle parts were either
+              overpriced or underwhelming. So we decided to change that.
+            </p>
+          </article>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ImagePanel
-                title="Precision engineered"
-                subtitle="Every mount, saddlebag and tool is prototyped, tested and tuned for lasting performance."
-                src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1400&auto=format&fit=crop"
-              />
+          <article className="glass-panel bg-white/6 p-6 rounded-2xl border border-white/8 shadow-md">
+            <h3 className="text-xl font-semibold mb-3">What we build</h3>
+            <p className="text-sm text-white/80 leading-relaxed mb-4">
+              We design upgrades riders actually want — balancing premium
+              materials with fair pricing and rugged real-world reliability.
+            </p>
+            <ul className="list-disc list-inside text-white/80 space-y-1">
+              <li>Precision engineering</li>
+              <li>Real-world testing</li>
+              <li>Premium-grade materials</li>
+              <li>Rider-driven design</li>
+            </ul>
+          </article>
 
-              <ImagePanel
-                title="Real riders, real testing"
-                subtitle="We put gear through the conditions riders actually encounter — climbs, downpours, and long commutes."
-                src="https://images.unsplash.com/photo-1509395176047-4a66953fd231?q=80&w=1400&auto=format&fit=crop"
-              />
-            </div>
+          <article className="glass-panel bg-white/6 p-6 rounded-2xl border border-white/8 shadow-md">
+            <h3 className="text-xl font-semibold mb-3">Our mission</h3>
+            <p className="text-sm text-white/80 leading-relaxed">
+              Create high-quality performance parts that riders can afford —
+              without compromising safety, performance, or style. Today, TFC is
+              a rider-led community built on passion, loyalty, and the love for
+              two wheels.
+            </p>
+          </article>
+        </section>
 
-            <Stats />
-
-            <div className="space-y-6">
-              <h3 className="text-2xl font-semibold">What we ship</h3>
-              <ul className="grid gap-4 sm:grid-cols-2">
-                <li className="glass-panel bg-white/10 p-4 rounded-xl border border-white/8">
+        {/* Product & Community Cards */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="glass-panel bg-white/6 p-6 rounded-2xl border border-white/8 shadow-md">
+              <h4 className="text-lg font-semibold">What we ship</h4>
+              <p className="text-sm text-white/70 mt-2 mb-3">
+                Small-batch, tested parts:
+              </p>
+              <ul className="grid gap-2 sm:grid-cols-2 list-none">
+                <li className="p-3 bg-white/5 rounded-lg">
                   Alloy mounts & adapters
                 </li>
-                <li className="glass-panel bg-white/10 p-4 rounded-xl border border-white/8">
+                <li className="p-3 bg-white/5 rounded-lg">
                   Waterproof saddle bags
                 </li>
-                <li className="glass-panel bg-white/10 p-4 rounded-xl border border-white/8">
+                <li className="p-3 bg-white/5 rounded-lg">
                   Quick-release locks & tools
                 </li>
-                <li className="glass-panel bg-white/10 p-4 rounded-xl border border-white/8">
+                <li className="p-3 bg-white/5 rounded-lg">
                   Lights & visibility kits
                 </li>
               </ul>
             </div>
-          </div>
 
-          <aside className="space-y-6">
-            {/* EMAIL → /api/newsletter */}
-            <div className="glass-panel bg-white/10 p-6 rounded-2xl border border-white/8">
+            <div className="glass-panel bg-white/6 p-6 rounded-2xl border border-white/8 shadow-md">
               <h4 className="text-lg font-semibold">Join product trials</h4>
-              <p className="mt-3 text-white/70 text-sm">
-                Want to test a prototype? Sign up and we'll reach out for select
-                regional trials.
+              <p className="text-sm text-white/70 mt-2">
+                Want to test a prototype? Apply for select regional trials.
               </p>
-              <form
-                onSubmit={handleTrialSignup}
-                className="mt-4 flex flex-col gap-3 sm:flex-row"
-              >
+              <div className="mt-4 flex gap-3">
                 <input
                   aria-label="email"
                   placeholder="you@domain.com"
-                  type="email"
-                  required
-                  value={trialEmail}
-                  onChange={(e) => setTrialEmail(e.target.value)}
                   className="flex-1 px-3 py-2 bg-transparent border border-white/8 rounded-md text-white placeholder:text-white/50 focus:outline-none"
                 />
-                <button
-                  type="submit"
-                  disabled={trialLoading}
-                  className="px-4 py-2 rounded-md backdrop-blur-sm bg-white/8 border border-white/12 disabled:opacity-60"
-                >
-                  {trialLoading ? "Applying..." : "Apply"}
+                <button className="px-4 py-2 rounded-md backdrop-blur-sm bg-white/8 border border-white/12">
+                  Apply
                 </button>
-              </form>
-              {trialMessage && (
-                <p className="mt-2 text-xs text-green-400">{trialMessage}</p>
-              )}
-              {trialError && (
-                <p className="mt-2 text-xs text-red-400">{trialError}</p>
-              )}
+              </div>
             </div>
+          </div>
 
-            <div className="glass-panel bg-white/10 p-6 rounded-2xl border border-white/8">
+          <aside className="space-y-4">
+            <div className="glass-panel bg-white/6 p-6 rounded-2xl border border-white/8 shadow-md">
               <h4 className="text-lg font-semibold">Sustainability</h4>
               <p className="mt-2 text-white/70 text-sm">
                 We minimize packaging and prioritize recyclable materials. Small
@@ -133,17 +99,26 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="glass-panel bg-white/10 p-6 rounded-2xl border border-white/8">
+            <div className="glass-panel bg-white/6 p-6 rounded-2xl border border-white/8 shadow-md">
               <h4 className="text-lg font-semibold">Press & partners</h4>
               <p className="mt-2 text-white/70 text-sm">
-                Seen in urban rider reviews and design showcases across the
-                region.
+                Featured in regional rider reviews and design spotlights.
+                Interested partners can reach out via our contact channels.
+              </p>
+            </div>
+
+            <div className="glass-panel bg-white/6 p-6 rounded-2xl border border-white/8 shadow-md">
+              <h4 className="text-lg font-semibold">Why riders trust us</h4>
+              <p className="mt-2 text-white/70 text-sm">
+                We test parts on our own machines — if we wouldn't use it, we
+                won't ship it.
               </p>
             </div>
           </aside>
         </section>
 
-        <section className="space-y-8">
+        {/* Team */}
+        <section className="space-y-6">
           <h3 className="text-2xl font-semibold">Meet the team</h3>
           <p className="text-white/70">
             A compact crew — designers, engineers, riders. We ship small-batch
@@ -152,9 +127,8 @@ export default function AboutPage() {
 
           <TeamGrid />
         </section>
-
-        <CTA />
       </main>
+
       <Footer />
     </div>
   );
