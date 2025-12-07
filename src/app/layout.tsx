@@ -8,7 +8,7 @@ import GlobalBackground from "@/components/GlobalBackground";
 import AppToaster from "@/components/ui/Toaster";
 
 export const metadata = {
-  title: "TFCustoms",
+  title: "Throttle Forged Customs",
 };
 
 export default function RootLayout({
