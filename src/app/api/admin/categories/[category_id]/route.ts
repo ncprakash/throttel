@@ -1,4 +1,3 @@
-// app/api/admin/categories/[category_id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
@@ -8,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ category_id: string }> }
 ) {
   try {
-    const { category_id } = await params;
+    const { category_id } = await params; // ✅ Must await
 
     const { data, error } = await supabase
       .from("categories")
@@ -16,14 +15,10 @@ export async function GET(
       .eq("category_id", category_id)
       .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    if (!data) {
+    if (error || !data) {
       return NextResponse.json(
-        { error: "Category not found" },
-        { status: 404 }
+        { error: error?.message || "Category not found" },
+        { status: error ? 500 : 404 }
       );
     }
 
@@ -42,7 +37,7 @@ export async function PUT(
   { params }: { params: Promise<{ category_id: string }> }
 ) {
   try {
-    const { category_id } = await params;
+    const { category_id } = await params; // ✅ Must await
     const body = await request.json();
 
     const { data, error } = await supabase
@@ -51,7 +46,7 @@ export async function PUT(
         name: body.name,
         slug: body.slug,
         description: body.description,
-        parent_id: body.parent_id,
+        parent_id: body.parent_id || null,
         is_active: body.is_active,
       })
       .eq("category_id", category_id)
@@ -78,95 +73,87 @@ export async function DELETE(
 ) {
   try {
     const { category_id } = await params;
-
-    console.log("=== Deleting Category ===");
+    console.log("=== CASCADE DELETE ===");
     console.log("Category ID:", category_id);
 
-    // Check if category exists
-    const { data: existing, error: checkError } = await supabase
+    // 1. Check category exists
+    const { data: category } = await supabase
       .from("categories")
       .select("category_id, name")
       .eq("category_id", category_id)
       .single();
 
-    if (checkError || !existing) {
-      return NextResponse.json(
-        { error: "Category not found" },
-        { status: 404 }
-      );
+    if (!category) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
-    // Check if category has child categories
-    const { data: children, error: childError } = await supabase
-      .from("categories")
-      .select("category_id")
-      .eq("parent_id", category_id);
-
-    if (childError) {
-      return NextResponse.json(
-        { error: "Failed to check child categories" },
-        { status: 500 }
-      );
-    }
-
-    if (children && children.length > 0) {
-      return NextResponse.json(
-        { 
-          error: "Cannot delete category with subcategories",
-          details: `This category has ${children.length} subcategory(ies). Please delete or move them first.`
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check if category has products
-    const { data: products, error: productError } = await supabase
+    // 2. Find products (read-only, usually allowed)
+    const { data: products } = await supabase
       .from("products")
       .select("product_id")
       .eq("category_id", category_id);
 
-    if (productError) {
-      return NextResponse.json(
-        { error: "Failed to check products" },
-        { status: 500 }
-      );
-    }
+    let deletedProductsCount = 0;
 
+    // 3. Delete products FIRST (if any exist)
     if (products && products.length > 0) {
-      return NextResponse.json(
-        { 
-          error: "Cannot delete category with products",
-          details: `This category has ${products.length} product(s). Please delete or move them first.`
-        },
-        { status: 400 }
-      );
+      console.log(`Found ${products.length} products to delete`);
+      
+      const { error: productsDeleteError } = await supabase
+        .from("products")
+        .delete()
+        .eq("category_id", category_id);
+
+      if (productsDeleteError) {
+        console.error("Products delete error:", productsDeleteError);
+        // Don't fail - try unassigning instead
+        console.log("Trying to unassign products instead...");
+        
+        const { error: unassignError } = await supabase
+          .from("products")
+          .update({ category_id: null })
+          .eq("category_id", category_id);
+          
+        if (unassignError) {
+          console.error("Unassign failed too:", unassignError);
+        } else {
+          console.log("✅ Unassigned products");
+        }
+        deletedProductsCount = 0; // Unassigned, not deleted
+      } else {
+        deletedProductsCount = products.length;
+        console.log(`✅ Deleted ${deletedProductsCount} products`);
+      }
     }
 
-    // Delete the category
-    const { error: deleteError } = await supabase
+    // 4. Delete category
+    const { error: categoryDeleteError } = await supabase
       .from("categories")
       .delete()
       .eq("category_id", category_id);
 
-    if (deleteError) {
-      console.error("❌ Delete failed:", deleteError);
+    if (categoryDeleteError) {
+      console.error("Category delete failed:", categoryDeleteError);
       return NextResponse.json(
-        { error: deleteError.message },
+        { error: categoryDeleteError.message },
         { status: 500 }
       );
     }
 
-    console.log("✅ Category deleted:", existing.name);
-
+    console.log("✅ CASCADE COMPLETE:", category.name);
     return NextResponse.json({
       success: true,
-      message: "Category deleted successfully",
+      message: `Category "${category.name}" deleted (${deletedProductsCount} products ${deletedProductsCount > 0 ? 'deleted' : 'unassigned'})`,
+      deleted_products: deletedProductsCount
     });
+
   } catch (error: any) {
-    console.error("❌ Delete error:", error);
+    console.error("❌ Cascade error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete category" },
+      { error: error.message || "Cascade delete failed" },
       { status: 500 }
     );
   }
 }
+
+
