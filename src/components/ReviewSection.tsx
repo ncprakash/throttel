@@ -2,29 +2,61 @@
 export default function ReviewsSection() {
   const reviews = [
     {
-      name: 'Marcus Chen',
-      bike: '2023 Ducati Panigale V4',
+      name: 'Ankit Verma',
+      bike: 'Royal Enfield Hunter 350',
       rating: 5,
-      text: 'The Akrapovic exhaust system completely transformed my bike. The quality is exceptional, the sound is pure perfection, and the power gains are immediately noticeable.',
+      text: 'I was initially skeptical, but the air filter cap really complements my existing setup. Throttle response feels smoother and the bike breathes better without any issues. Clean design and perfect fit',
       verified: true,
-      date: '2 weeks ago',
+     
     },
     {
-      name: 'Sarah Mitchell',
-      bike: '2024 BMW S1000RR',
+      name: ' Rahul Sharma',
+      bike: 'Royal Enfield Interceptor 650',
       rating: 5,
-      text: 'Outstanding customer service and technical support. They helped me choose the perfect suspension setup for my riding style. Track times improved significantly.',
+      text: 'Installed the footpeg extenders on my Interceptor 650 and the difference was immediate. Long rides are way more comfortable now, especially for my pillion. Build quality feels solid and installation was straightforward. Totally worth it.',
       verified: true,
-      date: '1 month ago',
+     
     },
     {
-      name: 'Alex Rodriguez',
-      bike: '2022 Kawasaki ZX-10R',
+      name: 'Suresh Iyer',
+      bike: 'Royal Enfield Continental GT 650',
       rating: 5,
-      text: 'Track-proven performance parts that actually deliver. The brake upgrade kit is incredible - shorter stopping distances and better feel. Worth every penny.',
+      text: 'Quality machining and proper finishing—no rough edges or fitment problems. I’ve done a few highway rides after installing this and everything feels more refined. Happy to support a brand that actually focuses on rider experience.',
       verified: true,
-      date: '3 weeks ago',
+      
     },
+      {
+      name: 'Rahul Mehta',
+      bike: 'Royal Enfield Continental GT 650',
+      rating: 5,
+      text: 'The footpeg extender solved the pillion comfort issue on my Interceptor 650 instantly. Leg angle is much more relaxed now and long rides are no longer tiring. Solid build and perfect fit.',
+      verified: true,
+     
+    },
+    {
+      name:'Amit Verma',
+      bike:'Royal Enfield Himalayan 411',
+      rating:5,
+      text:'Installed the air filter cap on my Himalayan 411 along with the stock filter. Throttle response feels cleaner and the bike breathes better, especially in mid-range. Fit and finish are top-notch',
+      verified:true
+      
+    },
+    {
+      name:'Sandeep Rao',
+      bike:'Royal Enfield Scram 411',
+      rating:5,
+      text:'Using this air filter cap on my Scram 411 for daily rides. No tuning needed, no issues at all. The bike feels smoother and slightly more responsive, plus it looks much better than stock.',
+      verified:true
+
+    },
+    {
+      name:'Aditya',
+      bike:'Royal Enfield Interceptor bear 650',
+      rating:5,
+      text:'Installed the air filter cap on my Interceptor bear 650 with a stock air filter. The bike feels more free-revving and throttle response is noticeably smoother, especially in city riding. Clean fit and proper OEM-like finish.',
+      verified:true
+
+    }
   ];
 
   return (
@@ -81,7 +113,7 @@ export default function ReviewsSection() {
                   )}
                 </div>
                 <p className="text-white/50 text-sm font-light">{review.bike}</p>
-                <p className="text-white/30 text-xs mt-1 font-light">{review.date}</p>
+              
               </div>
             </div>
           ))}
@@ -94,7 +126,7 @@ export default function ReviewsSection() {
             <p className="text-white/60 text-sm font-light">Average Rating</p>
           </div>
           <div className="text-center">
-            <p className="text-4xl md:text-5xl font-black text-white mb-2">12K+</p>
+            <p className="text-4xl md:text-5xl font-black text-white mb-2">1K+</p>
             <p className="text-white/60 text-sm font-light">Reviews</p>
           </div>
           <div className="text-center">
@@ -102,7 +134,7 @@ export default function ReviewsSection() {
             <p className="text-white/60 text-sm font-light">Satisfaction</p>
           </div>
           <div className="text-center">
-            <p className="text-4xl md:text-5xl font-black text-white mb-2">50K+</p>
+            <p className="text-4xl md:text-5xl font-black text-white mb-2">5K+</p>
             <p className="text-white/60 text-sm font-light">Happy Riders</p>
           </div>
         </div>
