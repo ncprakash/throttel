@@ -12,17 +12,22 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<TabType>("signin");
 
   return (
-    <section className="min-h-screen w-full bg-transparent text-white flex items-center justify-center py-20 px-6">
-      <div className="w-full max-w-3xl transition-all duration-1000 opacity-100 translate-y-0">
-        <div className="bg-white/4 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
-          <div className="text-center mb-8">
+    <section className="min-h-screen w-full bg-transparent text-white flex flex-col items-center justify-center px-4 sm:px-6 lg:px-12 py-16">
+      
+      {/* Auth Card */}
+      <div className="w-full max-w-md sm:max-w-lg lg:max-w-3xl transition-all duration-700">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl">
+          
+          {/* Header */}
+          <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white mb-2">
               THROTTLE
             </h1>
             <p className="text-sm text-white/70">Access your account</p>
           </div>
 
-          <div className="flex gap-2 mb-8 border-b border-white/10">
+          {/* Tabs */}
+          <div className="flex gap-2 mb-6 sm:mb-8 border-b border-white/10">
             {(["signin", "signup"] as TabType[]).map((tab) => (
               <button
                 key={tab}
@@ -34,21 +39,26 @@ export default function AuthPage() {
                     : "text-white/50 hover:text-white/70"
                 }`}
               >
-                {tab === "signin" && "Sign In"}
-                {tab === "signup" && "Create Account"}
+                {tab === "signin" ? "Sign In" : "Create Account"}
               </button>
             ))}
           </div>
 
+          {/* Forms */}
           {activeTab === "signin" && <SignInForm />}
           {activeTab === "signup" && <SignUpForm />}
         </div>
 
-        <p className="mt-8 text-center text-xs uppercase tracking-[0.35em] text-white/30">
+        {/* Security Note */}
+        <p className="mt-6 sm:mt-8 text-center text-xs uppercase tracking-[0.3em] text-white/30">
           Protected by industry-grade encryption
         </p>
       </div>
-      {/* <Footer /> */}
+
+      {/* Footer */}
+      <div className="mt-10 w-full">
+        <Footer />
+      </div>
     </section>
   );
 }

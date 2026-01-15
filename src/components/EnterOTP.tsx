@@ -1,4 +1,3 @@
-// components/EnterOTP.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -14,15 +13,13 @@ type Props = {
 
 function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
   const [values, setValues] = useState<string[]>(() => Array(length).fill(""));
-  // keep explicit nullables and indexable array
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Get email from URL parameter named "otpemail"
   const email = searchParams.get("otpemail");
 
   useEffect(() => {
@@ -51,10 +48,7 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
     }
   };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    i: number
-  ) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, i: number) => {
     const key = e.key;
     if (key === "Backspace") {
       if (values[i]) {
@@ -80,16 +74,17 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
       .replace(/\D/g, "")
       .slice(0, length);
     if (!paste) return;
+
     const next = Array(length).fill("");
     for (let i = 0; i < paste.length; i++) next[i] = paste[i];
     setValues(next);
+
     const focusIndex = Math.min(paste.length, length - 1);
     inputsRef.current[focusIndex]?.focus();
   };
 
   async function handleVerify(code: string) {
     if (!code || code.length !== length) return;
-
     if (!email) {
       setError("Email not found in URL");
       return;
@@ -111,7 +106,7 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
       } else {
         setError(res?.data?.message || "Verification failed");
       }
-    } catch (err) {
+    } catch (err: any) {
       if (axios.isAxiosError(err)) {
         setError(
           err.response?.data?.message ||
@@ -126,6 +121,65 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
     }
   }
 
+  const handleResend = async () => {
+    if (!email) {
+      setError("Email not found in URL");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      // Try both possible endpoints based on your previous code
+      const res = await fetch("/api/resend-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!res.ok) {
+        // Fallback to the other endpoint if first fails
+        const fallbackRes = await fetch("/api/resend-otp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+        const fallbackData = await fallbackRes.json();
+        if (!fallbackRes.ok || !fallbackData.ok) {
+          throw new Error(fallbackData.error || fallbackData.message || "Resend failed");
+        }
+        setSuccess("OTP resent successfully. Check your email.");
+        return;
+      }
+
+      const data = await res.json();
+      if (data.ok || data.success) {
+        setSuccess("OTP resent successfully. Check your email.");
+      } else {
+        setError(data.error || data.message || "Failed to resend OTP");
+      }
+    } catch (err: any) {
+      console.error("Resend OTP error:", err);
+      setError(err.message || "Failed to resend OTP. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearOtp = () => {
+    setValues(Array(length).fill(""));
+    inputsRef.current[0]?.focus();
+    setError(null);
+    setSuccess(null);
+    onResend?.();
+  };
+
   return (
     <div className={`w-full max-w-md mx-auto ${className}`}>
       <div className="text-center mb-4">
@@ -133,7 +187,7 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
           Enter verification code
         </h2>
         <p className="text-xs text-white/70">
-          We sent a {length}-digit code to {email || "your email"}
+          We sent a {length}-digit code to <strong>{email || "your email"}</strong>
         </p>
       </div>
 
@@ -148,7 +202,6 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
         {values.map((val, i) => (
           <input
             key={i}
-            // <-- important fix: use block body so callback returns void (not the assigned element)
             ref={(el) => {
               inputsRef.current[i] = el;
             }}
@@ -158,41 +211,39 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
             value={val}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, i)}
-            className="w-12 h-12 rounded-lg border border-white/10 bg-white/5 text-center text-lg font-medium outline-none focus:border-white/40 focus:bg-white/10"
+            className="w-12 h-12 rounded-lg border border-white/10 bg-white/5 text-center text-lg font-medium outline-none focus:border-white/40 focus:bg-white/10 focus:ring-2 focus:ring-white/30"
             aria-label={`Digit ${i + 1}`}
           />
         ))}
       </form>
 
-      <div className="mt-4 flex items-center justify-between text-xs">
+      <div className="mt-6 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-xs">
         <button
           type="button"
-          onClick={() => {
-            setValues(Array(length).fill(""));
-            inputsRef.current[0]?.focus();
-            onResend?.();
-            setError(null);
-            setSuccess(null);
-          }}
-          className="text-sm font-medium text-white/70 hover:text-white/90"
+          onClick={handleResend}
+          disabled={loading || isSubmitting}
+          className="w-full sm:w-auto text-sm font-medium text-white/70 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Resend code
+          {loading ? "Sending..." : "Didn't receive? Resend code"}
         </button>
         <button
-          type="button"
-          onClick={() => handleVerify(values.join(""))}
-          className="rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-50"
+          type="submit"
           disabled={values.some((v) => v === "") || isSubmitting}
+          className="w-full sm:w-auto rounded-lg bg-white/10 hover:bg-white/20 px-6 py-3 text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Verifying..." : "Verify"}
+          {isSubmitting ? "Verifying..." : "Verify OTP"}
         </button>
       </div>
 
       {error && (
-        <p className="mt-3 text-center text-sm text-red-400">{error}</p>
+        <p className="mt-4 text-center text-sm text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/30">
+          {error}
+        </p>
       )}
       {success && (
-        <p className="mt-3 text-center text-sm text-green-400">{success}</p>
+        <p className="mt-4 text-center text-sm text-green-400 bg-green-500/10 p-3 rounded-lg border border-green-500/30">
+          {success}
+        </p>
       )}
     </div>
   );

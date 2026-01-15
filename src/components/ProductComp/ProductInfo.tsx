@@ -1,6 +1,7 @@
 // components/product/ProductInfo.tsx
 "use client";
 
+import { usePathname } from "next/navigation";
 type ProductInfoProps = {
   name: string;
   sku: string;
@@ -23,6 +24,9 @@ export default function ProductInfo({
   reviewCount = 124,
   rating = 4.5,
 }: ProductInfoProps) {
+   const pathname = usePathname(); // /shop/product
+
+ 
   return (
     <div className="space-y-4">
       {/* Compatibility Badge */}
@@ -91,9 +95,14 @@ export default function ProductInfo({
           ))}
         </div>
         <span className="text-sm text-white/70">({reviewCount} Reviews)</span>
-        <button className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
-          Write a review
-        </button>
+<button
+  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+  onClick={() => {
+    window.open("/support", "_blank");
+  }}
+>
+  Write a review
+</button>
       </div>
 
       {/* Short Description */}

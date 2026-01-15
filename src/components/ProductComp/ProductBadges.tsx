@@ -36,28 +36,7 @@ export default function ProductBadges({
       </div>
 
       {/* Warranty */}
-      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4 text-center">
-        <div className="w-10 h-10 mx-auto mb-2 backdrop-blur-sm bg-purple-500/20 rounded-full flex items-center justify-center">
-          <svg
-            className="w-6 h-6 text-purple-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-            />
-          </svg>
-        </div>
-        <div className="text-xs font-semibold text-white mb-1">
-          {warrantyMonths}-Year Warranty
-        </div>
-        <div className="text-xs text-white/60">Manufacturer's</div>
-      </div>
-
+     
       {/* Free Shipping */}
       <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4 text-center">
         <div className="w-10 h-10 mx-auto mb-2 backdrop-blur-sm bg-blue-500/20 rounded-full flex items-center justify-center">
@@ -78,7 +57,7 @@ export default function ProductBadges({
         <div className="text-xs font-semibold text-white mb-1">
           Free Shipping
         </div>
-        <div className="text-xs text-white/60">On orders over $50</div>
+        <div className="text-xs text-white/60">On orders over ₹1500</div>
       </div>
     </div>
   );

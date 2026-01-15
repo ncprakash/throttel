@@ -2,7 +2,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import FormInput from "./FormInpute";
 import SubmitButton from "./SubmitButton";
@@ -10,6 +10,7 @@ import AlertMessage from "./AlertMessage";
 
 export default function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     identifier: "", // email or phone
     password: "",
@@ -40,7 +41,22 @@ export default function SignInForm() {
         setError(res.error);
       } else {
         console.log(res);
-        router.push("/profile"); // redirect on success
+        // Check for callbackUrl parameter, otherwise redirect to profile
+        let redirectUrl = "/profile";
+        const callbackUrl = searchParams.get("callbackUrl");
+        
+        if (callbackUrl) {
+          try {
+            // Handle both absolute and relative URLs
+            const urlObj = new URL(callbackUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+            redirectUrl = urlObj.pathname + urlObj.search;
+          } catch {
+            // If URL parsing fails, use the callbackUrl as-is (for relative paths)
+            redirectUrl = callbackUrl;
+          }
+        }
+        
+        router.push(redirectUrl);
       }
     } catch (err) {
       setError("An unexpected error occurred");

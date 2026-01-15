@@ -54,20 +54,20 @@ export default function AboutPage() {
             <div className="glass-panel bg-white/6 p-6 rounded-2xl border border-white/8 shadow-md">
               <h4 className="text-lg font-semibold">What we ship</h4>
               <p className="text-sm text-white/70 mt-2 mb-3">
-                Small-batch, tested parts:
+                Small-batch, rider-tested performance parts:
               </p>
               <ul className="grid gap-2 sm:grid-cols-2 list-none">
                 <li className="p-3 bg-white/5 rounded-lg">
-                  Alloy mounts & adapters
+                  CNC-machined performance
                 </li>
                 <li className="p-3 bg-white/5 rounded-lg">
-                  Waterproof saddle bags
+                  Intake & airflow components
                 </li>
                 <li className="p-3 bg-white/5 rounded-lg">
-                  Quick-release locks & tools
+                 Ergonomic upgrades & extenders
                 </li>
                 <li className="p-3 bg-white/5 rounded-lg">
-                  Lights & visibility kits
+                  Precision brackets, mounts & hardware
                 </li>
               </ul>
             </div>
