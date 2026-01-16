@@ -7,12 +7,14 @@ type ProductTabsProps = {
   description: string;
   specifications: Record<string, string>;
   fitmentGuide?: string;
+  reviews:Record<string,string>
 };
 
 export default function ProductTabs({
   description,
   specifications,
   fitmentGuide,
+  reviews
 }: ProductTabsProps) {
   const [activeTab, setActiveTab] = useState<"description" | "specs" | "fitment" | "reviews">(
     "description"
@@ -96,7 +98,7 @@ export default function ProductTabs({
         {activeTab === "reviews" && (
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-white mb-4">Customer Reviews</h3>
-            <div className="text-white/70">No reviews yet. Be the first to review!</div>
+            <div className="text-white/70">{reviews}</div>
           </div>
         )}
       </div>

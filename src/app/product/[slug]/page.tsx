@@ -251,19 +251,18 @@ export default function ProductDetailPage() {
 
           {/* Product Tabs */}
           <div className="glass-panel p-6 rounded-2xl border">
-            <ProductTabs
-              description={product.description}
-              specifications={{
-                Material:
-                  product.material || "High-Grade Titanium & Carbon Fiber",
-                Weight: product.weight
-                  ? `${product.weight} kg`
-                  : "3.8 kg (1.7 kg lighter than stock)",
-                "Power Increase": "+2.1 kW at 9900 rpm",
-                "Torque Increase": "+2.4 Nm at 5100 rpm",
-              }}
-              fitmentGuide={product.fitment_guide}
-            />
+        <ProductTabs 
+  description={product.description}
+  specifications={{
+    Material: product.material || "High-Grade Titanium & Carbon Fiber",
+    Weight: product.weight ? `${product.weight} kg` : "3.8 kg",
+    ...(product.techincal_specification || {}),
+  }}
+  fitmentGuide={product.fitment_guide}
+  reviews={Array.isArray(product.reviews) ? product.reviews.map((r: any) => `${r.user}: ${r.rating}★ "${r.comment}"`).join(', ') : "No reviews"}
+/>
+
+
           </div>
         </div>
 
