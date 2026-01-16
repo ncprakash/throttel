@@ -150,15 +150,15 @@ export default function ShopPage() {
             {/* Sidebar column: visible on all sizes.
                 - small screens: full width and appears above main (order-first)
                 - lg+: occupies left column */}
-            <div className="col-span-1 lg:col-span-1 order-first lg:order-none">
+            {/* <div className="col-span-1 lg:col-span-1 order-first lg:order-none">
               <ShopSidebar
                 onSelectCategory={handleSelectCategory}
                 onSelectBike={handleSelectBike}
               />
-            </div>
+            </div> */}
 
             {/* Main column */}
-            <div className="col-span-1 lg:col-span-3 space-y-6">
+            <div className="col-span-1 lg:col-span-4 space-y-6">
               {/* Header (higher stacking context) */}
               <div className="relative z-40">
                 <ShopHeader
