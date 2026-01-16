@@ -29,15 +29,19 @@ export default function UsersList() {
       try {
         const p = opts?.page ?? page;
         const q = opts?.q ?? search;
+        const offset = (p - 1) * limit; // Fix: Calculate offset
+        
         const res = await axios.get("/api/admin/users", {
-          params: { page: p, limit, search: q },
+          params: { page: p, limit, offset, search: q }, // Fix: Add offset
         });
+        
         setUsers(res.data.users || res.data || []);
-        setTotal(res.data.total ?? res.data.users?.length ?? 0);
+        setTotal(res.data.total ?? 0);
         setPage(p);
       } catch (err) {
         console.error("Could not load users", err);
         setUsers([]);
+        setTotal(0);
       } finally {
         setLoading(false);
       }
@@ -82,9 +86,19 @@ export default function UsersList() {
   };
 
   const handlePage = (dir: "next" | "prev") => {
-    const next = dir === "next" ? page + 1 : Math.max(1, page - 1);
-    load({ page: next });
+    const maxPages = Math.ceil(total / limit);
+    let nextPage = page;
+    
+    if (dir === "next" && page < maxPages) {
+      nextPage = page + 1;
+    } else if (dir === "prev" && page > 1) {
+      nextPage = page - 1;
+    }
+    
+    load({ page: nextPage });
   };
+
+  const maxPages = Math.ceil(total / limit);
 
   return (
     <div className="space-y-4">
@@ -92,7 +106,9 @@ export default function UsersList() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <h3 className="text-lg font-semibold">Users</h3>
-            <p className="text-sm text-white/60">{total} users</p>
+            <p className="text-sm text-white/60">
+              {total} users • Page {page} of {maxPages}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -104,7 +120,8 @@ export default function UsersList() {
             />
             <button
               onClick={() => load({ page: 1, q: search })}
-              className="px-3 py-2 rounded-md bg-white text-black"
+              disabled={loading}
+              className="px-3 py-2 rounded-md bg-white text-black disabled:opacity-50"
             >
               Search
             </button>
@@ -139,46 +156,46 @@ export default function UsersList() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="text-xs text-white/60 text-right">
-                      <div>Joined</div>
-                      <div className="font-medium">
-                        {u.created_at
-                          ? new Date(u.created_at).toLocaleDateString()
-                          : "-"}
-                      </div>
+                  <div className="text-xs text-white/60 text-right">
+                    <div>Joined</div>
+                    <div className="font-medium">
+                      {u.created_at
+                        ? new Date(u.created_at).toLocaleDateString()
+                        : "-"}
                     </div>
+                  </div>
 
-                    <div>
-                      <button
-                        onClick={() => toggleActive(u.user_id, u.is_active)}
-                        className={`px-3 py-1 rounded-md ${
-                          u.is_active ? "bg-white text-black" : "bg-white/6"
-                        }`}
-                      >
-                        {u.is_active ? "Active" : "Inactive"}
-                      </button>
-                    </div>
+                  <div>
+                    <button
+                      onClick={() => toggleActive(u.user_id, u.is_active)}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        u.is_active 
+                          ? "bg-green-500/20 text-green-300 hover:bg-green-500/30" 
+                          : "bg-white/6 hover:bg-white/10"
+                      }`}
+                    >
+                      {u.is_active ? "Active" : "Inactive"}
+                    </button>
+                  </div>
 
-                    <div>
-                      <button
-                        onClick={() =>
-                          navigator.clipboard.writeText(u.email || "")
-                        }
-                        className="px-3 py-1 rounded-md"
-                      >
-                        Copy
-                      </button>
-                    </div>
+                  <div>
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(u.email || "")
+                      }
+                      className="px-3 py-1 rounded-md bg-white/6 hover:bg-white/10 text-sm"
+                    >
+                      Copy
+                    </button>
+                  </div>
 
-                    <div>
-                      <button
-                        onClick={() => removeUser(u.user_id)}
-                        className="px-3 py-1 rounded-md text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                  <div>
+                    <button
+                      onClick={() => removeUser(u.user_id)}
+                      className="px-3 py-1 rounded-md bg-red-500/20 text-red-300 hover:bg-red-500/30 text-sm"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
@@ -186,20 +203,25 @@ export default function UsersList() {
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <div className="text-sm text-white/60">Page {page}</div>
+        {/* Fixed Pagination */}
+        <div className="mt-6 flex items-center justify-between">
+          <div className="text-sm text-white/60">
+            Page {page} of {maxPages} • Showing {users.length} of {total} users
+          </div>
           <div className="flex gap-2">
             <button
               onClick={() => handlePage("prev")}
-              className="px-3 py-1 rounded-md"
+              disabled={page === 1 || loading}
+              className="px-4 py-2 rounded-md bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              Prev
+              ← Prev
             </button>
             <button
               onClick={() => handlePage("next")}
-              className="px-3 py-1 rounded-md"
+              disabled={page >= maxPages || loading}
+              className="px-4 py-2 rounded-md bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              Next
+              Next →
             </button>
           </div>
         </div>
