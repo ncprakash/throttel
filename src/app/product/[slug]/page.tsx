@@ -25,13 +25,32 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
-
+const flattenJsonbArray = (array: any[]): Record<string, string> => {
+  return array.reduce((acc, obj) => {
+    for (const [key, value] of Object.entries(obj)) {
+      const formattedValue = `${value}`.trim();
+      if (!formattedValue) continue;
+      
+      // Smart units
+      switch (key.toLowerCase()) {
+        case 'diameter': acc[key] = `${formattedValue} mm`; break;
+        case 'length': acc[key] = `${formattedValue} cm`; break;
+        case 'torque_increase': acc[key] = `+${formattedValue} Nm`; break;
+        case 'power_increase': acc[key] = `+${formattedValue} kW`; break;
+        default: acc[key] = formattedValue;
+      }
+    }
+    return acc;
+  }, {});
+};
+  
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         // same API endpoints — no backend changes
         const response = await axios.get(`/api/products/${slug}`);
         setProduct(response.data);
+        console.log(response);
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -41,6 +60,7 @@ export default function ProductDetailPage() {
 
     if (slug) fetchProduct();
   }, [slug]);
+
 
   const handleAddToCart = (quantity: number) => {
     if (!product) return;
@@ -251,12 +271,12 @@ export default function ProductDetailPage() {
 
           {/* Product Tabs */}
           <div className="glass-panel p-6 rounded-2xl border">
-      <ProductTabs 
+  <ProductTabs 
   description={product.description}
   specifications={{
-    Material: product.material || "High-Grade Titanium & Carbon Fiber",
-    Weight: product.weight ? `${product.weight} kg` : "3.8 kg",
-    ...(product.techincal_specification || {}),
+    Material: product.material || "Steel",
+    Weight: `${product.weight || 0} kg`,
+    ...flattenJsonbArray(product.technical_specification || []),
   }}
   fitmentGuide={product.fitment_guide}
   reviews={Array.isArray(product.reviews) ? product.reviews : []}

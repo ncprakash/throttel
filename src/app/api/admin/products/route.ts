@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       is_featured,
       warranty_months,
       material,
-      techincal_specification, // Matches exact DB column name (typo preserved)
+      technical_specification, // Matches exact DB column name (typo preserved)
       reviews,
       // Map frontend fields to exact DB columns
       weight,
@@ -88,30 +88,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert matching exact DB schema
-    const { data, error } = await supabase
-      .from("products")
-      .insert([
-        {
-          category_id,
-          name,
-          slug,
-          short_description,
-          description,
-          regular_price,
-          sale_price,
-          sku,
-          stock_quantity: stock_quantity ?? 0,
-          is_active: is_active ?? true,
-          is_featured: is_featured ?? false,
-          weight,
-          warranty_months: warranty_months ?? 6,
-          techincal_specification, // Exact DB spelling
-          fitment_guide, // DB column
-          material,
-          reviews: reviews || [], // jsonb[] default empty array
-        }
-      ])
-      .select();
+    // In your POST function, replace the insert object:
+const { data, error } = await supabase
+  .from("products")
+  .insert([
+    {
+      category_id,
+      name,
+      slug,
+      description,
+      short_description,
+      regular_price,
+      sale_price,
+      sku,
+      stock_quantity: stock_quantity ?? 0,
+      is_active: is_active ?? true,
+      is_featured: is_featured ?? false,
+      weight,
+      warranty_months: warranty_months ?? 6,
+      fitment_guide,  // filament → fitment_guide
+      material,
+      // ✅ FIX: Both arrays save correctly
+      reviews: Array.isArray(reviews) ? reviews : (reviews ? [reviews] : []),
+      technical_specification: Array.isArray(technical_specification) ? technical_specification : (technical_specification ? [technical_specification] : []),
+    }
+  ])
+  .select();
+
 
     if (error) {
       console.error("Supabase insert error:", error);

@@ -7,13 +7,12 @@ type ProductTabsProps = {
   description: string;
   specifications: Record<string, string>;
   fitmentGuide?: string;
-  reviews?: Array<{  // Array of review objects
+  reviews?: Array<{
     user: string;
     rating: number;
     comment: string;
   }>;
 };
-
 
 export default function ProductTabs({
   description,
@@ -26,10 +25,10 @@ export default function ProductTabs({
   );
 
   const tabs = [
-    { id: "description", label: "Description" },
-    { id: "specs", label: "Specifications" },
-    { id: "fitment", label: "Fitment" },
-    { id: "reviews", label: "Reviews" },
+    { id: "description" as const, label: "Description" },
+    { id: "specs" as const, label: "Specifications" },
+    { id: "fitment" as const, label: "Fitment" },
+    { id: "reviews" as const, label: "Reviews" },
   ];
 
   return (
@@ -39,8 +38,8 @@ export default function ProductTabs({
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`px-6 py-4 text-sm font-semibold transition-all whitespace-nowrap ${
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-6 py-4 text-sm font-semibold transition-all whitespace-nowrap flex-1 ${
               activeTab === tab.id
                 ? "text-purple-400 border-b-2 border-purple-400 bg-white/5"
                 : "text-white/60 hover:text-white hover:bg-white/5"
@@ -75,12 +74,12 @@ export default function ProductTabs({
                   {Object.entries(specifications).map(([key, value], index) => (
                     <tr
                       key={key}
-                      className={index % 2 === 0 ? "bg-white/5" : ""}
+                      className={`hover:bg-white/10 transition-colors ${index % 2 === 0 ? "bg-white/5" : ""}`}
                     >
-                      <td className="px-6 py-4 text-sm font-semibold text-white/80 w-1/3">
-                        {key}
+                      <td className="px-6 py-4 text-sm font-semibold text-white/80 w-1/3 capitalize">
+                        {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </td>
-                      <td className="px-6 py-4 text-sm text-white/70">
+                      <td className="px-6 py-4 text-sm text-white/70 font-mono">
                         {value}
                       </td>
                     </tr>
@@ -94,8 +93,10 @@ export default function ProductTabs({
         {activeTab === "fitment" && (
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-white mb-4">Fitment Guide</h3>
-            <div className="text-white/70 leading-relaxed">
-              {fitmentGuide || "Fitment information coming soon."}
+            <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-6">
+              <div className="text-white/70 leading-relaxed">
+                {fitmentGuide || "Fitment information coming soon."}
+              </div>
             </div>
           </div>
         )}
@@ -103,21 +104,31 @@ export default function ProductTabs({
         {activeTab === "reviews" && (
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-white mb-4">Customer Reviews</h3>
-           <div className="space-y-3">
-  {Array.isArray(reviews) && reviews.length > 0 ? (
-    reviews.map((review: any, index: number) => (
-      <div key={index} className="p-3 bg-white/10 rounded-md">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-semibold text-white">{review.user}</span>
-          <span className="text-yellow-400">{'★'.repeat(review.rating)}</span>
-        </div>
-        <p className="text-white/80 text-sm">{review.comment}</p>
-      </div>
-    ))
-  ) : (
-    <p className="text-white/50 italic">No reviews yet</p>
-  )}
-</div>
+            <div className="space-y-4">
+              {Array.isArray(reviews) && reviews.length > 0 ? (
+                reviews.map((review, index) => (
+                  <div key={index} className="backdrop-blur-md bg-white/10 border border-white/10 rounded-xl p-6">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500/30 to-blue-500/30 grid place-items-center font-semibold text-white text-sm">
+                        {review.user.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-white truncate">{review.user}</span>
+                          <span className="text-yellow-400 text-sm">{'★'.repeat(review.rating)}</span>
+                        </div>
+                        <p className="text-white/80 leading-relaxed">{review.comment}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-8 text-center">
+                  <p className="text-white/50 italic">No reviews yet</p>
+                  <p className="text-white/30 text-sm mt-2">Be the first to review this product</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

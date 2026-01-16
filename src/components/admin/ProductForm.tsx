@@ -43,7 +43,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     is_featured: product?.is_featured ?? false,
     warranty_months: product?.warranty_months ?? 6,
     material: product?.material ?? "",
-    technical_specification: product?.technical_specification || {}, // Object!
+    technical_specification: product?.technical_specification || [], // Object!
     reviews: product?.reviews || [], // Array!
     filament: product?.filament ?? "",
   });
@@ -164,9 +164,9 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         description: form.description || null,
         short_description: form.short_description || null,
         // Parse textarea string → JSON object
-        technical_specification: Object.fromEntries(
-          Object.entries(specValues).filter(([_, v]) => v.trim())
-        ),
+      technical_specification: Object.entries(specValues)
+  .filter(([_, v]) => v.trim())
+  .map(([key, value]) => ({ [key]: value })),
         // Parse reviews string → array OR use existing array
         reviews: reviewList.filter((r) => r.user.trim() && r.comment.trim()),
         regular_price: Number(form.regular_price),
@@ -182,7 +182,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
       };
 
       let savedProd: any;
-
+         
       // Create or Update Product
       if (editing && product.product_id) {
         const res = await axios.patch(
@@ -192,6 +192,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         savedProd = res.data.product || res.data;
       } else {
         const res = await axios.post(`/api/admin/products`, payload);
+        console.log(payload);
         savedProd = res.data.product || res.data;
       }
 
