@@ -251,7 +251,7 @@ export default function ProductDetailPage() {
 
           {/* Product Tabs */}
           <div className="glass-panel p-6 rounded-2xl border">
-        <ProductTabs 
+      <ProductTabs 
   description={product.description}
   specifications={{
     Material: product.material || "High-Grade Titanium & Carbon Fiber",
@@ -259,7 +259,7 @@ export default function ProductDetailPage() {
     ...(product.techincal_specification || {}),
   }}
   fitmentGuide={product.fitment_guide}
-  reviews={Array.isArray(product.reviews) ? product.reviews.map((r: any) => `${r.user}: ${r.rating}★ "${r.comment}"`).join(', ') : "No reviews"}
+  reviews={Array.isArray(product.reviews) ? product.reviews : []}
 />
 
 

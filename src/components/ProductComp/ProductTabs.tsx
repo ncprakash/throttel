@@ -7,8 +7,13 @@ type ProductTabsProps = {
   description: string;
   specifications: Record<string, string>;
   fitmentGuide?: string;
-  reviews:Record<string,string>
+  reviews?: Array<{  // Array of review objects
+    user: string;
+    rating: number;
+    comment: string;
+  }>;
 };
+
 
 export default function ProductTabs({
   description,
@@ -98,7 +103,21 @@ export default function ProductTabs({
         {activeTab === "reviews" && (
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-white mb-4">Customer Reviews</h3>
-            <div className="text-white/70">{reviews}</div>
+           <div className="space-y-3">
+  {Array.isArray(reviews) && reviews.length > 0 ? (
+    reviews.map((review: any, index: number) => (
+      <div key={index} className="p-3 bg-white/10 rounded-md">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-semibold text-white">{review.user}</span>
+          <span className="text-yellow-400">{'★'.repeat(review.rating)}</span>
+        </div>
+        <p className="text-white/80 text-sm">{review.comment}</p>
+      </div>
+    ))
+  ) : (
+    <p className="text-white/50 italic">No reviews yet</p>
+  )}
+</div>
           </div>
         )}
       </div>
