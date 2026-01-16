@@ -34,7 +34,7 @@ export default function Home() {
 
       {/* ---------- Footer ---------- */}
       <footer className="relative w-full bg-black border-t border-white/10 z-10">
-        <Footer />
+       =
       </footer>
     </main>
   );

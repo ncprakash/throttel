@@ -10,6 +10,7 @@ import USPStrip from "./UspStrip";
 import EditorialSection from "./EditorialSection";
 import ReviewsSection from "./ReviewSection";
 import NewsletterCTA from "./NewsLetterCTA";
+import Image from "next/image";
 
 export default function InterleavedScrollExperience() {
   const router = useRouter();
@@ -111,9 +112,10 @@ export default function InterleavedScrollExperience() {
       <div className="relative bg-transparent">
         {/* Static Background Image - replaced with <img> for iOS stability */}
         <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
-          <img
+          <Image
             src="/frames/render1.png"
             alt=""
+            fill
             className="absolute inset-0 w-full h-full object-cover -z-10 bg-image-stabilize subtle-zoom-onload"
             style={{ transform: "translateZ(0)" }}
             loading="eager"
@@ -183,9 +185,10 @@ export default function InterleavedScrollExperience() {
     <div className="relative bg-transparent">
       {/* Static Background Image - replaced with <img> for iOS stability */}
       <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
-        <img
+        <Image
           src="/frames/render1.png"
           alt=""
+          fill
           className="absolute inset-0 w-full h-full object-cover -z-10 bg-image-stabilize subtle-zoom-onload"
           style={{ transform: "translateZ(0)" }}
           loading="eager"
