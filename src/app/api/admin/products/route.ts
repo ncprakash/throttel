@@ -11,7 +11,6 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-
     let query = supabase
       .from("products")
       .select(`
@@ -54,6 +53,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -62,29 +62,32 @@ export async function POST(request: NextRequest) {
       category_id,
       name,
       slug,
-      description,
       short_description,
+      description,
       regular_price,
       sale_price,
       sku,
       stock_quantity,
       is_active,
       is_featured,
-      weight,
       warranty_months,
-      warranty_description,
-      material
+      material,
+      techincal_specification, // Matches exact DB column name (typo preserved)
+      reviews,
+      // Map frontend fields to exact DB columns
+      weight,
+      fitment_guide, // DB has fitment_guide, frontend might send as filament or reviews
     } = body;
 
-    // Basic validation
-    if (!name || !slug || !regular_price) {
+    // Basic validation - required fields
+    if (!name || !slug || regular_price == null) {
       return NextResponse.json(
         { error: "name, slug, and regular_price are required" },
         { status: 400 }
       );
     }
 
-    // Insert into Supabase
+    // Insert matching exact DB schema
     const { data, error } = await supabase
       .from("products")
       .insert([
@@ -92,23 +95,26 @@ export async function POST(request: NextRequest) {
           category_id,
           name,
           slug,
-          description,
           short_description,
+          description,
           regular_price,
           sale_price,
           sku,
-          stock_quantity,
-          is_active,
-          is_featured,
+          stock_quantity: stock_quantity ?? 0,
+          is_active: is_active ?? true,
+          is_featured: is_featured ?? false,
           weight,
-          warranty_months,
-          warranty_description,
-          material
+          warranty_months: warranty_months ?? 6,
+          techincal_specification, // Exact DB spelling
+          fitment_guide, // DB column
+          material,
+          reviews: reviews || [], // jsonb[] default empty array
         }
       ])
-      .select("*");
+      .select();
 
     if (error) {
+      console.error("Supabase insert error:", error);
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
@@ -120,6 +126,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (err: any) {
+    console.error("POST /api/products error:", err);
     return NextResponse.json(
       { error: err.message || "Something went wrong" },
       { status: 500 }

@@ -34,9 +34,10 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     is_featured: product?.is_featured ?? false,
     warranty_months: product?.warranty_months ?? 6,
     material: product?.material ?? "",
-    technical_specification: product?.technical_specification ?? "",
-    reviews: product?.reviews ?? "",
-    filament: product?.filament ?? "",
+  technical_specification: product?.technical_specification || {},  // Object!
+  reviews: product?.reviews || [],                                // Array!
+  filament: product?.filament ?? "",
+ 
   });
 
   // Weight handling: value + unit (kg | g)
@@ -144,26 +145,32 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         }
       }
 
-      const payload: any = {
-        category_id: form.category_id || null,
-        name: form.name.trim(),
-        slug: form.slug.trim(),
-        description: form.description || null,
-        short_description: form.short_description || null,
-        technical_specification: form.technical_specification || null,
-        reviews: form.reviews || null,
-        regular_price: Number(form.regular_price),
-        sale_price: form.sale_price ? Number(form.sale_price) : null,
-        sku: form.sku || null,
-        stock_quantity: Number(form.stock_quantity || 0),
-        is_active: Boolean(form.is_active),
-        is_featured: Boolean(form.is_featured),
-        weight: weightKg,
-        warranty_months: form.warranty_months || 6,
-        //warranty_description: product?.warranty_description ?? null,
-        material: form.material || null,
-        filament: form.filament || null,
-      };
+ const payload: any = {
+  category_id: form.category_id || null,
+  name: form.name.trim(),
+  slug: form.slug.trim(),
+  description: form.description || null,
+  short_description: form.short_description || null,
+  // Parse textarea string → JSON object
+  technical_specification: form.technical_specification && typeof form.technical_specification === 'object' 
+    ? form.technical_specification 
+    : form.technical_specification ? JSON.parse(form.technical_specification) : null,
+  // Parse reviews string → array OR use existing array
+ reviews: Array.isArray(form.reviews) 
+    ? form.reviews 
+    : form.reviews ? JSON.parse(form.reviews) : [],
+  regular_price: Number(form.regular_price),
+  sale_price: form.sale_price ? Number(form.sale_price) : null,
+  sku: form.sku || null,
+  stock_quantity: Number(form.stock_quantity || 0),
+  is_active: Boolean(form.is_active),
+  is_featured: Boolean(form.is_featured),
+  weight: weightKg,
+  warranty_months: form.warranty_months || 6,
+  material: form.material || null,
+  fitment_guide: form.filament || null,  // filament → fitment_guide for DB
+};
+
 
       let savedProd: any;
 
@@ -323,7 +330,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
             className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
           />
 
-          <label className="text-sm text-white/60">Filament Type</label>
+          <label className="text-sm text-white/60">Fitment guide</label>
           <textarea
             value={form.filament}
             onChange={(e) => setField("filament", e.target.value)}
@@ -333,13 +340,22 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
           />
 
           <label className="text-sm text-white/60">Reviews</label>
-          <textarea
-            value={form.reviews}
-            onChange={(e) => setField("reviews", e.target.value)}
-            rows={4}
-            placeholder=""
-            className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
-          />
+       <textarea
+  value={Array.isArray(form.reviews) 
+    ? JSON.stringify(form.reviews, null, 2) 
+    : form.reviews }
+  onChange={(e) => setField("reviews", e.target.value)}
+  rows={4}
+  placeholder='[
+  {
+    "user": "racer_pro",
+    "rating": 5,
+    "comment": "Amazing sound!"
+  }
+]'
+  className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
+/>
+
         </div>
 
         <aside className="space-y-3">
@@ -387,15 +403,16 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
           />
 
           <label className="text-sm text-white/60">Specification</label>
-          <textarea
-            value={form.technical_specification}
-            onChange={(e) =>
-              setField("technical_specification", e.target.value)
-            }
-            rows={4}
-            placeholder="Enter technical specifications, dimensions, standards, etc."
-            className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
-          />
+         <textarea
+  value={typeof form.technical_specification === 'object' 
+    ? JSON.stringify(form.technical_specification, null, 2) 
+    : form.technical_specification}
+  onChange={(e) => setField("technical_specification", e.target.value)}
+  rows={4}
+  placeholder='{"diameter": "60mm", "torque_increase": "+15%","power_incease":"+13%"}'
+  className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
+/>
+
 
           <div className="flex gap-2 mt-2">
             <label className="flex items-center gap-2 text-sm">
