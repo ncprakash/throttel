@@ -34,6 +34,9 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     is_featured: product?.is_featured ?? false,
     warranty_months: product?.warranty_months ?? 6,
     material: product?.material ?? "",
+    technical_specification: product?.technical_specification ?? "",
+    reviews: product?.reviews ?? "",
+    filament: product?.filament ?? "",
   });
 
   // Weight handling: value + unit (kg | g)
@@ -147,6 +150,8 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         slug: form.slug.trim(),
         description: form.description || null,
         short_description: form.short_description || null,
+        technical_specification: form.technical_specification || null,
+        reviews: form.reviews || null,
         regular_price: Number(form.regular_price),
         sale_price: form.sale_price ? Number(form.sale_price) : null,
         sku: form.sku || null,
@@ -155,12 +160,13 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         is_featured: Boolean(form.is_featured),
         weight: weightKg,
         warranty_months: form.warranty_months || 6,
-        warranty_description: product?.warranty_description ?? null,
+        //warranty_description: product?.warranty_description ?? null,
         material: form.material || null,
+        filament: form.filament || null,
       };
 
       let savedProd: any;
-      
+
       // Create or Update Product
       if (editing && product.product_id) {
         const res = await axios.patch(
@@ -177,7 +183,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
       if (imageFiles.length > 0 && savedProd?.product_id) {
         setUploadingImages(true);
         const formData = new FormData();
-        
+
         // Append all images with the same field name
         imageFiles.forEach((file) => {
           formData.append("images", file);
@@ -237,12 +243,12 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     if (!files) return;
     const arr = Array.from(files);
     const totalImages = imageFiles.length + arr.length;
-    
+
     if (totalImages > 8) {
       toast("You can only upload up to 8 images");
       return;
     }
-    
+
     setImageFiles((prev) => [...prev, ...arr]);
   };
 
@@ -316,6 +322,24 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
             rows={4}
             className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
           />
+
+          <label className="text-sm text-white/60">Filament Type</label>
+          <textarea
+            value={form.filament}
+            onChange={(e) => setField("filament", e.target.value)}
+            rows={4}
+            placeholder=""
+            className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
+          />
+
+          <label className="text-sm text-white/60">Reviews</label>
+          <textarea
+            value={form.reviews}
+            onChange={(e) => setField("reviews", e.target.value)}
+            rows={4}
+            placeholder=""
+            className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
+          />
         </div>
 
         <aside className="space-y-3">
@@ -359,6 +383,17 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
             onChange={(e) =>
               setField("stock_quantity", Number(e.target.value || 0))
             }
+            className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
+          />
+
+          <label className="text-sm text-white/60">Specification</label>
+          <textarea
+            value={form.technical_specification}
+            onChange={(e) =>
+              setField("technical_specification", e.target.value)
+            }
+            rows={4}
+            placeholder="Enter technical specifications, dimensions, standards, etc."
             className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
           />
 
