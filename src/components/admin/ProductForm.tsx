@@ -8,6 +8,15 @@ import { toast } from "sonner";
 
 type Category = { category_id: string; name: string };
 
+const SPEC_KEYS = [
+  "diameter",
+  "length",
+  "torque_increase",
+  "power_increase",
+  "color",
+  "finish",
+];
+
 type Props = {
   product?: any | null;
   onSaved?: (p: any) => void;
@@ -34,11 +43,14 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     is_featured: product?.is_featured ?? false,
     warranty_months: product?.warranty_months ?? 6,
     material: product?.material ?? "",
-  technical_specification: product?.technical_specification || {},  // Object!
-  reviews: product?.reviews || [],                                // Array!
-  filament: product?.filament ?? "",
- 
+    technical_specification: product?.technical_specification || {}, // Object!
+    reviews: product?.reviews || [], // Array!
+    filament: product?.filament ?? "",
   });
+
+  const [reviewList, setReviewList] = useState<
+    { user: string; rating: number; comment: string }[]
+  >(product?.reviews || []);
 
   // Weight handling: value + unit (kg | g)
   const initialWeightKg = product?.weight ?? "";
@@ -145,32 +157,29 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         }
       }
 
- const payload: any = {
-  category_id: form.category_id || null,
-  name: form.name.trim(),
-  slug: form.slug.trim(),
-  description: form.description || null,
-  short_description: form.short_description || null,
-  // Parse textarea string → JSON object
-  technical_specification: form.technical_specification && typeof form.technical_specification === 'object' 
-    ? form.technical_specification 
-    : form.technical_specification ? JSON.parse(form.technical_specification) : null,
-  // Parse reviews string → array OR use existing array
- reviews: Array.isArray(form.reviews) 
-    ? form.reviews 
-    : form.reviews ? JSON.parse(form.reviews) : [],
-  regular_price: Number(form.regular_price),
-  sale_price: form.sale_price ? Number(form.sale_price) : null,
-  sku: form.sku || null,
-  stock_quantity: Number(form.stock_quantity || 0),
-  is_active: Boolean(form.is_active),
-  is_featured: Boolean(form.is_featured),
-  weight: weightKg,
-  warranty_months: form.warranty_months || 6,
-  material: form.material || null,
-  fitment_guide: form.filament || null,  // filament → fitment_guide for DB
-};
-
+      const payload: any = {
+        category_id: form.category_id || null,
+        name: form.name.trim(),
+        slug: form.slug.trim(),
+        description: form.description || null,
+        short_description: form.short_description || null,
+        // Parse textarea string → JSON object
+        technical_specification: Object.fromEntries(
+          Object.entries(specValues).filter(([_, v]) => v.trim())
+        ),
+        // Parse reviews string → array OR use existing array
+        reviews: reviewList.filter((r) => r.user.trim() && r.comment.trim()),
+        regular_price: Number(form.regular_price),
+        sale_price: form.sale_price ? Number(form.sale_price) : null,
+        sku: form.sku || null,
+        stock_quantity: Number(form.stock_quantity || 0),
+        is_active: Boolean(form.is_active),
+        is_featured: Boolean(form.is_featured),
+        weight: weightKg,
+        warranty_months: form.warranty_months || 6,
+        material: form.material || null,
+        fitment_guide: form.filament || null, // filament → fitment_guide for DB
+      };
 
       let savedProd: any;
 
@@ -273,6 +282,15 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
+  const [specValues, setSpecValues] = useState<Record<string, string>>(() => {
+    const existing = product?.technical_specification || {};
+    const obj: Record<string, string> = {};
+    SPEC_KEYS.forEach((k) => {
+      obj[k] = existing[k] ?? "";
+    });
+    return obj;
+  });
+
   return (
     <form
       onSubmit={handleSave}
@@ -340,22 +358,80 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
           />
 
           <label className="text-sm text-white/60">Reviews</label>
-       <textarea
-  value={Array.isArray(form.reviews) 
-    ? JSON.stringify(form.reviews, null, 2) 
-    : form.reviews }
-  onChange={(e) => setField("reviews", e.target.value)}
-  rows={4}
-  placeholder='[
-  {
-    "user": "racer_pro",
-    "rating": 5,
-    "comment": "Amazing sound!"
-  }
-]'
-  className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
-/>
 
+          <div className="space-y-3">
+            {reviewList.map((r, idx) => (
+              <div
+                key={idx}
+                className="p-3 rounded-md border border-white/10 space-y-2"
+              >
+                <input
+                  placeholder="User"
+                  value={r.user}
+                  onChange={(e) =>
+                    setReviewList((s) =>
+                      s.map((x, i) =>
+                        i === idx ? { ...x, user: e.target.value } : x
+                      )
+                    )
+                  }
+                  className="w-full px-2 py-1 bg-transparent border border-white/10 rounded"
+                />
+
+                <select
+                  value={r.rating}
+                  onChange={(e) =>
+                    setReviewList((s) =>
+                      s.map((x, i) =>
+                        i === idx ? { ...x, rating: Number(e.target.value) } : x
+                      )
+                    )
+                  }
+                  className="w-full px-2 py-1 bg-transparent border border-white/10 rounded"
+                >
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>
+                      {n} ⭐
+                    </option>
+                  ))}
+                </select>
+
+                <textarea
+                  placeholder="Comment"
+                  value={r.comment}
+                  onChange={(e) =>
+                    setReviewList((s) =>
+                      s.map((x, i) =>
+                        i === idx ? { ...x, comment: e.target.value } : x
+                      )
+                    )
+                  }
+                  rows={2}
+                  className="w-full px-2 py-1 bg-transparent border border-white/10 rounded"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setReviewList((s) => s.filter((_, i) => i !== idx))
+                  }
+                  className="text-sm text-red-400"
+                >
+                  Remove review
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setReviewList((s) => [...s, { user: "", rating: 5, comment: "" }])
+            }
+            className="text-sm text-blue-400"
+          >
+            + Add review
+          </button>
         </div>
 
         <aside className="space-y-3">
@@ -403,16 +479,23 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
           />
 
           <label className="text-sm text-white/60">Specification</label>
-         <textarea
-  value={typeof form.technical_specification === 'object' 
-    ? JSON.stringify(form.technical_specification, null, 2) 
-    : form.technical_specification}
-  onChange={(e) => setField("technical_specification", e.target.value)}
-  rows={4}
-  placeholder='{"diameter": "60mm", "torque_increase": "+15%","power_incease":"+13%"}'
-  className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
-/>
-
+          <div className="space-y-2">
+            {SPEC_KEYS.map((key) => (
+              <div key={key} className="grid grid-cols-2 gap-2 items-center">
+                <div className="text-sm text-white/70 capitalize">
+                  {key.replace(/_/g, " ")}
+                </div>
+                <input
+                  value={specValues[key]}
+                  onChange={(e) =>
+                    setSpecValues((s) => ({ ...s, [key]: e.target.value }))
+                  }
+                  placeholder="Enter value"
+                  className="px-3 py-2 rounded-md bg-transparent border border-white/10"
+                />
+              </div>
+            ))}
+          </div>
 
           <div className="flex gap-2 mt-2">
             <label className="flex items-center gap-2 text-sm">
