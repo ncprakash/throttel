@@ -30,38 +30,69 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
   const [loadingCategories, setLoadingCategories] = useState(false);
 
   const [form, setForm] = useState({
-    category_id: product?.category_id ?? "",
-    name: product?.name ?? "",
-    slug: product?.slug ?? "",
-    short_description: product?.short_description ?? "",
-    description: product?.description ?? "",
-    regular_price: product?.regular_price ?? "",
-    sale_price: product?.sale_price ?? "",
-    sku: product?.sku ?? "",
-    stock_quantity: product?.stock_quantity ?? 0,
-    is_active: product?.is_active ?? true,
-    is_featured: product?.is_featured ?? false,
-    warranty_months: product?.warranty_months ?? 6,
-    material: product?.material ?? "",
-    technical_specification: product?.technical_specification || [], // Object!
-    reviews: product?.reviews || [], // Array!
-    filament: product?.filament ?? "",
+    category_id: "",
+    name: "",
+    slug: "",
+    short_description: "",
+    description: "",
+    regular_price: "",
+    sale_price: "",
+    sku: "",
+    stock_quantity: 0,
+    is_active: true,
+    is_featured: false,
+    warranty_months: 6,
+    material: "",
+    technical_specification: [],
+    reviews: [],
+    filament: "",
   });
 
   const [reviewList, setReviewList] = useState<
     { user: string; rating: number; comment: string }[]
-  >(product?.reviews || []);
+  >([]);
 
   // Weight handling: value + unit (kg | g)
-  const initialWeightKg = product?.weight ?? "";
-  const [weightValue, setWeightValue] = useState<string | number>(
-    initialWeightKg ?? ""
-  );
+  const [weightValue, setWeightValue] = useState<string | number>("");
   const [weightUnit, setWeightUnit] = useState<"kg" | "g">("kg");
+
+  // Update form when product changes (for editing)
+  useEffect(() => {
+    if (product) {
+      setForm({
+        category_id: product?.category_id ?? "",
+        name: product?.name ?? "",
+        slug: product?.slug ?? "",
+        short_description: product?.short_description ?? "",
+        description: product?.description ?? "",
+        regular_price: product?.regular_price ?? "",
+        sale_price: product?.sale_price ?? "",
+        sku: product?.sku ?? "",
+        stock_quantity: product?.stock_quantity ?? 0,
+        is_active: product?.is_active ?? true,
+        is_featured: product?.is_featured ?? false,
+        warranty_months: product?.warranty_months ?? 6,
+        material: product?.material ?? "",
+        technical_specification: product?.technical_specification || [],
+        reviews: product?.reviews || [],
+        filament: product?.fitment_guide ?? "",
+      });
+      setReviewList(product?.reviews || []);
+      if (product?.weight != null) {
+        setWeightValue(product.weight);
+        setWeightUnit("kg");
+      } else {
+        setWeightValue("");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.product_id]);
 
   // images (local preview + file)
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<any[]>([]);
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -74,10 +105,19 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
       year_to?: number | null;
       notes?: string;
     }[]
-  >(product?.product_compatibility || []);
+  >([]);
 
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+
+  // Update compatList when product changes
+  useEffect(() => {
+    if (product?.product_compatibility) {
+      setCompatList(product.product_compatibility);
+    } else {
+      setCompatList([]);
+    }
+  }, [product?.product_id]);
 
   useEffect(() => {
     (async () => {
@@ -93,6 +133,21 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
       }
     })();
   }, []);
+
+  // Load existing images when product changes
+  useEffect(() => {
+    if (editing && product?.product_images) {
+      setExistingImages(product.product_images || []);
+      setImageFiles([]);
+      setImagePreviews([]);
+      setImagesToDelete([]);
+    } else {
+      setExistingImages([]);
+      setImageFiles([]);
+      setImagePreviews([]);
+      setImagesToDelete([]);
+    }
+  }, [product?.product_id, editing]);
 
   useEffect(() => {
     if (!imageFiles.length) {
@@ -142,6 +197,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     setNotice(null);
 
     try {
+      console.log("🔄 Starting save...");
       if (!form.name?.trim()) throw new Error("Product name is required");
       if (!form.slug?.trim()) throw new Error("Slug is required");
       if (!form.regular_price || Number(form.regular_price) <= 0)
@@ -163,12 +219,10 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         slug: form.slug.trim(),
         description: form.description || null,
         short_description: form.short_description || null,
-        // Parse textarea string → JSON object
-      technical_specification: Object.entries(specValues)
-  .filter(([_, v]) => v.trim())
-  .map(([key, value]) => ({ [key]: value })),
-        // Parse reviews string → array OR use existing array
-        reviews: reviewList.filter((r) => r.user.trim() && r.comment.trim()),
+        technical_specification: Object.entries(specValues)
+          .filter(([_, v]) => typeof v === 'string' && v.trim())
+          .map(([key, value]) => ({ [key]: value })),
+        reviews: reviewList.filter((r) => String(r.user).trim() && String(r.comment).trim()),
         regular_price: Number(form.regular_price),
         sale_price: form.sale_price ? Number(form.sale_price) : null,
         sku: form.sku || null,
@@ -178,23 +232,65 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         weight: weightKg,
         warranty_months: form.warranty_months || 6,
         material: form.material || null,
-        fitment_guide: form.filament || null, // filament → fitment_guide for DB
+        fitment_guide: form.filament || null,
       };
 
       let savedProd: any;
-         
+
       // Create or Update Product
       if (editing && product.product_id) {
+        console.log("📝 Editing product, sending PATCH...");
+        console.log("Payload:", payload);
         const res = await axios.patch(
           `/api/admin/products/${product.product_id}`,
           payload
         );
-        savedProd = res.data.product || res.data;
+        console.log("✅ PATCH Response:", res.data);
+        savedProd = res.data.product || res.data[0] || res.data;
+        console.log("📦 Saved product:", savedProd);
+
+        // Delete removed images
+        if (imagesToDelete.length > 0) {
+          console.log("🖼️ Deleting images:", imagesToDelete);
+          try {
+            await axios.delete(
+              `/api/admin/products/${product.product_id}/images`,
+              {
+                data: { image_ids: imagesToDelete },
+              }
+            );
+            console.log("✅ Images deleted");
+          } catch (err) {
+            console.warn("❌ Failed to delete images:", err);
+          }
+        }
+
+        // Clear existing compatibility and rebuild from form
+        if (product.product_compatibility && product.product_compatibility.length > 0) {
+          console.log("🔄 Clearing compatibility entries...");
+          for (const compat of product.product_compatibility) {
+            try {
+              await axios.delete(
+                `/api/admin/products/${product.product_id}/compatibility/${compat.compatibility_id}`
+              );
+            } catch (err) {
+              console.warn("❌ Failed to delete compatibility:", err);
+            }
+          }
+        }
       } else {
+        console.log("🆕 Creating new product, sending POST...");
         const res = await axios.post(`/api/admin/products`, payload);
-        console.log(payload);
-        savedProd = res.data.product || res.data;
+        console.log("✅ POST Response:", res.data);
+        savedProd = res.data.product || res.data[0] || res.data;
+        console.log("📦 Saved product:", savedProd);
       }
+
+      if (!savedProd?.product_id) {
+        throw new Error("Failed to get product ID from response");
+      }
+
+      console.log("✅ Product saved with ID:", savedProd.product_id);
 
       // Upload images using bulk endpoint
       if (imageFiles.length > 0 && savedProd?.product_id) {
@@ -244,15 +340,22 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
       }
 
       setNotice("Saved successfully");
+      console.log("✅ Save successful, notice set:", "Saved successfully");
       setImageFiles([]);
       setImagePreviews([]);
+      setImagesToDelete([]);
       onSaved?.(savedProd);
     } catch (err: any) {
-      console.error("Save failed", err);
-      setNotice(err?.response?.data?.error || err?.message || "Save failed");
+      console.error("❌ Save failed", err);
+      const errorMsg = err?.response?.data?.error || err?.message || "Save failed";
+      console.log("Setting error notice:", errorMsg);
+      setNotice(errorMsg);
     } finally {
       setSaving(false);
-      setTimeout(() => setNotice(null), 3000);
+      setTimeout(() => {
+        console.log("Clearing notice after 5 seconds");
+        setNotice(null);
+      }, 5000);
     }
   };
 
@@ -284,19 +387,49 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
   }, [product]);
 
   const [specValues, setSpecValues] = useState<Record<string, string>>(() => {
-    const existing = product?.technical_specification || {};
     const obj: Record<string, string> = {};
     SPEC_KEYS.forEach((k) => {
-      obj[k] = existing[k] ?? "";
+      obj[k] = "";
     });
     return obj;
   });
 
+  // Update specValues when product changes
+  useEffect(() => {
+    if (product?.technical_specification) {
+      const existing = product.technical_specification;
+      const obj: Record<string, string> = {};
+      SPEC_KEYS.forEach((k) => {
+        obj[k] = existing[k] ?? "";
+      });
+      setSpecValues(obj);
+    } else {
+      const obj: Record<string, string> = {};
+      SPEC_KEYS.forEach((k) => {
+        obj[k] = "";
+      });
+      setSpecValues(obj);
+    }
+  }, [product?.product_id]);
+
   return (
-    <form
-      onSubmit={handleSave}
-      className="glass-panel p-6 rounded-2xl border border-white/10 space-y-6"
-    >
+    <>
+      {notice && (
+        <div
+          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md p-4 rounded-md font-medium transition-all duration-300 ${
+            notice.includes("failed") || notice.includes("error")
+              ? "bg-red-500/20 text-red-300 border border-red-500/50"
+              : "bg-green-500/20 text-green-300 border border-green-500/50"
+          }`}
+        >
+          {notice.includes("failed") || notice.includes("error") ? "❌ " : "✅ "}
+          {notice}
+        </div>
+      )}
+      <form
+        onSubmit={handleSave}
+        className="glass-panel p-6 rounded-2xl border border-white/10 space-y-6"
+      >
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">
           {editing ? "Edit product" : "Create product"}
@@ -570,44 +703,96 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploadingImages || imageFiles.length >= 8}
+            disabled={uploadingImages || (existingImages.length + imageFiles.length) >= 8}
             className="px-4 py-2 rounded-md bg-white text-black disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {uploadingImages ? "Uploading..." : "Select images"}
           </button>
           <div className="text-sm text-white/60 self-center">
-            You can upload up to 8 images. ({imageFiles.length}/8)
+            You can upload up to 8 images. ({existingImages.length + imageFiles.length}/8)
           </div>
         </div>
 
-        {imagePreviews.length > 0 && (
-          <div className="mt-3 grid grid-cols-4 gap-3">
-            {imagePreviews.map((src, i) => (
-              <div
-                key={i}
-                className="relative rounded-md overflow-hidden border border-white/10"
-              >
-                <Image
-                  src={src}
-                  width={200}
-                  height={200}
-                  alt={`preview-${i}`}
-                  className="w-full h-24 object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() => removePreviewAt(i)}
-                  className="absolute top-1 right-1 bg-black/60 p-1 rounded-full text-white hover:bg-black/80"
-                >
-                  ×
-                </button>
-                {i === 0 && (
-                  <span className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                    Primary
-                  </span>
-                )}
+        {/* Existing Images */}
+        {existingImages.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm text-white/70 mb-2">Existing Images</h4>
+            <div className="grid grid-cols-4 gap-3">
+              {existingImages
+                .filter((img) => !imagesToDelete.includes(img.image_id))
+                .map((img, i) => (
+                  <div
+                    key={img.image_id || i}
+                    className="relative rounded-md overflow-hidden border border-white/10"
+                  >
+                    <Image
+                      src={img.image_url}
+                      width={200}
+                      height={200}
+                      alt={img.alt_text || `image-${i}`}
+                      className="w-full h-24 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setImagesToDelete((prev) => [
+                          ...prev,
+                          img.image_id,
+                        ])
+                      }
+                      className="absolute top-1 right-1 bg-red-600 p-1 rounded-full text-white hover:bg-red-700"
+                      title="Delete image"
+                    >
+                      ×
+                    </button>
+                    {img.is_primary && (
+                      <span className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                        Primary
+                      </span>
+                    )}
+                  </div>
+                ))}
+            </div>
+            {imagesToDelete.length > 0 && (
+              <div className="mt-2 text-sm text-red-400">
+                {imagesToDelete.length} image(s) marked for deletion
               </div>
-            ))}
+            )}
+          </div>
+        )}
+
+        {/* New Images to Upload */}
+        {imagePreviews.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm text-white/70 mb-2">New Images</h4>
+            <div className="grid grid-cols-4 gap-3">
+              {imagePreviews.map((src, i) => (
+                <div
+                  key={i}
+                  className="relative rounded-md overflow-hidden border border-white/10"
+                >
+                  <Image
+                    src={src}
+                    width={200}
+                    height={200}
+                    alt={`preview-${i}`}
+                    className="w-full h-24 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removePreviewAt(i)}
+                    className="absolute top-1 right-1 bg-black/60 p-1 rounded-full text-white hover:bg-black/80"
+                  >
+                    ×
+                  </button>
+                  {existingImages.length === 0 && i === 0 && (
+                    <span className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                      Primary
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -762,18 +947,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
             : "Create product"}
         </button>
       </div>
-
-      {notice && (
-        <div
-          className={`text-sm p-3 rounded-md ${
-            notice.includes("failed")
-              ? "bg-red-500/10 text-red-400"
-              : "bg-green-500/10 text-green-400"
-          }`}
-        >
-          {notice}
-        </div>
-      )}
     </form>
+    </>
   );
 }
