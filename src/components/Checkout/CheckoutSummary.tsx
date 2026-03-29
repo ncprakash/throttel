@@ -4,17 +4,12 @@ import { useState, useMemo } from "react";
 
 type Props = {
   subtotal: number;
-  shipping: number;
   itemCount: number;
   onPlaceOrder: (paymentMethod?: string) => void | Promise<void>;
   placingOrder: boolean;
   couponLabel?: string;
   discount?: number;
-
-  // added to match page.tsx usage
   total?: number;
-  shippingMethod?: "standard" | "express";
-  onChangeShipping?: (method: "standard" | "express") => void;
 };
 
 const formatCurrency = (value: number) =>
@@ -27,23 +22,19 @@ const formatCurrency = (value: number) =>
 
 export default function CheckoutSummary({
   subtotal,
-  shipping,
   itemCount,
   onPlaceOrder,
   placingOrder,
   couponLabel,
   discount = 0,
   total: propTotal,
-  shippingMethod = "standard",
-  onChangeShipping,
 }: Props) {
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
 
-  // prefer passed `total` prop if provided, otherwise compute locally
   const total = useMemo(() => {
     if (typeof propTotal === "number") return propTotal;
-    return Math.max(subtotal - discount + shipping, 0);
-  }, [subtotal, discount, shipping, propTotal]);
+    return Math.max(subtotal - discount, 0);
+  }, [subtotal, discount, propTotal]);
 
   return (
     <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-2xl p-6">
@@ -62,64 +53,11 @@ export default function CheckoutSummary({
           </div>
         )}
 
-        <div className="flex justify-between text-sm">
-          <span className="text-white/60">Shipping</span>
-          <span>{formatCurrency(shipping)}</span>
-        </div>
-
         <div className="border-t border-white/10 pt-3">
           <div className="flex justify-between font-semibold text-lg">
             <span>Total</span>
             <span>{formatCurrency(total)}</span>
           </div>
-        </div>
-      </div>
-
-      {/* Shipping Method */}
-      <div className="mb-6">
-        <label className="text-sm text-white/60 mb-2 block">
-          Shipping Method
-        </label>
-
-        <div className="space-y-2">
-          <label
-            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition ${
-              shippingMethod === "standard" ? "bg-white/5" : "bg-transparent hover:bg-white/5"
-            }`}
-            onClick={() => onChangeShipping?.("standard")}
-          >
-            <input
-              type="radio"
-              name="shipping"
-              checked={shippingMethod === "standard"}
-              onChange={() => onChangeShipping?.("standard")}
-            />
-            <div className="flex-1">
-              <div className="font-medium">Standard Shipping</div>
-              <div className="text-xs text-white/60">5–7 business days</div>
-            </div>
-            <span className="text-sm">{formatCurrency(shipping)}</span>
-          </label>
-
-          <label
-            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition ${
-              shippingMethod === "express" ? "bg-white/5" : "bg-transparent hover:bg-white/5"
-            }`}
-            onClick={() => onChangeShipping?.("express")}
-          >
-            <input
-              type="radio"
-              name="shipping"
-              checked={shippingMethod === "express"}
-              onChange={() => onChangeShipping?.("express")}
-            />
-            <div className="flex-1">
-              <div className="font-medium">Express Shipping</div>
-              <div className="text-xs text-white/60">1–2 business days</div>
-            </div>
-            {/* If express shipping has a different price, page.tsx should pass `shipping` accordingly */}
-            <span className="text-sm">{formatCurrency(shipping)}</span>
-          </label>
         </div>
       </div>
 

@@ -23,9 +23,6 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
-  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">(
-    "standard"
-  );
 
   const [formValues, setFormValues] = useState({
     customer_name: "",
@@ -82,9 +79,7 @@ export default function CheckoutPage() {
     return s + (price + variant) * it.quantity;
   }, 0);
 
-  const shipping = shippingMethod === "express" ? 150 : 80;
-  const tax = subtotal * 0.18;
-  const total = subtotal + shipping + tax;
+  const total = subtotal;
 
   // Razorpay Payment Handler
   const handleRazorpayPayment = async (orderData: any) => {
@@ -200,7 +195,6 @@ export default function CheckoutPage() {
         shipping_postal_code: formValues.shipping_postal_code,
         shipping_country: formValues.shipping_country,
         payment_method: "razorpay",
-        shipping_method: shippingMethod,
         items: cartItems.map((item: any) => ({
           product_id: item.product.product_id,
           variant_id: item.variant?.variant_id || null,
@@ -213,8 +207,8 @@ export default function CheckoutPage() {
             item.quantity,
         })),
         subtotal,
-        shipping_charges: shipping,
-        tax_amount: tax,
+        shipping_charges: 0,
+        tax_amount: 0,
         total_amount: total,
       };
 
@@ -237,11 +231,9 @@ export default function CheckoutPage() {
 
       console.log("✅ Order created successfully:", data);
 
-      // data should contain: { order_id, order_number, amount, currency, razorpay_order_id }
-
       // 2) Insert order_items rows into `public.order_items`
       const itemsPayload = cartItems.map((item: any) => ({
-        order_id: data.order_id, // from /api/orders/create result
+        order_id: data.order_id,
         product_id: item.product.product_id,
         variant_id: item.variant?.variant_id || null,
         product_name: item.product.name,
@@ -276,7 +268,7 @@ export default function CheckoutPage() {
 
       // 3) Start Razorpay payment for this order
       await handleRazorpayPayment({
-        ...data, // order_id, order_number, amount, currency, razorpay_order_id
+        ...data,
       });
     } catch (error: any) {
       console.error("[handlePlaceOrder] Order failed:", error);
@@ -321,10 +313,9 @@ export default function CheckoutPage() {
     <>
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="afterInteractive" // ✅ Already correct
+        strategy="afterInteractive"
         onLoad={() => {
           console.log("✅ Razorpay script LOADED");
-          // Force window.Razorpay to be available
           if (window.Razorpay) {
             console.log("✅ window.Razorpay available:", window.Razorpay);
           }
@@ -367,11 +358,8 @@ export default function CheckoutPage() {
             <div className="space-y-6 lg:sticky lg:top-6">
               <CheckoutSummary
                 subtotal={subtotal}
-                shipping={shipping}
                 total={total}
                 itemCount={cartItems.length}
-                onChangeShipping={setShippingMethod}
-                shippingMethod={shippingMethod}
                 onPlaceOrder={handlePlaceOrder}
                 placingOrder={placingOrder}
               />
