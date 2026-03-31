@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 type CartSummaryProps = {
   subtotal: number;
   itemCount: number;
@@ -29,6 +31,8 @@ export default function CartSummary({
   discount = 0,
   total: propTotal,
 }: CartSummaryProps) {
+  const router = useRouter();
+
   const total =
     typeof propTotal === "number"
       ? propTotal
@@ -71,6 +75,14 @@ export default function CartSummary({
             <span>{formatCurrency(total)}</span>
           </div>
         </div>
+
+        {/* Checkout Button */}
+        <button
+          onClick={() => router.push("/checkout")}
+          className="w-full mt-4 bg-white text-black py-2 rounded-lg font-medium hover:bg-gray-200 transition"
+        >
+          Proceed to Checkout
+        </button>
       </div>
     </div>
   );
