@@ -10,6 +10,10 @@ type Props = {
   couponLabel?: string;
   discount?: number;
   total?: number;
+  // New — passed from checkout page
+  shipping?: number;
+  shippingLabel?: string;
+  tax?: number;
 };
 
 const formatCurrency = (value: number) =>
@@ -28,6 +32,9 @@ export default function CheckoutSummary({
   couponLabel,
   discount = 0,
   total: propTotal,
+  shipping,
+  shippingLabel,
+  tax,
 }: Props) {
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">(
     "online",
@@ -51,7 +58,21 @@ export default function CheckoutSummary({
         {discount > 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-white/60">{couponLabel ?? "Discount"}</span>
-            <span>-{formatCurrency(discount)}</span>
+            <span className="text-green-400">-{formatCurrency(discount)}</span>
+          </div>
+        )}
+
+        {typeof shipping === "number" && (
+          <div className="flex justify-between text-sm">
+            <span className="text-white/60">{shippingLabel ?? "Shipping"}</span>
+            <span>{formatCurrency(shipping)}</span>
+          </div>
+        )}
+
+        {typeof tax === "number" && tax > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-white/60">GST (18%)</span>
+            <span>{formatCurrency(tax)}</span>
           </div>
         )}
 

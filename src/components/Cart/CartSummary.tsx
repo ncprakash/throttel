@@ -1,119 +1,74 @@
-// components/cart/CartSummary.tsx
 "use client";
-
-import { useRouter } from "next/navigation";
 
 type CartSummaryProps = {
   subtotal: number;
-  shipping: number;
-  total: number;
   itemCount: number;
+  shipping?: number;
+  shippingLabel?: string;
+  tax?: number;
+  couponLabel?: string;
+  discount?: number;
+  total?: number;
 };
+
+const formatCurrency = (value: number) =>
+  typeof Intl !== "undefined"
+    ? new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+      }).format(value)
+    : `₹${value.toFixed(2)}`;
 
 export default function CartSummary({
   subtotal,
-  shipping,
-  total,
   itemCount,
+  shipping,
+  shippingLabel,
+  tax,
+  couponLabel,
+  discount = 0,
+  total: propTotal,
 }: CartSummaryProps) {
-  const router = useRouter();
+  const total =
+    typeof propTotal === "number"
+      ? propTotal
+      : Math.max(subtotal - discount, 0);
 
   return (
-    <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 top-8">
-      <h2 className="text-xl font-bold text-white mb-6">Order Summary</h2>
+    <div>
+      <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
 
-      {/* Order Details */}
-      <div className="space-y-3 mb-6">
+      <div className="space-y-3">
         <div className="flex justify-between text-sm">
-          <span className="text-[rgba(255,255,255,0.6)]">
-            Subtotal ({itemCount} items)
-          </span>
-          <span className="text-white font-semibold">
-            ₹{subtotal.toLocaleString("en-IN")}
-          </span>
+          <span className="text-white/60">Subtotal ({itemCount} items)</span>
+          <span>{formatCurrency(subtotal)}</span>
         </div>
 
-        <div className="flex justify-between text-sm">
-          <span className="text-[rgba(255,255,255,0.6)]">Shipping</span>
-
-          {shipping === 0 ? (
-            <span className="text-[rgba(34,197,94,1)] font-semibold">FREE</span>
-          ) : (
-            <span className="text-[rgba(34,197,94,1)] font-semibold">
-              ₹{shipping.toLocaleString("en-IN")}
-            </span>
-          )}
-        </div>
-
-        <div className="border-t border-[rgba(255,255,255,0.06)] pt-3 mt-3">
-          <div className="flex justify-between">
-            <span className="text-lg font-bold text-white">Total</span>
-            <span className="text-2xl font-bold text-white">
-              ₹{total.toLocaleString("en-IN")}
-            </span>
+        {discount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-white/60">{couponLabel ?? "Discount"}</span>
+            <span className="text-green-400">-{formatCurrency(discount)}</span>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Promo Code */}
-    
-
-      {/* Checkout Button */}
-      <button
-        onClick={() => router.push("/checkout")}
-        className="w-full backdrop-blur-md bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] text-white font-bold py-3 rounded-xl transition-all hover:scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.4)] flex items-center justify-center gap-2"
-      >
-        <span>Proceed to Checkout</span>
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M14 5l7 7m0 0l-7 7m7-7H3"
-          />
-        </svg>
-      </button>
-
-      {/* Trust Badges */}
-      <div className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.06)]">
-        <div className="flex justify-center gap-6 text-xs text-[rgba(255,255,255,0.6)]">
-          <div className="flex items-center gap-1">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-            <span>Secure</span>
+        {typeof shipping === "number" && (
+          <div className="flex justify-between text-sm">
+            <span className="text-white/60">{shippingLabel ?? "Shipping"}</span>
+            <span>{formatCurrency(shipping)}</span>
           </div>
+        )}
 
-          <div className="flex items-center gap-1">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-              />
-            </svg>
-            <span>Safe Payment</span>
+        {typeof tax === "number" && tax > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-white/60">GST (18%)</span>
+            <span>{formatCurrency(tax)}</span>
+          </div>
+        )}
+
+        <div className="border-t border-white/10 pt-3">
+          <div className="flex justify-between font-semibold text-lg">
+            <span>Total</span>
+            <span>{formatCurrency(total)}</span>
           </div>
         </div>
       </div>
