@@ -29,7 +29,9 @@ export default function CheckoutSummary({
   discount = 0,
   total: propTotal,
 }: Props) {
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">(
+    "online",
+  );
 
   const total = useMemo(() => {
     if (typeof propTotal === "number") return propTotal;
@@ -63,7 +65,9 @@ export default function CheckoutSummary({
 
       {/* Payment Method */}
       <div className="mb-6">
-        <label className="text-sm text-white/60 mb-2 block">Payment Method</label>
+        <label className="text-sm text-white/60 mb-2 block">
+          Payment Method
+        </label>
         <div className="space-y-2">
           <label className="flex items-center gap-3 p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition">
             <input
@@ -73,15 +77,6 @@ export default function CheckoutSummary({
               onChange={() => setPaymentMethod("online")}
             />
             <span>Online Payment</span>
-          </label>
-          <label className="flex items-center gap-3 p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition">
-            <input
-              type="radio"
-              name="payment"
-              checked={paymentMethod === "cod"}
-              onChange={() => setPaymentMethod("cod")}
-            />
-            <span>Cash on Delivery</span>
           </label>
         </div>
       </div>
