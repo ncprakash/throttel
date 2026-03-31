@@ -11,6 +11,28 @@ import CheckoutForm from "@/components/Checkout/CheckoutForm";
 import CheckoutSummary from "@/components/Checkout/CheckoutSummary";
 import OrderReview from "@/components/Checkout/OrderReview";
 
+// ── Shared constants (keep in sync with cart/page.tsx) ──────────────────────
+export type ShippingOption = "normal" | "superfast";
+
+export const SHIPPING_OPTIONS: Record<
+  ShippingOption,
+  { label: string; description: string; price: number }
+> = {
+  normal: {
+    label: "Normal Delivery",
+    description: "5–7 business days",
+    price: 80,
+  },
+  superfast: {
+    label: "Superfast Delivery",
+    description: "1–2 business days",
+    price: 150,
+  },
+};
+
+export const TAX_RATE = 0.18; // 18% GST
+// ────────────────────────────────────────────────────────────────────────────
+
 declare global {
   interface Window {
     Razorpay: any;
@@ -23,6 +45,8 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [selectedShipping, setSelectedShipping] =
+    useState<ShippingOption>("normal");
 
   const [formValues, setFormValues] = useState({
     customer_name: "",
@@ -52,7 +76,7 @@ export default function CheckoutPage() {
     }));
   }, [session, status, router]);
 
-  // Load cart
+  // Load cart + restore shipping option saved by cart page
   useEffect(() => {
     const loadCart = () => {
       try {
@@ -69,17 +93,29 @@ export default function CheckoutPage() {
         setLoading(false);
       }
     };
+
+    // Restore the shipping option the user picked on the cart page
+    const savedShipping = localStorage.getItem(
+      "shippingOption",
+    ) as ShippingOption | null;
+    if (savedShipping && SHIPPING_OPTIONS[savedShipping]) {
+      setSelectedShipping(savedShipping);
+    }
+
     loadCart();
   }, []);
 
-  // Calculate totals
-  const subtotal = cartItems.reduce((s, it) => {
-    const price = it.product?.sale_price ?? it.product?.regular_price ?? 0;
-    const variant = it.variant?.additional_price || 0;
-    return s + (price + variant) * it.quantity;
+  // ── Totals (mirrors cart/page.tsx exactly) ──────────────────────────────
+  const subtotal = cartItems.reduce((sum, item) => {
+    const price = item.product?.sale_price ?? item.product?.regular_price ?? 0;
+    const variantPrice = item.variant?.additional_price || 0;
+    return sum + (price + variantPrice) * item.quantity;
   }, 0);
 
-  const total = subtotal;
+  const shipping = SHIPPING_OPTIONS[selectedShipping].price;
+  const tax = Math.round(subtotal * TAX_RATE);
+  const total = subtotal + shipping + tax;
+  // ────────────────────────────────────────────────────────────────────────
 
   // Razorpay Payment Handler
   const handleRazorpayPayment = async (orderData: any) => {
@@ -121,6 +157,7 @@ export default function CheckoutPage() {
 
           if (verifyData.success) {
             localStorage.removeItem("cartItems");
+            localStorage.removeItem("shippingOption");
             toast.success("Payment successful!");
             router.push(`/order/confirmation/${orderData.order_id}`);
           } else {
@@ -148,7 +185,7 @@ export default function CheckoutPage() {
 
     try {
       const razorpay = new window.Razorpay(options);
-      razorpay.on("payment.failed", (response: any) => {
+      razorpay.on("payment.failed", () => {
         setPlacingOrder(false);
         toast.error("Payment failed");
       });
@@ -160,7 +197,7 @@ export default function CheckoutPage() {
     }
   };
 
-  // Single Place Order - RAZORPAY ONLY
+  // Place Order
   const handlePlaceOrder = async () => {
     console.log("[handlePlaceOrder] Started");
 
@@ -207,14 +244,14 @@ export default function CheckoutPage() {
             item.quantity,
         })),
         subtotal,
-        shipping_charges: 0,
-        tax_amount: 0,
+        shipping_charges: shipping,
+        tax_amount: tax,
         total_amount: total,
       };
 
       console.log("[handlePlaceOrder] Order payload prepared:", orderPayload);
 
-      // 1) Create main order (in `orders` table) + Razorpay order
+      // 1) Create main order + Razorpay order
       const response = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -222,7 +259,6 @@ export default function CheckoutPage() {
       });
 
       const data = await response.json();
-
       console.log("[handlePlaceOrder] /api/orders/create response:", data);
 
       if (!response.ok) {
@@ -231,7 +267,7 @@ export default function CheckoutPage() {
 
       console.log("✅ Order created successfully:", data);
 
-      // 2) Insert order_items rows into `public.order_items`
+      // 2) Insert order_items rows
       const itemsPayload = cartItems.map((item: any) => ({
         order_id: data.order_id,
         product_id: item.product.product_id,
@@ -247,7 +283,7 @@ export default function CheckoutPage() {
 
       console.log(
         "[handlePlaceOrder] order_items payload prepared:",
-        itemsPayload
+        itemsPayload,
       );
 
       const itemsRes = await fetch("/api/order-items", {
@@ -257,7 +293,6 @@ export default function CheckoutPage() {
       });
 
       const itemsData = await itemsRes.json();
-
       console.log("[handlePlaceOrder] /api/order-items response:", itemsData);
 
       if (!itemsRes.ok) {
@@ -266,10 +301,8 @@ export default function CheckoutPage() {
 
       console.log("✅ Order items created successfully");
 
-      // 3) Start Razorpay payment for this order
-      await handleRazorpayPayment({
-        ...data,
-      });
+      // 3) Start Razorpay payment
+      await handleRazorpayPayment({ ...data });
     } catch (error: any) {
       console.error("[handlePlaceOrder] Order failed:", error);
       toast.error(error.message || "Order failed");
@@ -358,6 +391,9 @@ export default function CheckoutPage() {
             <div className="space-y-6 lg:sticky lg:top-6">
               <CheckoutSummary
                 subtotal={subtotal}
+                shipping={shipping}
+                shippingLabel={SHIPPING_OPTIONS[selectedShipping].label}
+                tax={tax}
                 total={total}
                 itemCount={cartItems.length}
                 onPlaceOrder={handlePlaceOrder}
