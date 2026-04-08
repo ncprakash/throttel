@@ -22,7 +22,7 @@ async function getShipRocketToken(): Promise<string> {
     }),
   });
   const data = await res.json();
-  console.log("ShipRocket login:", JSON.stringify(data));
+ 
   if (!data.token) throw new Error("ShipRocket login failed: " + JSON.stringify(data));
   return data.token;
 }
@@ -40,10 +40,22 @@ async function createShipRocketOrder(order: any, token: string) {
     0
   );
 
+  // Fix 1: Include time in order_date
+  const now = new Date();
+  const orderDate = `${now.toISOString().split("T")[0]} ${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+  // Fix 2: Safe phone number handling
+  const rawPhone = order.customer_phone || "";
+  const cleanPhone = rawPhone
+    .replace(/\D/g, "")
+    .replace(/^91/, "")
+    .slice(-10);
+  const safePhone = cleanPhone.length === 10 ? cleanPhone : "9999999999"; // fallback
+
   const payload = {
     order_id: String(order.order_id),
-    order_date: new Date().toISOString().split("T")[0],
-    pickup_location: "home", // change to match your ShipRocket pickup name
+    order_date: orderDate, // ← fixed
+    pickup_location: "home",
 
     billing_customer_name: order.customer_name || "Customer",
     billing_last_name: "",
@@ -54,10 +66,9 @@ async function createShipRocketOrder(order: any, token: string) {
     billing_state: order.shipping_state || "N/A",
     billing_country: order.shipping_country || "India",
     billing_email: order.customer_email || "",
-    billing_phone: order.customer_phone || "0000000000",
+    billing_phone: safePhone, // ← fixed
 
     shipping_is_billing: true,
-
     order_items: srItems,
     payment_method: "Prepaid",
     sub_total: subtotal,
@@ -67,7 +78,7 @@ async function createShipRocketOrder(order: any, token: string) {
     weight: 0.5,
   };
 
-  console.log("ShipRocket payload:", JSON.stringify(payload));
+ 
 
   const res = await fetch(
     "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc",
@@ -80,9 +91,15 @@ async function createShipRocketOrder(order: any, token: string) {
       body: JSON.stringify(payload),
     }
   );
+
   const data = await res.json();
   console.log("ShipRocket response:", JSON.stringify(data));
-  if (!res.ok) throw new Error("ShipRocket failed: " + JSON.stringify(data));
+
+  // Fix 3: Validate by checking order_id in response body, not just HTTP status
+  if (!res.ok || !data.order_id) {
+    throw new Error("ShipRocket failed: " + JSON.stringify(data));
+  }
+
   return data;
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -90,7 +107,7 @@ async function createShipRocketOrder(order: any, token: string) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log("Verify payment body:", JSON.stringify(body));
+   
 
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, order_id } = body;
 
@@ -101,9 +118,7 @@ export async function POST(request: NextRequest) {
       .update(sign)
       .digest("hex");
 
-    console.log("Signature match:", expectedSign === razorpay_signature);
-    console.log("  received:", razorpay_signature);
-    console.log("  expected:", expectedSign);
+   
 
     if (expectedSign !== razorpay_signature) {
       return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 400 });
@@ -116,8 +131,7 @@ export async function POST(request: NextRequest) {
       .eq("order_id", order_id)
       .single();
 
-    console.log("Fetched order:", JSON.stringify(order));
-    console.log("Fetch error:", JSON.stringify(fetchError));
+  
 
     if (fetchError || !order) {
       return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });
@@ -135,15 +149,14 @@ export async function POST(request: NextRequest) {
         order.shipping_state = parsed.shipping_state;
         order.shipping_postal_code = parsed.shipping_postal_code;
         order.shipping_country = parsed.shipping_country || "India";
-        console.log("Parsed customer info from notes JSON");
+     
+
       } catch {
         console.warn("Could not parse notes as JSON:", order.notes);
       }
     }
 
-    console.log("Customer:", order.customer_name, order.customer_email);
-    console.log("Address:", order.shipping_address, order.shipping_city, order.shipping_postal_code);
-
+  
     // Update order to paid
     const { error: updateError } = await supabase
       .from("orders")
@@ -154,18 +167,20 @@ export async function POST(request: NextRequest) {
     else console.log("Order updated to confirmed/paid");
 
     // ShipRocket
-    try {
-      const srToken = await getShipRocketToken();
-      const srOrder = await createShipRocketOrder(order, srToken);
-      await supabase
-        .from("orders")
-        .update({ shiprocket_order_id: String(srOrder.order_id) })
-        .eq("order_id", order_id);
-      console.log("ShipRocket order created:", srOrder.order_id);
-    } catch (srError) {
-      console.error("ShipRocket error (non-fatal):", srError);
-    }
+    let shiprocketOrderId: string | null = null;
 
+try {
+  const srToken = await getShipRocketToken();
+  const srOrder = await createShipRocketOrder(order, srToken);
+  shiprocketOrderId = String(srOrder.order_id);
+  await supabase
+    .from("orders")
+    .update({ shiprocket_order_id: shiprocketOrderId })
+    .eq("order_id", order_id);
+  console.log("ShipRocket order created:", srOrder.order_id);
+} catch (srError) {
+  console.error("ShipRocket error (non-fatal):", srError);
+}
     // Confirmation email
     try {
       const transporter = createTransport();
@@ -213,7 +228,12 @@ export async function POST(request: NextRequest) {
                 <li>Order being prepared</li>
                 <li>Shipping within 2-3 business days</li>
               </ul>
-            </div>
+            </div> <p style="margin: 8px 0;">ShipRocket Order ID: <strong>${shiprocketOrderId}</strong></p>
+      <a href="https://www.shiprocket.in/shipment-tracking/?id=${shiprocketOrderId}"
+         style="display: inline-block; background: #2e7d32; color: white; padding: 12px 24px;
+                border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 8px;">
+        Track Package
+      </a>
             <p style="color: #666; text-align: center;">
               Need help? <a href="mailto:support@throttleforged.com">Contact Support</a>
             </p>
