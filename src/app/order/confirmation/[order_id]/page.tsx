@@ -20,6 +20,7 @@ interface Order {
     quantity: number;
     unit_price: number;
     total_price: number;
+    variant_name?: string | null;
   }>;
 }
 
