@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-
 interface Order {
   order_id: string;
   total_amount: number;
@@ -16,10 +15,11 @@ interface Order {
   customer_name?: string;
   customer_email?: string;
   shipping_address?: string;
-  items?: Array<{
+  order_items?: Array<{
     product_name: string;
     quantity: number;
     unit_price: number;
+    total_price: number;
   }>;
 }
 
@@ -28,68 +28,41 @@ export default function OrderConfirmation() {
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const orderId = params.order_id as string;
 
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderId) {
+        console.error("❌ No orderId in URL params");
         router.push("/orders");
         return;
       }
 
+      console.log("📌 orderId from URL:", orderId);
+
       try {
+        console.log("🚀 Fetching:", `/api/orders/${orderId}`);
+
         const res = await fetch(`/api/orders/${orderId}`, {
-          credentials: 'include'
+          credentials: "include",
         });
+
+        console.log("📡 Response status:", res.status);
 
         if (res.ok) {
           const orderData = await res.json();
+          console.log("✅ Order data:", orderData);
           setOrder(orderData);
         } else {
-          // Fallback mock data
-          setOrder({
-            order_id: orderId,
-            total_amount: 1250,
-            subtotal: 1050,
-            shipping_charges: 80,
-            tax_amount: 180,
-            payment_method: "razorpay",
-            status: "confirmed",
-            customer_name: "John Doe",
-            customer_email: "john@example.com",
-            shipping_address: "123 Main St, Bangalore",
-            items: [
-              {
-                product_name: "Motorcycle Helmet",
-                quantity: 1,
-                unit_price: 1200
-              }
-            ]
-          });
+          const errData = await res.json().catch(() => ({}));
+          console.error("❌ API error:", res.status, errData);
+          setError(`Failed to load order (${res.status})`);
         }
-      } catch (error) {
-        console.error("Order fetch error:", error);
-        // Fallback mock data
-        setOrder({
-          order_id: orderId,
-          total_amount: 1250,
-          subtotal: 1050,
-          shipping_charges: 80,
-          tax_amount: 180,
-          payment_method: "razorpay",
-          status: "confirmed",
-          customer_name: "John Doe",
-          customer_email: "john@example.com",
-          shipping_address: "123 Main St, Bangalore",
-          items: [
-            {
-              product_name: "Motorcycle Helmet",
-              quantity: 1,
-              unit_price: 1200
-            }
-          ]
-        });
+      } catch (err) {
+        console.error("❌ Fetch error:", err);
+        setError("Network error. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -110,13 +83,16 @@ export default function OrderConfirmation() {
     );
   }
 
-  if (!order) {
+  if (error || !order) {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center p-8">
         <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-12 text-center max-w-md mx-auto">
           <h1 className="text-3xl font-bold text-white mb-4">Order Not Found</h1>
-          <p className="text-white/60 mb-8">The order you're looking for doesn't exist</p>
-          <button 
+          <p className="text-white/60 mb-2">
+            {error || "The order you're looking for doesn't exist"}
+          </p>
+          <p className="text-white/40 text-sm mb-8">Order ID: {orderId}</p>
+          <button
             onClick={() => router.push("/shop")}
             className="px-8 py-3 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition"
           >
@@ -130,6 +106,7 @@ export default function OrderConfirmation() {
   return (
     <div className="min-h-screen bg-transparent text-white py-20 px-4">
       <div className="max-w-4xl mx-auto">
+
         {/* Success Header */}
         <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-3xl p-12 text-center mb-12">
           <div className="w-28 h-28 bg-green-500/20 border-4 border-green-500/50 rounded-full flex items-center justify-center mx-auto mb-8">
@@ -137,7 +114,6 @@ export default function OrderConfirmation() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
             Thank You!
           </h1>
@@ -147,21 +123,22 @@ export default function OrderConfirmation() {
 
         {/* Order Summary */}
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
+
           {/* Order Details */}
           <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-2xl p-8">
             <h3 className="text-2xl font-bold mb-6">Order Details</h3>
             <div className="space-y-4 text-sm">
               <div className="flex justify-between">
                 <span className="text-white/70">Subtotal</span>
-                <span>₹{(order.subtotal || 1050).toLocaleString()}</span>
+                <span>₹{(order.subtotal ?? 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-white/70">Shipping</span>
-                <span>₹{(order.shipping_charges || 80).toLocaleString()}</span>
+                <span>₹{(order.shipping_charges ?? 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-white/70">Tax (18%)</span>
-                <span>₹{(order.tax_amount || 180).toLocaleString()}</span>
+                <span>₹{(order.tax_amount ?? 0).toLocaleString()}</span>
               </div>
               <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-4" />
               <div className="flex justify-between text-xl font-bold">
@@ -169,6 +146,30 @@ export default function OrderConfirmation() {
                 <span>₹{order.total_amount.toLocaleString()}</span>
               </div>
             </div>
+
+            {/* Order Items */}
+            {order.order_items && order.order_items.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <h4 className="text-sm font-semibold text-white/70 mb-3">Items</h4>
+                <div className="space-y-2">
+                  {Array.from(
+                    new Map(
+                      order.order_items.map((item) => [
+                        `${item.product_name}-${item.variant_name ?? ""}-${item.unit_price}-${item.total_price}`,
+                        item,
+                      ])
+                    ).values()
+                  ).map((item, i) => (
+                    <div key={i} className="flex justify-between text-sm">
+                      <span className="text-white/80">
+                        {item.product_name} × {item.quantity}
+                      </span>
+                      <span>₹{item.total_price.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Payment & Status */}
@@ -182,9 +183,21 @@ export default function OrderConfirmation() {
               <div className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.05)] rounded-xl">
                 <span className="text-white/70">Order Status</span>
                 <span className="px-4 py-2 bg-green-500/20 text-green-400 rounded-full text-sm font-semibold border border-green-500/30">
-                  Confirmed
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>
               </div>
+              {order.customer_name && (
+                <div className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.05)] rounded-xl">
+                  <span className="text-white/70">Customer</span>
+                  <span className="font-semibold">{order.customer_name}</span>
+                </div>
+              )}
+              {order.shipping_address && (
+                <div className="p-4 bg-[rgba(255,255,255,0.05)] rounded-xl">
+                  <span className="text-white/70 text-sm block mb-1">Shipping Address</span>
+                  <span className="text-sm">{order.shipping_address}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -204,6 +217,7 @@ export default function OrderConfirmation() {
             Continue Shopping
           </button>
         </div>
+
       </div>
     </div>
   );

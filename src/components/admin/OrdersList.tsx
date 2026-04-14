@@ -52,7 +52,10 @@ export default function OrdersList() {
         params: { limit: 50 },
       });
       const payload: Order[] = res.data.orders ?? res.data ?? [];
-      setOrders(payload);
+      const uniqueOrders = Array.from(
+        new Map(payload.map((order) => [order.order_id, order])).values()
+      );
+      setOrders(uniqueOrders);
     } catch (err) {
       console.error("Failed to load orders", err);
       setError("Failed to load orders");

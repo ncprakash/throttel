@@ -53,7 +53,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ orders: data });
+    const uniqueOrders = Array.from(
+      new Map((data ?? []).map((order: any) => [order.order_id, order]))
+        .values()
+    );
+
+    return NextResponse.json({ orders: uniqueOrders });
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message || "Failed to fetch orders" },

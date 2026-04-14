@@ -8,10 +8,7 @@ import BottomNav from "@/components/BottomNavbar";
 import { FaTimes } from "react-icons/fa";
 import Footer from "@/components/Footer";
 
-import ShopSidebar from "@/components/shopComp/ShopSidebar";
-
 export default function ShopPage() {
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("featured");
 
   // filter + type: "bike" when chosen from bikes, "category" when chosen from categories
@@ -128,49 +125,32 @@ export default function ShopPage() {
     }
   }, [products, sortBy]);
 
-  // Handler wrappers for passing into the sidebar
+  // Handler wrappers for header filters
   const handleSelectCategory = (cat: string) => {
     setFilterType("category");
     setSearchFilter(cat || "");
-  };
-
-  const handleSelectBike = (bike: string) => {
-    setFilterType("bike");
-    setSearchFilter(bike || "");
   };
 
   return (
     <>
       <div className="min-h-screen bg-transparent text-white pb-32">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Layout: sidebar + main.
-              On small screens the sidebar sits above the main content (full width).
-              On lg+ the sidebar becomes the left column. */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Sidebar column: visible on all sizes.
-                - small screens: full width and appears above main (order-first)
-                - lg+: occupies left column */}
-            {/* <div className="col-span-1 lg:col-span-1 order-first lg:order-none">
-              <ShopSidebar
-                onSelectCategory={handleSelectCategory}
-                onSelectBike={handleSelectBike}
-              />
-            </div> */}
-
-            {/* Main column */}
-            <div className="col-span-1 lg:col-span-4 space-y-6">
+          {/* Layout: main content only. */}
+          <div className="space-y-6">
               {/* Header (higher stacking context) */}
               <div className="relative z-40">
                 <ShopHeader
                   totalResults={sortedProducts.length}
-                  currentView={viewMode}
-                  onViewChange={setViewMode}
                   sortBy={sortBy}
                   onSortChange={setSortBy}
                   onSearchSelect={(val: string) => {
                     // when user types a free search from header, treat as bike search by default
                     setFilterType("bike");
                     setSearchFilter(val);
+                  }}
+                  onCategorySelect={(cat: string) => {
+                    setFilterType("category");
+                    setSearchFilter(cat);
                   }}
                 />
               </div>
@@ -260,7 +240,7 @@ export default function ShopPage() {
                       {sortedProducts.length > 0 ? (
                         <ProductGrid
                           products={sortedProducts}
-                          viewMode={viewMode}
+                          viewMode="grid"
                         />
                       ) : (
                         <div className="flex items-center justify-center py-32">
@@ -313,7 +293,6 @@ export default function ShopPage() {
         </div>
 
         <BottomNav />
-      </div>
 
       <Footer />
     </>

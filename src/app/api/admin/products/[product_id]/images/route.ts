@@ -1,4 +1,4 @@
-// app/api/admin/products/[product_id]/images/route.ts
+// src\app\api\admin\products\[product_id]\images\route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { supabase } from "@/lib/supabase";

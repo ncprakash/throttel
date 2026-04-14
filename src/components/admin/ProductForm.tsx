@@ -293,30 +293,43 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
       console.log("✅ Product saved with ID:", savedProd.product_id);
 
       // Upload images using bulk endpoint
-      if (imageFiles.length > 0 && savedProd?.product_id) {
-        setUploadingImages(true);
-        const formData = new FormData();
+     if (imageFiles.length > 0 && savedProd?.product_id) {
+  setUploadingImages(true);
+  const formData = new FormData();
 
-        // Append all images with the same field name
-        imageFiles.forEach((file) => {
-          formData.append("images", file);
-        });
+  imageFiles.forEach((file) => {
+    formData.append("images", file);
+  });
 
-        try {
-          await axios.post(
-            `/api/admin/products/${savedProd.product_id}/images/bulk`,
-            formData,
-            {
-              headers: { "Content-Type": "multipart/form-data" },
-            }
-          );
-        } catch (err) {
-          console.warn("Bulk image upload failed", err);
-          setNotice("Product saved but image upload failed");
-        } finally {
-          setUploadingImages(false);
-        }
-      }
+  console.log("📸 Files to upload:", imageFiles.length);
+  imageFiles.forEach((f, i) =>
+    console.log(`  File ${i}:`, f.name, f.type, f.size, "bytes")
+  );
+
+  try {
+    console.log("🚀 Sending upload request to:", `/api/admin/products/${savedProd.product_id}/image/bulk`);
+    
+    const response = await axios.post(  // ✅ capture response here
+      `/api/admin/products/${savedProd.product_id}/images/bulk`,  // ✅ removed /bulk
+      formData
+      // ✅ no headers
+    );
+
+    console.log("✅ Upload success! Status:", response.status);
+    console.log("✅ Response data:", response.data);
+
+  } catch (err: any) {  // ✅ typed as any so err.response works
+    console.error("❌ Upload FAILED");
+    console.error("  Status:", err?.response?.status);
+    console.error("  Error message:", err?.response?.data?.error);
+    console.error("  Error details:", err?.response?.data?.details);
+    console.error("  Full response:", err?.response?.data);
+    console.error("  Raw error:", err);
+    setNotice(`Image upload failed: ${err?.response?.data?.error || err?.message}`);
+  } finally {
+    setUploadingImages(false);
+  }
+}
 
       // Save compatibility entries
       if (compatList.length > 0 && savedProd?.product_id) {

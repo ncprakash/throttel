@@ -254,9 +254,7 @@ const flattenJsonbArray = (array: any[]): Record<string, string> => {
                   </div>
                 )}
 
-                <div className="mt-4">
-                  <ProductBadges warrantyMonths={product.warranty_months} />
-                </div>
+               
 
                 <div className="mt-6">
                   <ProductActions

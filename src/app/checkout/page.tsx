@@ -267,40 +267,6 @@ export default function CheckoutPage() {
 
       console.log("✅ Order created successfully:", data);
 
-      // 2) Insert order_items rows
-      const itemsPayload = cartItems.map((item: any) => ({
-        order_id: data.order_id,
-        product_id: item.product.product_id,
-        variant_id: item.variant?.variant_id || null,
-        product_name: item.product.name,
-        variant_name: item.variant?.name || null,
-        quantity: item.quantity,
-        unit_price: item.product.sale_price || item.product.regular_price,
-        total_price:
-          (item.product.sale_price || item.product.regular_price) *
-          item.quantity,
-      }));
-
-      console.log(
-        "[handlePlaceOrder] order_items payload prepared:",
-        itemsPayload,
-      );
-
-      const itemsRes = await fetch("/api/order-items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(itemsPayload),
-      });
-
-      const itemsData = await itemsRes.json();
-      console.log("[handlePlaceOrder] /api/order-items response:", itemsData);
-
-      if (!itemsRes.ok) {
-        throw new Error(itemsData.error || "Failed to create order items");
-      }
-
-      console.log("✅ Order items created successfully");
-
       // 3) Start Razorpay payment
       await handleRazorpayPayment({ ...data });
     } catch (error: any) {

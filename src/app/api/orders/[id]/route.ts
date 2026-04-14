@@ -4,10 +4,12 @@ import { supabase } from "@/lib/supabase";
 
 export async function GET(
   request: NextRequest,
-   { params }: { params: Promise<{ id: string }> }  
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } =  await  params;
+    const { id } = await params;
+
+    console.log("📌 API hit! id:", id); // check terminal
 
     const { data: order, error } = await supabase
       .from("orders")
@@ -21,15 +23,24 @@ export async function GET(
           total_price
         )
       `)
-      .eq("user_id", id)
+      .eq("order_id", id)  // ✅ was user_id — now order_id
       .single();
 
+    
+
     if (error || !order) {
-      return new Response(null, { status: 404 });
+      return new Response(
+        JSON.stringify({ error: error?.message || "Order not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     return Response.json(order);
-  } catch (error) {
-    return new Response(null, { status: 500 });
+  } catch (err: any) {
+    console.error("❌ Server error:", err);
+    return new Response(
+      JSON.stringify({ error: err.message || "Server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 }

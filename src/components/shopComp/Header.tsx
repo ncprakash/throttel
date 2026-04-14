@@ -3,38 +3,43 @@
 
 import axios from "axios";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { FaSearch, FaMotorcycle, FaTh, FaList, FaTimes } from "react-icons/fa";
+import { FaSearch, FaMotorcycle, FaTimes } from "react-icons/fa";
 
 type ShopHeaderProps = {
   totalResults: number;
-  currentView: "grid" | "list";
-  onViewChange: (view: "grid" | "list") => void;
   sortBy: string;
   onSortChange: (sort: string) => void;
   onSearchSelect: (modelName: string) => void;
+  onCategorySelect?: (category: string) => void;
 };
 
 export default function ShopHeader({
   totalResults,
-  currentView,
-  onViewChange,
   sortBy,
   onSortChange,
   onSearchSelect,
+  onCategorySelect,
 }: ShopHeaderProps) {
   const [bikeBrand, setBikeBrand] = useState("");
   const [bikeModel, setBikeModel] = useState("");
+  const [categoryQuery, setCategoryQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [brandResults, setBrandResults] = useState<any[]>([]);
   const [modelResults, setModelResults] = useState<any[]>([]);
+  const [categoryResults, setCategoryResults] = useState<any[]>([]);
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [isLoadingBrands, setIsLoadingBrands] = useState(false);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
   const brandRef = useRef<HTMLDivElement | null>(null);
   const modelRef = useRef<HTMLDivElement | null>(null);
+  const categoryRef = useRef<HTMLDivElement | null>(null);
   const brandInputRef = useRef<HTMLInputElement | null>(null);
   const modelInputRef = useRef<HTMLInputElement | null>(null);
+  const categoryInputRef = useRef<HTMLInputElement | null>(null);
 
   // Debounced brand lookup
   useEffect(() => {
@@ -114,13 +119,18 @@ export default function ShopHeader({
       if (modelRef.current && !modelRef.current.contains(target)) {
         setShowModelDropdown(false);
       }
+      if (categoryRef.current && !categoryRef.current.contains(target)) {
+        setShowCategoryDropdown(false);
+      }
     }
     function handleEsc(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setShowBrandDropdown(false);
         setShowModelDropdown(false);
+        setShowCategoryDropdown(false);
         brandInputRef.current?.blur();
         modelInputRef.current?.blur();
+        categoryInputRef.current?.blur();
       }
     }
 
@@ -130,6 +140,19 @@ export default function ShopHeader({
       document.removeEventListener("mousedown", handleOutside);
       document.removeEventListener("keydown", handleEsc);
     };
+  }, []);
+
+  useEffect(() => {
+    setIsLoadingCategories(true);
+    axios
+      .get("/api/admin/categories")
+      .then((response) => {
+        setCategoryResults(response.data.categories || response.data || []);
+      })
+      .catch(() => {
+        setCategoryResults([]);
+      })
+      .finally(() => setIsLoadingCategories(false));
   }, []);
 
   const handleBrandSelect = useCallback((brandName: string) => {
@@ -151,6 +174,16 @@ export default function ShopHeader({
     [onSearchSelect]
   );
 
+  const handleCategorySelect = useCallback(
+    (category: string) => {
+      setSelectedCategory(category);
+      setCategoryQuery(category);
+      setShowCategoryDropdown(false);
+      onCategorySelect?.(category);
+    },
+    [onCategorySelect]
+  );
+
   const clearBrandSearch = () => {
     setBikeBrand("");
     setBikeModel("");
@@ -159,6 +192,13 @@ export default function ShopHeader({
     onSearchSelect("");
     setShowBrandDropdown(false);
     setShowModelDropdown(false);
+  };
+
+  const clearCategorySearch = () => {
+    setSelectedCategory("");
+    setCategoryQuery("");
+    setShowCategoryDropdown(false);
+    onCategorySelect?.("");
   };
 
   return (
@@ -177,39 +217,6 @@ export default function ShopHeader({
               </p>
             </div>
 
-            {/* View Toggle - Desktop */}
-            <div className="hidden sm:flex backdrop-blur-md bg-white/10 border border-white/20 rounded-xl p-1 shadow-lg">
-              <button
-                onClick={() => onViewChange("grid")}
-                className={`p-3 rounded-lg transition-all flex items-center gap-2 ${
-                  currentView === "grid"
-                    ? "bg-white text-black shadow-md"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
-                aria-label="Grid view"
-                aria-pressed={currentView === "grid"}
-              >
-                <FaTh className="w-4 h-4" />
-                <span className="text-sm font-medium hidden lg:inline">
-                  Grid
-                </span>
-              </button>
-              <button
-                onClick={() => onViewChange("list")}
-                className={`p-3 rounded-lg transition-all flex items-center gap-2 ${
-                  currentView === "list"
-                    ? "bg-white text-black shadow-md"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
-                aria-label="List view"
-                aria-pressed={currentView === "list"}
-              >
-                <FaList className="w-4 h-4" />
-                <span className="text-sm font-medium hidden lg:inline">
-                  List
-                </span>
-              </button>
-            </div>
           </div>
 
           {/* Search and Filter Controls */}
@@ -349,6 +356,78 @@ export default function ShopHeader({
                       </p>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Category Filter */}
+            <div ref={categoryRef} className="relative flex-1 lg:max-w-xs">
+              <label htmlFor="category-search" className="sr-only">
+                Filter by category
+              </label>
+              <div className="relative">
+                <input
+                  id="category-search"
+                  ref={categoryInputRef}
+                  type="text"
+                  placeholder="Filter by category"
+                  value={categoryQuery}
+                  onChange={(e) => {
+                    setCategoryQuery(e.target.value);
+                    setShowCategoryDropdown(true);
+                  }}
+                  onFocus={() =>
+                    categoryResults.length > 0 && setShowCategoryDropdown(true)
+                  }
+                  className="w-full backdrop-blur-md bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-xl pl-11 pr-10 py-3 text-sm focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/10 transition-all"
+                  autoComplete="off"
+                />
+                <FaSearch
+                  className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50"
+                  aria-hidden="true"
+                />
+                {categoryQuery && (
+                  <button
+                    onClick={clearCategorySearch}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                    aria-label="Clear category filter"
+                  >
+                    <FaTimes className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {showCategoryDropdown && (
+                <div
+                  className="absolute left-0 top-full mt-3 w-full backdrop-blur-xl bg-black/95 border border-white/20 rounded-xl max-h-80 overflow-y-auto z-50 shadow-2xl"
+                  role="listbox"
+                  aria-label="Category suggestions"
+                >
+                  <div className="sticky top-0 backdrop-blur-md bg-white/5 p-3 text-xs text-white/60 border-b border-white/10 font-medium">
+                    {isLoadingCategories
+                      ? "Loading categories..."
+                      : categoryResults.length > 0
+                      ? `${categoryResults.length} categories found`
+                      : "No categories found"}
+                  </div>
+                  {categoryResults
+                    .filter((cat) =>
+                      cat.name
+                        .toLowerCase()
+                        .includes(categoryQuery.toLowerCase())
+                    )
+                    .slice(0, 10)
+                    .map((cat: any, i: number) => (
+                      <div
+                        key={cat.category_id || i}
+                        onMouseDown={() => handleCategorySelect(cat.name)}
+                        className="px-4 py-3.5 hover:bg-white/10 cursor-pointer border-b border-white/5 last:border-0 transition-colors"
+                        role="option"
+                        aria-selected={selectedCategory === cat.name}
+                      >
+                        <p className="text-white font-semibold">{cat.name}</p>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>
