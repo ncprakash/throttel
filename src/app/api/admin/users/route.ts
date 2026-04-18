@@ -1,9 +1,12 @@
 // app/api/admin/users/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 // GET - Fetch users with search and pagination
 export async function GET(request: NextRequest) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -60,6 +63,8 @@ export async function GET(request: NextRequest) {
 
 // POST - Create new user (optional, if you want admin to create users)
 export async function POST(request: NextRequest) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
     const body = await request.json();
    

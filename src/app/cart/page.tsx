@@ -10,25 +10,9 @@ import CartSummary from "@/components/Cart/CartSummary";
 import BottomNav from "@/components/BottomNavbar";
 import Footer from "@/components/Footer";
 
-export type ShippingOption = "normal" | "superfast";
-
-export const SHIPPING_OPTIONS: Record<
-  ShippingOption,
-  { label: string; description: string; price: number }
-> = {
-  normal: {
-    label: "Normal Delivery",
-    description: "5–7 business days",
-    price: 80,
-  },
-  superfast: {
-    label: "Superfast Delivery",
-    description: "1–2 business days",
-    price: 150,
-  },
-};
-
-export const TAX_RATE = 0.18; // 18% GST
+import { SHIPPING_OPTIONS, TAX_RATE, type ShippingOption } from "@/lib/commerce";
+export type { ShippingOption };
+export { SHIPPING_OPTIONS, TAX_RATE };
 
 export default function CartPage() {
   const router = useRouter();

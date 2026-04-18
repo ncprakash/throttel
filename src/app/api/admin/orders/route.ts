@@ -1,8 +1,16 @@
 // app/api/admin/orders/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
+
+interface Order {
+  order_id: string;
+  [key: string]: unknown;
+}
 
 export async function GET(request: NextRequest) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
     const { searchParams } = new URL(request.url);
     const limit = Number(searchParams.get("limit") ?? 50);
@@ -54,15 +62,12 @@ export async function GET(request: NextRequest) {
     }
 
     const uniqueOrders = Array.from(
-      new Map((data ?? []).map((order: any) => [order.order_id, order]))
-        .values()
+      new Map((data ?? []).map((order: Order) => [order.order_id, order])).values()
     );
 
     return NextResponse.json({ orders: uniqueOrders });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message || "Failed to fetch orders" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to fetch orders";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -4,7 +4,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import FormInput from "./FormInpute";
+import FormInput from "./FormInput";
 import SubmitButton from "./SubmitButton";
 import AlertMessage from "./AlertMessage";
 

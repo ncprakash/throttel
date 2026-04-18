@@ -11,7 +11,6 @@ const createTransport = () =>
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
   });
 
-// ── ShipRocket helpers ────────────────────────────────────────────────────────
 async function getShipRocketToken(): Promise<string> {
   const res = await fetch("https://apiv2.shiprocket.in/v1/external/auth/login", {
     method: "POST",
@@ -22,13 +21,33 @@ async function getShipRocketToken(): Promise<string> {
     }),
   });
   const data = await res.json();
- 
   if (!data.token) throw new Error("ShipRocket login failed: " + JSON.stringify(data));
   return data.token;
 }
 
-async function createShipRocketOrder(order: any, token: string) {
-  const srItems = order.order_items.map((item: any) => ({
+interface OrderItem {
+  order_item_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+}
+
+interface Order {
+  order_id: string;
+  order_items: OrderItem[];
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
+  shipping_address?: string;
+  shipping_city?: string;
+  shipping_state?: string;
+  shipping_postal_code?: string;
+  shipping_country?: string;
+  notes?: string;
+}
+
+async function createShipRocketOrder(order: Order, token: string) {
+  const srItems = order.order_items.map((item) => ({
     name: item.product_name || "Product",
     sku: `SKU-${item.order_item_id}`,
     units: item.quantity,
@@ -36,27 +55,23 @@ async function createShipRocketOrder(order: any, token: string) {
   }));
 
   const subtotal = order.order_items.reduce(
-    (sum: number, item: any) => sum + item.quantity * (item.unit_price || 0),
+    (sum, item) => sum + item.quantity * (item.unit_price || 0),
     0
   );
 
-  // Fix 1: Include time in order_date
   const now = new Date();
   const orderDate = `${now.toISOString().split("T")[0]} ${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
 
-  // Fix 2: Safe phone number handling
   const rawPhone = order.customer_phone || "";
-  const cleanPhone = rawPhone
-    .replace(/\D/g, "")
-    .replace(/^91/, "")
-    .slice(-10);
-  const safePhone = cleanPhone.length === 10 ? cleanPhone : "9999999999"; // fallback
+  const cleanPhone = rawPhone.replace(/\D/g, "").replace(/^91/, "").slice(-10);
+  if (cleanPhone.length !== 10) {
+    throw new Error(`Invalid customer phone number: "${rawPhone}". A valid 10-digit Indian mobile number is required for ShipRocket.`);
+  }
 
   const payload = {
     order_id: String(order.order_id),
-    order_date: orderDate, // ← fixed
+    order_date: orderDate,
     pickup_location: "home",
-
     billing_customer_name: order.customer_name || "Customer",
     billing_last_name: "",
     billing_address: order.shipping_address || "N/A",
@@ -66,8 +81,7 @@ async function createShipRocketOrder(order: any, token: string) {
     billing_state: order.shipping_state || "N/A",
     billing_country: order.shipping_country || "India",
     billing_email: order.customer_email || "",
-    billing_phone: safePhone, // ← fixed
-
+    billing_phone: cleanPhone,
     shipping_is_billing: true,
     order_items: srItems,
     payment_method: "Prepaid",
@@ -78,66 +92,50 @@ async function createShipRocketOrder(order: any, token: string) {
     weight: 0.5,
   };
 
- 
-
-  const res = await fetch(
-    "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    }
-  );
+  const res = await fetch("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
 
   const data = await res.json();
-  console.log("ShipRocket response:", JSON.stringify(data));
 
-  // Fix 3: Validate by checking order_id in response body, not just HTTP status
   if (!res.ok || !data.order_id) {
     throw new Error("ShipRocket failed: " + JSON.stringify(data));
   }
 
   return data;
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-   
-
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, order_id } = body;
 
-    // Signature check — order matters: razorpay_order_id FIRST, then razorpay_payment_id
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSign = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
       .update(sign)
       .digest("hex");
 
-   
-
     if (expectedSign !== razorpay_signature) {
       return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 400 });
     }
 
-    // Fetch order — use * to get all columns (avoids missing column errors)
     const { data: order, error: fetchError } = await supabase
       .from("orders")
       .select("*, order_items(*)")
       .eq("order_id", order_id)
       .single();
 
-  
-
     if (fetchError || !order) {
       return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });
     }
 
-    // If customer fields are stored as JSON in notes, parse them out
+    // Parse customer fields from notes if stored as JSON (legacy fallback)
     if (!order.customer_name && order.notes) {
       try {
         const parsed = JSON.parse(order.notes);
@@ -149,43 +147,33 @@ export async function POST(request: NextRequest) {
         order.shipping_state = parsed.shipping_state;
         order.shipping_postal_code = parsed.shipping_postal_code;
         order.shipping_country = parsed.shipping_country || "India";
-     
-
       } catch {
-        console.warn("Could not parse notes as JSON:", order.notes);
+        // notes is not JSON — nothing to parse
       }
     }
 
-  
-    // Update order to paid
-    const { error: updateError } = await supabase
+    await supabase
       .from("orders")
       .update({ status: "confirmed", payment_status: "paid", razorpay_payment_id })
       .eq("order_id", order_id);
 
-    if (updateError) console.error("Order update error:", updateError);
-    else console.log("Order updated to confirmed/paid");
-
-    // ShipRocket
     let shiprocketOrderId: string | null = null;
+    try {
+      const srToken = await getShipRocketToken();
+      const srOrder = await createShipRocketOrder(order as Order, srToken);
+      shiprocketOrderId = String(srOrder.order_id);
+      await supabase
+        .from("orders")
+        .update({ shiprocket_order_id: shiprocketOrderId })
+        .eq("order_id", order_id);
+    } catch {
+      // ShipRocket failure is non-fatal — order is still confirmed
+    }
 
-try {
-  const srToken = await getShipRocketToken();
-  const srOrder = await createShipRocketOrder(order, srToken);
-  shiprocketOrderId = String(srOrder.order_id);
-  await supabase
-    .from("orders")
-    .update({ shiprocket_order_id: shiprocketOrderId })
-    .eq("order_id", order_id);
-  console.log("ShipRocket order created:", srOrder.order_id);
-} catch (srError) {
-  console.error("ShipRocket error (non-fatal):", srError);
-}
-    // Confirmation email
     try {
       const transporter = createTransport();
-      const totalAmount = order.order_items.reduce(
-        (sum: number, item: any) => sum + item.quantity * (item.unit_price || 0),
+      const totalAmount = (order.order_items as OrderItem[]).reduce(
+        (sum, item) => sum + item.quantity * (item.unit_price || 0),
         0
       );
 
@@ -204,7 +192,7 @@ try {
             <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #eee; margin: 20px 0;">
               <h3 style="color: #000; margin-top: 0;">Order Details</h3>
               <table style="width: 100%; border-collapse: collapse;">
-                ${order.order_items.map((item: any) => `
+                ${(order.order_items as OrderItem[]).map((item) => `
                   <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 10px 0;">
                       <strong>${item.product_name}</strong><br>
@@ -228,26 +216,26 @@ try {
                 <li>Order being prepared</li>
                 <li>Shipping within 2-3 business days</li>
               </ul>
-            </div> <p style="margin: 8px 0;">ShipRocket Order ID: <strong>${shiprocketOrderId}</strong></p>
-      <a href="https://www.shiprocket.in/shipment-tracking/?id=${shiprocketOrderId}"
-         style="display: inline-block; background: #2e7d32; color: white; padding: 12px 24px;
-                border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 8px;">
-        Track Package
-      </a>
+            </div>
+            <p style="margin: 8px 0;">ShipRocket Order ID: <strong>${shiprocketOrderId}</strong></p>
+            <a href="https://www.shiprocket.in/shipment-tracking/?id=${shiprocketOrderId}"
+               style="display: inline-block; background: #2e7d32; color: white; padding: 12px 24px;
+                      border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 8px;">
+              Track Package
+            </a>
             <p style="color: #666; text-align: center;">
               Need help? <a href="mailto:support@throttleforged.com">Contact Support</a>
             </p>
           </div>
         `,
       });
-      console.log("Email sent to", order.customer_email);
-    } catch (mailError) {
-      console.error("Email error (non-fatal):", mailError);
+    } catch {
+      // Email failure is non-fatal
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Verification error:", error);
-    return NextResponse.json({ success: false, error: "Verification failed" }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Verification failed";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

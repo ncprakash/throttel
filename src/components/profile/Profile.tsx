@@ -80,9 +80,8 @@ export default function ProfilePage() {
       const userId = session.user.id.trim();
       setLoading(true);
       setNotice(null);
-        console.log("userName",session?.user?.name)
       const requests = {
-        orders: axios.get(`/api/orders/${userId}`),
+        orders: axios.get(`/api/orders?user_id=${userId}`),
         wishlist: axios.get(`/api/wishlist?user_id=${userId}`),
         addresses: axios.get(`/api/addresses?user_id=${userId}`),
         userData: axios.get(`/api/users/${userId}`),
@@ -168,10 +167,8 @@ export default function ProfilePage() {
 
         if (errors.length > 0) {
           setNotice(`Some data failed: ${errors.join(", ")}`);
-          console.warn("Profile data load errors:", errors);
         }
-      } catch (err) {
-        console.error("Profile fetch error:", err);
+      } catch {
         if (mounted) {
           setNotice("Failed to load profile data");
         }

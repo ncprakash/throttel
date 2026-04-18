@@ -1,27 +1,46 @@
 // app/api/admin/products/[product_id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 interface RouteParams {
-  params: Promise<{
-    product_id: string;
-  }>;
+  params: Promise<{ product_id: string }>;
 }
 
-export async function GET(request: NextRequest, context: RouteParams) {
+interface ProductUpdate {
+  category_id?: string;
+  name?: string;
+  slug?: string;
+  short_description?: string;
+  description?: string;
+  regular_price?: number;
+  sale_price?: number;
+  sku?: string;
+  stock_quantity?: number;
+  is_active?: boolean;
+  is_featured?: boolean;
+  warranty_months?: number;
+  material?: string;
+  weight?: number;
+  fitment_guide?: string;
+  technical_specification?: string[];
+  reviews?: string[];
+}
+
+export async function GET(_request: Request, context: RouteParams) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
     const { product_id } = await context.params;
 
     const { data, error } = await supabase
       .from("products")
-      .select(
-        `
+      .select(`
         *,
         categories(category_id, name, slug),
         product_images(image_id, image_url, alt_text, is_primary, display_order),
         product_compatibility(compatibility_id, bike_brand, bike_model, year_from, year_to, notes)
-      `
-      )
+      `)
       .eq("product_id", product_id)
       .single();
 
@@ -34,46 +53,27 @@ export async function GET(request: NextRequest, context: RouteParams) {
     }
 
     return NextResponse.json({ product: data });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to fetch product" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to fetch product";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function PATCH(request: NextRequest, context: RouteParams) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
     const { product_id } = await context.params;
     const body = await request.json();
 
-    console.log("🔄 PATCH /api/admin/products/[product_id]");
-    console.log("Product ID:", product_id);
-    console.log("Update data:", body);
-
     const {
-      category_id,
-      name,
-      slug,
-      short_description,
-      description,
-      regular_price,
-      sale_price,
-      sku,
-      stock_quantity,
-      is_active,
-      is_featured,
-      warranty_months,
-      material,
-      technical_specification,
-      reviews,
-      weight,
-      fitment_guide,
+      category_id, name, slug, short_description, description,
+      regular_price, sale_price, sku, stock_quantity, is_active,
+      is_featured, warranty_months, material, technical_specification,
+      reviews, weight, fitment_guide,
     } = body;
 
-    // Build update object with only provided fields
-    const updateData: any = {};
-
+    const updateData: ProductUpdate = {};
     if (category_id !== undefined) updateData.category_id = category_id;
     if (name !== undefined) updateData.name = name;
     if (slug !== undefined) updateData.slug = slug;
@@ -92,48 +92,35 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
     if (technical_specification !== undefined) updateData.technical_specification = technical_specification;
     if (reviews !== undefined) updateData.reviews = reviews;
 
-    console.log("Update object:", updateData);
-
-    // Perform the update
     const { data, error } = await supabase
       .from("products")
       .update(updateData)
       .eq("product_id", product_id)
-      .select(
-        `
+      .select(`
         *,
         categories(category_id, name, slug),
         product_images(image_id, image_url, alt_text, is_primary, display_order),
         product_compatibility(compatibility_id, bike_brand, bike_model, year_from, year_to, notes)
-      `
-      );
+      `);
 
     if (error) {
-      console.error("❌ Supabase update error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     if (!data || data.length === 0) {
-      console.error("❌ Product not found:", product_id);
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    console.log("✅ Product updated successfully:", data[0]);
-
-    return NextResponse.json(
-      { message: "Product updated successfully", product: data[0] },
-      { status: 200 }
-    );
-  } catch (err: any) {
-    console.error("❌ PATCH /api/admin/products/[product_id] error:", err);
-    return NextResponse.json(
-      { error: err.message || "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Product updated successfully", product: data[0] });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Something went wrong";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-export async function DELETE(request: NextRequest, context: RouteParams) {
+export async function DELETE(_request: Request, context: RouteParams) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
     const { product_id } = await context.params;
 
@@ -143,19 +130,12 @@ export async function DELETE(request: NextRequest, context: RouteParams) {
       .eq("product_id", product_id);
 
     if (error) {
-      console.error("Supabase delete error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { message: "Product deleted successfully" },
-      { status: 200 }
-    );
-  } catch (err: any) {
-    console.error("DELETE /api/admin/products/[product_id] error:", err);
-    return NextResponse.json(
-      { error: err.message || "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Product deleted successfully" });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Something went wrong";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

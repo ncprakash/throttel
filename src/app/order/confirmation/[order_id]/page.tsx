@@ -15,6 +15,7 @@ interface Order {
   customer_name?: string;
   customer_email?: string;
   shipping_address?: string;
+  shiprocket_order_id?: string | null;
   order_items?: Array<{
     product_name: string;
     quantity: number;
@@ -36,33 +37,22 @@ export default function OrderConfirmation() {
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderId) {
-        console.error("❌ No orderId in URL params");
         router.push("/orders");
         return;
       }
 
-      console.log("📌 orderId from URL:", orderId);
-
       try {
-        console.log("🚀 Fetching:", `/api/orders/${orderId}`);
-
         const res = await fetch(`/api/orders/${orderId}`, {
           credentials: "include",
         });
 
-        console.log("📡 Response status:", res.status);
-
         if (res.ok) {
           const orderData = await res.json();
-          console.log("✅ Order data:", orderData);
           setOrder(orderData);
         } else {
-          const errData = await res.json().catch(() => ({}));
-          console.error("❌ API error:", res.status, errData);
           setError(`Failed to load order (${res.status})`);
         }
-      } catch (err) {
-        console.error("❌ Fetch error:", err);
+      } catch {
         setError("Network error. Please try again.");
       } finally {
         setLoading(false);
@@ -201,6 +191,40 @@ export default function OrderConfirmation() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* ShipRocket Tracking */}
+        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] rounded-2xl p-8 mb-8">
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+            </svg>
+            Shipment Tracking
+          </h3>
+
+          {order.shiprocket_order_id ? (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex-1 p-4 bg-[rgba(255,255,255,0.05)] rounded-xl">
+                <p className="text-xs text-white/50 mb-1">ShipRocket Order ID</p>
+                <p className="font-mono font-semibold text-white text-lg">{order.shiprocket_order_id}</p>
+              </div>
+              <a
+                href={`https://www.shiprocket.in/shipment-tracking/?id=${order.shiprocket_order_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all shadow-lg hover:shadow-blue-500/25 whitespace-nowrap"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Track on ShipRocket
+              </a>
+            </div>
+          ) : (
+            <p className="text-white/50 text-sm">
+              Tracking details will appear here once your shipment is dispatched. You will also receive a confirmation email.
+            </p>
+          )}
         </div>
 
         {/* Action Buttons */}

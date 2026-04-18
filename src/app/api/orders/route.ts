@@ -4,36 +4,70 @@ import { supabase } from "@/lib/supabase";
 
 function generateOrderNumber() {
   const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
   return `ORD-${timestamp}-${random}`;
+}
+
+interface CartItem {
+  product_id?: string;
+  variant_id?: string;
+  quantity: number;
+  product?: { name?: string; sale_price?: number; regular_price?: number };
+  variant?: { name?: string; additional_price?: number };
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const user_id = searchParams.get("user_id");
+
+    if (!user_id) {
+      return NextResponse.json({ error: "user_id is required" }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from("orders")
+      .select(`
+        order_id,
+        order_number,
+        status,
+        payment_status,
+        total_amount,
+        created_at,
+        shiprocket_order_id,
+        order_items (
+          product_name,
+          variant_name,
+          quantity,
+          unit_price,
+          total_price
+        )
+      `)
+      .eq("user_id", user_id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ orders: data ?? [] });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to fetch orders";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    console.log("=== Creating Order ===");
-    console.log("Request body:", JSON.stringify(body, null, 2));
-
     const {
-      user_id, // ✅ Receive user_id from frontend
-      customer_name,
-      customer_email,
-      customer_phone,
-      shipping_address,
-      shipping_city,
-      shipping_state,
-      shipping_postal_code,
-      shipping_country,
-      payment_method,
-      shipping_method,
-      items,
-      subtotal,
-      shipping_cost,
-      total_amount,
+      user_id, customer_name, customer_email, customer_phone,
+      shipping_address, shipping_city, shipping_state,
+      shipping_postal_code, shipping_country,
+      payment_method, items, subtotal, shipping_cost, total_amount,
     } = body;
 
-    // Validate required fields
     if (!customer_email || !customer_name) {
       return NextResponse.json(
         { error: "Customer name and email are required" },
@@ -50,10 +84,6 @@ export async function POST(request: NextRequest) {
 
     const orderNumber = generateOrderNumber();
 
-    console.log("Generated order number:", orderNumber);
-    console.log("User ID:", user_id);
-
-    // Build notes
     const notesContent = [
       `Customer: ${customer_name}`,
       `Email: ${customer_email}`,
@@ -63,12 +93,13 @@ export async function POST(request: NextRequest) {
       shipping_state ? `State: ${shipping_state}` : null,
       shipping_postal_code ? `Postal Code: ${shipping_postal_code}` : null,
       shipping_country ? `Country: ${shipping_country}` : null,
-    ].filter(Boolean).join(', ');
+    ]
+      .filter(Boolean)
+      .join(", ");
 
-    // ✅ Create order with user_id
-    const orderData: any = {
+    const orderData = {
       order_number: orderNumber,
-      user_id: user_id || null, // ✅ Include user_id
+      user_id: user_id || null,
       status: "pending",
       payment_method: payment_method || "cod",
       payment_status: "pending",
@@ -80,12 +111,9 @@ export async function POST(request: NextRequest) {
       notes: notesContent,
       cancellation_reason: null,
       cancelled_at: null,
-      // For now, set address IDs as null (you can create address records separately)
       shipping_address_id: null,
       billing_address_id: null,
     };
-
-    console.log("Order data to insert:", orderData);
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
@@ -94,24 +122,16 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (orderError) {
-      console.error("❌ Order creation failed:", orderError);
       return NextResponse.json(
-        { 
-          error: "Failed to create order", 
-          details: orderError.message 
-        },
+        { error: "Failed to create order", details: orderError.message },
         { status: 500 }
       );
     }
 
-    console.log("✅ Order created:", order.order_id);
-
-    // Create order items
-    const orderItems = items.map((item: any) => {
+    const orderItems = (items as CartItem[]).map((item) => {
       const productPrice = item.product?.sale_price ?? item.product?.regular_price ?? 0;
       const variantPrice = item.variant?.additional_price || 0;
       const unitPrice = productPrice + variantPrice;
-      const totalPrice = unitPrice * item.quantity;
 
       return {
         order_id: order.order_id,
@@ -121,7 +141,7 @@ export async function POST(request: NextRequest) {
         variant_name: item.variant?.name || null,
         quantity: Number(item.quantity) || 1,
         unit_price: Number(unitPrice) || 0,
-        total_price: Number(totalPrice) || 0,
+        total_price: Number(unitPrice * item.quantity) || 0,
       };
     });
 
@@ -131,33 +151,19 @@ export async function POST(request: NextRequest) {
       .select();
 
     if (itemsError) {
-      console.error("❌ Order items creation failed:", itemsError);
       await supabase.from("orders").delete().eq("order_id", order.order_id);
-      
       return NextResponse.json(
         { error: "Failed to create order items", details: itemsError.message },
         { status: 500 }
       );
     }
 
-    console.log("✅ Order items created:", orderItemsData.length);
-
     return NextResponse.json(
-      {
-        success: true,
-        order: {
-          ...order,
-          items: orderItemsData,
-        },
-        message: "Order placed successfully",
-      },
+      { success: true, order: { ...order, items: orderItemsData }, message: "Order placed successfully" },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error("❌ Order creation error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to create order" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to create order";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -9,48 +10,29 @@ cloudinary.config({
 });
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ product_id: string }> }  // ✅ Changed to Promise
+  request: Request,
+  { params }: { params: Promise<{ product_id: string }> }
 ) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
-    // ✅ CRITICAL: Await params before accessing
     const { product_id } = await params;
 
-    // 🔍 DEBUG: Add logging
-    console.log("=== Image Upload API ===");
-    console.log("Received product_id:", product_id);
-    console.log("Type:", typeof product_id);
-    
-    // Validate product_id
     if (!product_id || product_id === "undefined" || product_id === "null") {
-      console.error("❌ Invalid product_id:", product_id);
-      return NextResponse.json(
-        { error: "Invalid product_id" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid product_id" }, { status: 400 });
     }
 
     const formData = await request.formData();
     const images = formData.getAll("images") as File[];
 
-    console.log("Number of images:", images.length);
-    console.log("========================");
-
     if (!images || images.length === 0) {
-      return NextResponse.json(
-        { error: "No images provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No images provided" }, { status: 400 });
     }
 
     if (images.length > 8) {
-      return NextResponse.json(
-        { error: "Maximum 8 images allowed" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Maximum 8 images allowed" }, { status: 400 });
     }
 
-    // Upload all images to Cloudinary in parallel
     const uploadPromises = images.map(async (image, index) => {
       const bytes = await image.arrayBuffer();
       const buffer = Buffer.from(bytes);
@@ -76,42 +58,30 @@ export async function POST(
 
     const uploadedImages = await Promise.all(uploadPromises);
 
-    // Save all to database
     const imageRecords = uploadedImages.map((img) => ({
-      product_id: product_id,  // ✅ Now this will have the correct value
+      product_id,
       ...img,
     }));
 
-    // 🔍 DEBUG: Log what we're inserting
-    console.log("=== Inserting to DB ===");
-    console.log("First record:", JSON.stringify(imageRecords[0], null, 2));
-    
     const { data, error } = await supabase
       .from("product_images")
       .insert(imageRecords)
       .select();
 
     if (error) {
-      console.error("❌ Database error:", error);
       return NextResponse.json(
         { error: "Failed to save images to database", details: error.message },
         { status: 500 }
       );
     }
 
-    console.log("✅ Images saved to DB:", data?.length);
-    console.log("=======================");
-
     return NextResponse.json({
       success: true,
       images: data,
       message: `Successfully uploaded ${images.length} images`,
     });
-  } catch (error: any) {
-    console.error("❌ Upload error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to upload images" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to upload images";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,11 +1,14 @@
 // app/api/admin/users/[user_id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ user_id: string }> }
 ) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
     const { user_id } = await params;
 
@@ -19,10 +22,8 @@ export async function DELETE(
     }
 
     return NextResponse.json({ message: "User deleted" });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to delete user" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to delete user";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

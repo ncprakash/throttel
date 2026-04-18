@@ -14,6 +14,7 @@ type Order = {
   status?: string;
   total_amount: number;
   items: OrderItem[];
+  shiprocket_order_id?: string | null;
 };
 
 type OrderDetailsModalProps = {
@@ -91,6 +92,24 @@ export default function OrderDetailsModal({ open, order, onClose }: OrderDetails
                 {order.status || "—"}
               </Badge>
             </div>
+
+            {order.shiprocket_order_id && (
+              <div className="mt-5 pt-4 border-t border-white/10">
+                <p className="text-xs text-white/50 mb-1">ShipRocket ID</p>
+                <p className="font-mono text-sm text-white mb-3">{order.shiprocket_order_id}</p>
+                <a
+                  href={`https://www.shiprocket.in/shipment-tracking/?id=${order.shiprocket_order_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Track Shipment
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </div>

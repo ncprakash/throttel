@@ -36,7 +36,7 @@ export default function ShopSidebar({
   const [brandsLoading, setBrandsLoading] = useState(false);
   const [brandsError, setBrandsError] = useState<string | null>(null);
 
-  // bikes per brand name, built from same /api/compatable data
+  // bikes per brand name, built from same /api/compatible data
   const [bikesByBrand, setBikesByBrand] = useState<Record<string, Bike[]>>({});
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -62,7 +62,7 @@ export default function ShopSidebar({
     setBrandsLoading(true);
     setBrandsError(null);
     try {
-      const res = await axios.get("/api/compatable");
+      const res = await axios.get("/api/compatible");
       // expected: { success: true, compatibility: [...] }
       const compat = res.data.compatibility || [];
 

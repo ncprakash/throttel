@@ -2,12 +2,25 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
+interface ProductRow {
+  product_id: string;
+  name: string;
+  slug: string;
+  short_description: string | null;
+  regular_price: number;
+  sale_price: number | null;
+  stock_quantity: number;
+  is_featured: boolean;
+  product_images: { image_url: string; alt_text: string; is_primary: boolean }[];
+}
+
+interface CompatibilityRow {
+  product_id: string;
+  bike_model: string;
+}
 
 export async function GET() {
   try {
-    console.log("📦 Fetching all products...");
-
-    // Fetch all active products with images
     const { data: productsData, error: productsError } = await supabase
       .from("products")
       .select(`
@@ -30,35 +43,24 @@ export async function GET() {
       .order("created_at", { ascending: false });
 
     if (productsError) {
-      console.error("❌ Products error:", productsError);
       return NextResponse.json({ error: productsError.message }, { status: 500 });
     }
 
-    console.log("✅ Products fetched:", productsData?.length || 0);
+    const productIds = (productsData as ProductRow[])?.map((p) => p.product_id) || [];
 
-    // Get compatibility info for each product
-    const productIds = productsData?.map((p: any) => p.product_id) || [];
-    
-    const { data: compatibilityData, error: compatError } = await supabase
+    const { data: compatibilityData } = await supabase
       .from("product_compatibility")
-      .select("*")
+      .select("product_id, bike_model")
       .in("product_id", productIds);
 
-    if (compatError) {
-      console.error("⚠️ Compatibility error:", compatError);
-    }
+    const formattedProducts = (productsData as ProductRow[])?.map((product) => {
+      const primaryImage =
+        product.product_images?.find((img) => img.is_primary) ||
+        product.product_images?.[0];
 
-    console.log("✅ Compatibility fetched:", compatibilityData?.length || 0);
-
-    // Format response
-    const formattedProducts = productsData?.map((product: any) => {
-      const primaryImage = product.product_images?.find((img: any) => img.is_primary) 
-        || product.product_images?.[0];
-      
-      // Get all compatible bikes for this product
-      const compatibleBikes = compatibilityData
-        ?.filter((c: any) => c.product_id === product.product_id)
-        .map((c: any) => c.bike_model) || [];
+      const compatibleBikes = (compatibilityData as CompatibilityRow[])
+        ?.filter((c) => c.product_id === product.product_id)
+        .map((c) => c.bike_model) || [];
 
       return {
         id: product.product_id,
@@ -75,16 +77,13 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      products: formattedProducts || [], 
-      count: formattedProducts?.length || 0 
+      products: formattedProducts || [],
+      count: formattedProducts?.length || 0,
     });
-
-  } catch (error: any) {
-    console.error("💥 Error fetching products:", error);
-    return NextResponse.json({ 
-      error: error.message 
-    }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to fetch products";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

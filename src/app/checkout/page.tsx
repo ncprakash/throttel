@@ -11,27 +11,7 @@ import CheckoutForm from "@/components/Checkout/CheckoutForm";
 import CheckoutSummary from "@/components/Checkout/CheckoutSummary";
 import OrderReview from "@/components/Checkout/OrderReview";
 
-// ── Shared constants (keep in sync with cart/page.tsx) ──────────────────────
-export type ShippingOption = "normal" | "superfast";
-
-export const SHIPPING_OPTIONS: Record<
-  ShippingOption,
-  { label: string; description: string; price: number }
-> = {
-  normal: {
-    label: "Normal Delivery",
-    description: "5–7 business days",
-    price: 80,
-  },
-  superfast: {
-    label: "Superfast Delivery",
-    description: "1–2 business days",
-    price: 150,
-  },
-};
-
-export const TAX_RATE = 0.18; // 18% GST
-// ────────────────────────────────────────────────────────────────────────────
+import { SHIPPING_OPTIONS, TAX_RATE, type ShippingOption } from "@/lib/commerce";
 
 declare global {
   interface Window {

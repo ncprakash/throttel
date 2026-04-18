@@ -4,7 +4,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import FormInput from "./FormInpute";
+import FormInput from "./FormInput";
 import SubmitButton from "./SubmitButton";
 import AlertMessage from "./AlertMessage";
 

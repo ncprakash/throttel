@@ -1,18 +1,16 @@
 // app/api/admin/products/[product_id]/variants/[variant_id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 type RouteParams = {
-  params: Promise<{
-    product_id: string;
-    variant_id: string;
-  }>;
+  params: Promise<{ product_id: string; variant_id: string }>;
 };
 
-// PATCH /api/admin/products/[product_id]/variants/[variant_id]
 export async function PATCH(request: NextRequest, context: RouteParams) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   const { product_id, variant_id } = await context.params;
-
   try {
     const body = await request.json();
 
@@ -37,10 +35,8 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
     }
 
     return NextResponse.json({ variant: data }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to update variant" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to update variant";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

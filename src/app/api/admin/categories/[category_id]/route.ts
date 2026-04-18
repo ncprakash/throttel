@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
-// GET - Fetch single category
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ category_id: string }> }
 ) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
-    const { category_id } = await params; // ✅ Must await
+    const { category_id } = await params;
 
     const { data, error } = await supabase
       .from("categories")
@@ -23,21 +25,20 @@ export async function GET(
     }
 
     return NextResponse.json({ category: data });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to fetch category" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to fetch category";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-// PUT - Update category
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ category_id: string }> }
 ) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
-    const { category_id } = await params; // ✅ Must await
+    const { category_id } = await params;
     const body = await request.json();
 
     const { data, error } = await supabase
@@ -58,25 +59,21 @@ export async function PUT(
     }
 
     return NextResponse.json({ category: data });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to update category" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to update category";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-// DELETE - Delete category
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ category_id: string }> }
 ) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
     const { category_id } = await params;
-    console.log("=== CASCADE DELETE ===");
-    console.log("Category ID:", category_id);
 
-    // 1. Check category exists
     const { data: category } = await supabase
       .from("categories")
       .select("category_id, name")
@@ -87,7 +84,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
-    // 2. Find products (read-only, usually allowed)
     const { data: products } = await supabase
       .from("products")
       .select("product_id")
@@ -95,65 +91,38 @@ export async function DELETE(
 
     let deletedProductsCount = 0;
 
-    // 3. Delete products FIRST (if any exist)
     if (products && products.length > 0) {
-      console.log(`Found ${products.length} products to delete`);
-      
       const { error: productsDeleteError } = await supabase
         .from("products")
         .delete()
         .eq("category_id", category_id);
 
       if (productsDeleteError) {
-        console.error("Products delete error:", productsDeleteError);
-        // Don't fail - try unassigning instead
-        console.log("Trying to unassign products instead...");
-        
-        const { error: unassignError } = await supabase
+        await supabase
           .from("products")
           .update({ category_id: null })
           .eq("category_id", category_id);
-          
-        if (unassignError) {
-          console.error("Unassign failed too:", unassignError);
-        } else {
-          console.log("✅ Unassigned products");
-        }
-        deletedProductsCount = 0; // Unassigned, not deleted
       } else {
         deletedProductsCount = products.length;
-        console.log(`✅ Deleted ${deletedProductsCount} products`);
       }
     }
 
-    // 4. Delete category
     const { error: categoryDeleteError } = await supabase
       .from("categories")
       .delete()
       .eq("category_id", category_id);
 
     if (categoryDeleteError) {
-      console.error("Category delete failed:", categoryDeleteError);
-      return NextResponse.json(
-        { error: categoryDeleteError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: categoryDeleteError.message }, { status: 500 });
     }
 
-    console.log("✅ CASCADE COMPLETE:", category.name);
     return NextResponse.json({
       success: true,
-      message: `Category "${category.name}" deleted (${deletedProductsCount} products ${deletedProductsCount > 0 ? 'deleted' : 'unassigned'})`,
-      deleted_products: deletedProductsCount
+      message: `Category "${category.name}" deleted (${deletedProductsCount} products ${deletedProductsCount > 0 ? "deleted" : "unassigned"})`,
+      deleted_products: deletedProductsCount,
     });
-
-  } catch (error: any) {
-    console.error("❌ Cascade error:", error);
-    return NextResponse.json(
-      { error: error.message || "Cascade delete failed" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Cascade delete failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
-

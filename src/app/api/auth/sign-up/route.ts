@@ -2,21 +2,20 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { transporter } from "@/lib/mail";
 import bcrypt from "bcryptjs";
+import { signUpSchema } from "@/lib/schemas";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, phone, last_name, first_name, password } = body;
-
-    // Validate input
-    if (!email || !password || !first_name || !last_name) {
+    const parsed = signUpSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { ok: false, error: "All fields are required" },
+        { ok: false, error: parsed.error.issues[0].message },
         { status: 400 }
       );
     }
+    const { email, phone, last_name, first_name, password } = parsed.data;
 
-    // Check email exists
     const { data: existingEmail } = await supabase
       .from("users")
       .select("email")
@@ -30,7 +29,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check phone exists (if phone provided)
     if (phone) {
       const { data: existingPhone } = await supabase
         .from("users")
@@ -46,10 +44,8 @@ export async function POST(req: Request) {
       }
     }
 
-    // Hash password with bcrypt (10 rounds is secure and performant)
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert user (unverified)
     const { data: newUser, error: userError } = await supabase
       .from("users")
       .insert({
@@ -65,32 +61,17 @@ export async function POST(req: Request) {
       .single();
 
     if (userError) {
-      return NextResponse.json(
-        { ok: false, error: userError.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: userError.message }, { status: 400 });
     }
 
-    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Save OTP with expiration (10 minutes)
-  const { error: otpError } = await supabase
-  .from("email_otps")
-  .insert({
-    email,
-    otp,
-    expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-  })
-  .select();
+    await supabase.from("email_otps").insert({
+      email,
+      otp,
+      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    });
 
-
-    if (otpError) {
-      console.error("OTP creation error:", otpError);
-      // Continue anyway - user is created
-    }
-
-    // Send OTP Email
     try {
       await transporter.sendMail({
         from: `"Throttle" <${process.env.EMAIL_USER}>`,
@@ -111,9 +92,7 @@ export async function POST(req: Request) {
           </div>
         `,
       });
-    } catch (emailError) {
-      console.error("Email sending error:", emailError);
-      // User is created, but email failed
+    } catch {
       return NextResponse.json(
         {
           ok: true,
@@ -125,18 +104,11 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(
-      {
-        ok: true,
-        message: "User created. OTP sent to email.",
-        user_id: newUser.user_id,
-      },
+      { ok: true, message: "User created. OTP sent to email.", user_id: newUser.user_id },
       { status: 201 }
     );
-  } catch (err: any) {
-    console.error("Sign-up error:", err);
-    return NextResponse.json(
-      { ok: false, error: "Internal server error" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

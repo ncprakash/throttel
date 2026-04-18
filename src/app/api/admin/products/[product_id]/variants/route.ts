@@ -1,17 +1,16 @@
 // app/api/admin/products/[product_id]/variants/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
 
 type RouteParams = {
-  params: Promise<{
-    product_id: string;
-  }>;
+  params: Promise<{ product_id: string }>;
 };
 
-// GET /api/admin/products/[product_id]/variants
-export async function GET(request: NextRequest, context: RouteParams) {
-  const { product_id } = await context.params; // <- await because it's a Promise
-
+export async function GET(_request: Request, context: RouteParams) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+  const { product_id } = await context.params;
   try {
     const { data, error } = await supabase
       .from("product_variants")
@@ -24,18 +23,16 @@ export async function GET(request: NextRequest, context: RouteParams) {
     }
 
     return NextResponse.json({ variants: data ?? [] });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to fetch variants" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to fetch variants";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-// POST /api/admin/products/[product_id]/variants
 export async function POST(request: NextRequest, context: RouteParams) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   const { product_id } = await context.params;
-
   try {
     const body = await request.json();
 
@@ -59,10 +56,8 @@ export async function POST(request: NextRequest, context: RouteParams) {
     }
 
     return NextResponse.json({ variant: data }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to create variant" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to create variant";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

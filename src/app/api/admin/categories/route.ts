@@ -1,12 +1,13 @@
 // app/api/admin/categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/admin-auth";
+import { categorySchema } from "@/lib/schemas";
 
-// GET - Fetch all categories
-export async function GET(request: NextRequest) {
+export async function GET() {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
-   
-
     const { data, error } = await supabase
       .from("categories")
       .select("*")
@@ -17,28 +18,30 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ categories: data });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to fetch categories" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to fetch categories";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-// POST - Create category
 export async function POST(request: NextRequest) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
   try {
     const body = await request.json();
-    
+    const parsed = categorySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    }
+    const { name, slug, description, is_active } = parsed.data;
 
     const { data, error } = await supabase
       .from("categories")
       .insert({
-        name: body.name,
-        slug: body.slug,
-        description: body.description || null,
-      
-        is_active: body.is_active ?? true,
+        name,
+        slug,
+        description: description || null,
+        is_active: is_active ?? true,
       })
       .select()
       .single();
@@ -48,10 +51,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ category: data }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Failed to create category" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to create category";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
