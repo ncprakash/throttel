@@ -71,7 +71,7 @@ async function createShipRocketOrder(order: Order, token: string) {
   const payload = {
     order_id: String(order.order_id),
     order_date: orderDate,
-    pickup_location: "home",
+    pickup_location: "wearhouse",
     billing_customer_name: order.customer_name || "Customer",
     billing_last_name: "",
     billing_address: order.shipping_address || "N/A",
@@ -158,6 +158,7 @@ export async function POST(request: NextRequest) {
       .eq("order_id", order_id);
 
     let shiprocketOrderId: string | null = null;
+    let shiprocketError: string | null = null;
     try {
       const srToken = await getShipRocketToken();
       const srOrder = await createShipRocketOrder(order as Order, srToken);
@@ -166,8 +167,10 @@ export async function POST(request: NextRequest) {
         .from("orders")
         .update({ shiprocket_order_id: shiprocketOrderId })
         .eq("order_id", order_id);
-    } catch {
-      // ShipRocket failure is non-fatal — order is still confirmed
+      console.log("[ShipRocket] Order created successfully:", shiprocketOrderId);
+    } catch (srErr) {
+      shiprocketError = srErr instanceof Error ? srErr.message : String(srErr);
+      console.error("[ShipRocket] Order creation FAILED:", shiprocketError);
     }
 
     try {
@@ -233,7 +236,11 @@ export async function POST(request: NextRequest) {
       // Email failure is non-fatal
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      shiprocket_order_id: shiprocketOrderId,
+      shiprocket_error: shiprocketError,
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Verification failed";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
