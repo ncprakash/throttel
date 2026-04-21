@@ -152,10 +152,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await supabase
+    const { error: updateError } = await supabase
       .from("orders")
       .update({ status: "confirmed", payment_status: "paid", razorpay_payment_id })
       .eq("order_id", order_id);
+
+    if (updateError) {
+      console.error("[verify-payment] Supabase update failed:", updateError.message);
+      return NextResponse.json({ success: false, error: "Failed to update order status" }, { status: 500 });
+    }
 
     let shiprocketOrderId: string | null = null;
     let shiprocketError: string | null = null;

@@ -38,6 +38,12 @@ async function createRazorpayAndItems(
     notes: { order_id: order.order_id, customer_name, customer_email },
   });
 
+  // Store razorpay_order_id so the webhook can look up this order later
+  await supabase
+    .from("orders")
+    .update({ razorpay_order_id: razorpayOrder.id })
+    .eq("order_id", order.order_id);
+
   const orderItems = items.map((item) => ({
     order_id: order.order_id,
     product_id: item.product_id || null,
