@@ -62,7 +62,10 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 1500):
 // ── Create ShipRocket order ───────────────────────────────────────────────────
 async function createShipRocketOrder(order: FullOrder, token: string): Promise<string> {
   const rawPhone = order.customer_phone || "";
-  const cleanPhone = rawPhone.replace(/\D/g, "").replace(/^91/, "").slice(-10);
+  const digitsOnly = rawPhone.replace(/\D/g, "");
+  // Strip country code only when number is 12+ digits (e.g. 919164801744 → 9164801744)
+  // A 10-digit number starting with 91 (e.g. 9164801744) must NOT be stripped
+  const cleanPhone = digitsOnly.length > 10 ? digitsOnly.replace(/^91/, "").slice(-10) : digitsOnly;
   if (cleanPhone.length !== 10) {
     throw new Error(`Invalid phone "${rawPhone}" — need 10-digit Indian mobile`);
   }
