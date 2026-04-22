@@ -191,6 +191,13 @@ export default function CheckoutPage() {
       return;
     }
 
+    const digits = formValues.customer_phone.replace(/\D/g, "");
+    const cleanedPhone = digits.length > 10 ? digits.replace(/^91/, "").slice(-10) : digits;
+    if (cleanedPhone.length !== 10 || !/^[6-9]/.test(cleanedPhone)) {
+      toast.error("Enter a valid 10-digit Indian mobile number");
+      return;
+    }
+
     if (cartItems.length === 0) {
       console.warn("[handlePlaceOrder] Cart is empty");
       toast.error("Cart is empty");

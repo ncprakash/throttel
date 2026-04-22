@@ -6,10 +6,25 @@ type Props = {
   onChange: (values: any) => void;
 };
 
+function normalizePhone(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  return digits.length > 10 ? digits.replace(/^91/, "").slice(-10) : digits;
+}
+
+function isValidPhone(raw: string): boolean {
+  const cleaned = normalizePhone(raw);
+  return cleaned.length === 10 && /^[6-9]/.test(cleaned);
+}
+
 export default function CheckoutForm({ formValues, onChange }: Props) {
   const handleChange = (field: string, value: string) => {
     onChange({ ...formValues, [field]: value });
   };
+
+  const phoneError =
+    formValues.customer_phone && !isValidPhone(formValues.customer_phone)
+      ? "Enter a valid 10-digit Indian mobile number"
+      : null;
 
   return (
     <div className="space-y-4">
@@ -36,13 +51,21 @@ export default function CheckoutForm({ formValues, onChange }: Props) {
       </div>
 
       <div>
-        <label className="text-sm text-white/60">Phone</label>
+        <label className="text-sm text-white/60">Phone *</label>
         <input
           type="tel"
           value={formValues.customer_phone}
           onChange={(e) => handleChange("customer_phone", e.target.value)}
-          className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+          maxLength={13}
+          placeholder="10-digit mobile number"
+          className={`w-full px-4 py-2 rounded-lg bg-white/5 border text-white ${
+            phoneError ? "border-red-500" : "border-white/10"
+          }`}
+          required
         />
+        {phoneError && (
+          <p className="text-red-400 text-xs mt-1">{phoneError}</p>
+        )}
       </div>
 
       <div>
