@@ -21,7 +21,7 @@ export default function ProductDetailPage() {
   const slug = params.slug as string;
 
   const { data: session } = useSession();
-
+const [fitmentGuide, setFitmentGuide] = useState("");
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);

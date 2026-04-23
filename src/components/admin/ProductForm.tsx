@@ -45,7 +45,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
     material: "",
     technical_specification: [],
     reviews: [],
-    filament: "",
+    fitment_guide: "",
   });
 
   const [reviewList, setReviewList] = useState<
@@ -75,7 +75,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         material: product?.material ?? "",
         technical_specification: product?.technical_specification || [],
         reviews: product?.reviews || [],
-        filament: product?.fitment_guide ?? "",
+        fitment_guide: product?.fitment_guide ?? "",
       });
       setReviewList(product?.reviews || []);
       if (product?.weight != null) {
@@ -232,7 +232,7 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
         weight: weightKg,
         warranty_months: form.warranty_months || 6,
         material: form.material || null,
-        fitment_guide: form.filament || null,
+        fitment_guide: form.fitment_guide || null,
       };
 
       let savedProd: any;
@@ -307,25 +307,25 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
   );
 
   try {
-    console.log("🚀 Sending upload request to:", `/api/admin/products/${savedProd.product_id}/image/bulk`);
+    console.log("🚀 Sending upload request to:", `/api/admin/products/${savedProd.product_id}/images/bulk`);
     
-    const response = await axios.post(  // ✅ capture response here
-      `/api/admin/products/${savedProd.product_id}/images/bulk`,  // ✅ removed /bulk
+    const response = await axios.post(
+      `/api/admin/products/${savedProd.product_id}/images/bulk`,
       formData
-      // ✅ no headers
     );
 
     console.log("✅ Upload success! Status:", response.status);
     console.log("✅ Response data:", response.data);
 
   } catch (err: any) {  // ✅ typed as any so err.response works
+    const responseData = err?.response?.data;
     console.error("❌ Upload FAILED");
     console.error("  Status:", err?.response?.status);
-    console.error("  Error message:", err?.response?.data?.error);
-    console.error("  Error details:", err?.response?.data?.details);
-    console.error("  Full response:", err?.response?.data);
+    console.error("  Error message:", responseData?.error || responseData?.message);
+    console.error("  Error details:", responseData?.details);
+    console.error("  Full response:", responseData);
     console.error("  Raw error:", err);
-    setNotice(`Image upload failed: ${err?.response?.data?.error || err?.message}`);
+    setNotice(`Image upload failed: ${responseData?.error || responseData?.message || err?.message}`);
   } finally {
     setUploadingImages(false);
   }
@@ -360,8 +360,9 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
       onSaved?.(savedProd);
     } catch (err: any) {
       console.error("❌ Save failed", err);
-      const errorMsg = err?.response?.data?.error || err?.message || "Save failed";
-      console.log("Setting error notice:", errorMsg);
+      const responseData = err?.response?.data;
+      const errorMsg = responseData?.error || responseData?.message || err?.message || "Save failed";
+      console.log("Setting error notice:", errorMsg, "response data:", responseData);
       setNotice(errorMsg);
     } finally {
       setSaving(false);
@@ -497,8 +498,8 @@ export default function ProductForm({ product, onSaved, onCancel }: Props) {
 
           <label className="text-sm text-white/60">Fitment guide</label>
           <textarea
-            value={form.filament}
-            onChange={(e) => setField("filament", e.target.value)}
+            value={form.fitment_guide}
+            onChange={(e) => setField("fitment_guide", e.target.value)}
             rows={4}
             placeholder=""
             className="w-full px-3 py-2 rounded-md bg-transparent border border-white/10"
