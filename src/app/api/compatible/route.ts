@@ -29,7 +29,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch product compatibility" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, compatibility: data }, { status: 200 });
+    return NextResponse.json(
+      { success: true, compatibility: data },
+      { status: 200, headers: { "Cache-Control": "public, max-age=600, stale-while-revalidate=7200" } }
+    );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });

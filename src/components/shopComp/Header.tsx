@@ -41,7 +41,7 @@ export default function ShopHeader({
   const modelInputRef = useRef<HTMLInputElement | null>(null);
   const categoryInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Debounced brand lookup
+  // Debounced brand lookup with sessionStorage cache
   useEffect(() => {
     if (bikeBrand.length < 2) {
       setBrandResults([]);
@@ -50,24 +50,36 @@ export default function ShopHeader({
       return;
     }
 
+    const cacheKey = "nhtsa_brands";
+    const cached = sessionStorage.getItem(cacheKey);
+    const allBrands: { MakeName: string }[] = cached ? JSON.parse(cached) : [];
+
+    const filterAndSet = (brands: { MakeName: string }[]) => {
+      const filtered = brands.filter((b) =>
+        b.MakeName.toLowerCase().includes(bikeBrand.toLowerCase())
+      );
+      setBrandResults(filtered.slice(0, 8));
+      setShowBrandDropdown(filtered.length > 0);
+      setIsLoadingBrands(false);
+    };
+
+    if (allBrands.length > 0) {
+      filterAndSet(allBrands);
+      return;
+    }
+
     setIsLoadingBrands(true);
     const timer = setTimeout(() => {
       axios
-        .get(
-          `https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/motorcycle?format=json`
-        )
+        .get("https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/motorcycle?format=json")
         .then((response) => {
-          const filtered = response.data.Results.filter((brand: any) =>
-            brand.MakeName.toLowerCase().includes(bikeBrand.toLowerCase())
-          );
-          setBrandResults(filtered.slice(0, 8));
-          setShowBrandDropdown(true);
+          const results = response.data.Results as { MakeName: string }[];
+          sessionStorage.setItem(cacheKey, JSON.stringify(results));
+          filterAndSet(results);
         })
         .catch(() => {
           setBrandResults([]);
           setShowBrandDropdown(false);
-        })
-        .finally(() => {
           setIsLoadingBrands(false);
         });
     }, 400);
@@ -75,7 +87,7 @@ export default function ShopHeader({
     return () => clearTimeout(timer);
   }, [bikeBrand]);
 
-  // Debounced model lookup
+  // Debounced model lookup with sessionStorage cache per brand
   useEffect(() => {
     if (!bikeBrand || bikeModel.length < 1) {
       setModelResults([]);
@@ -84,24 +96,36 @@ export default function ShopHeader({
       return;
     }
 
+    const cacheKey = `nhtsa_models_${bikeBrand.toLowerCase()}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    const allModels: { Model_Name: string; Make_Name: string }[] = cached ? JSON.parse(cached) : [];
+
+    const filterAndSet = (models: { Model_Name: string; Make_Name: string }[]) => {
+      const filtered = models.filter((m) =>
+        m.Model_Name.toLowerCase().includes(bikeModel.toLowerCase())
+      );
+      setModelResults(filtered.slice(0, 8));
+      setShowModelDropdown(filtered.length > 0);
+      setIsLoadingModels(false);
+    };
+
+    if (allModels.length > 0) {
+      filterAndSet(allModels);
+      return;
+    }
+
     setIsLoadingModels(true);
     const timer = setTimeout(() => {
       axios
-        .get(
-          `https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${bikeBrand}?format=json`
-        )
+        .get(`https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${bikeBrand}?format=json`)
         .then((response) => {
-          const filtered = response.data.Results.filter((model: any) =>
-            model.Model_Name.toLowerCase().includes(bikeModel.toLowerCase())
-          );
-          setModelResults(filtered.slice(0, 8));
-          setShowModelDropdown(true);
+          const results = response.data.Results as { Model_Name: string; Make_Name: string }[];
+          sessionStorage.setItem(cacheKey, JSON.stringify(results));
+          filterAndSet(results);
         })
         .catch(() => {
           setModelResults([]);
           setShowModelDropdown(false);
-        })
-        .finally(() => {
           setIsLoadingModels(false);
         });
     }, 400);
@@ -145,7 +169,7 @@ export default function ShopHeader({
   useEffect(() => {
     setIsLoadingCategories(true);
     axios
-      .get("/api/admin/categories")
+      .get("/api/categories")
       .then((response) => {
         setCategoryResults(response.data.categories || response.data || []);
       })

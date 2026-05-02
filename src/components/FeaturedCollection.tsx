@@ -43,7 +43,7 @@ export default function FeaturedCollections() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("/api/products");
+        const res = await axios.get("/api/products?limit=12");
         const data = (res.data.products || []) as ApiProduct[];
 
         const mapped: CardProduct[] = data.map((p) => ({

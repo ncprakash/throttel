@@ -99,7 +99,6 @@ export default function CheckoutPage() {
 
   // Razorpay Payment Handler
   const handleRazorpayPayment = async (orderData: any) => {
-    console.log("🔥 Razorpay data:", orderData);
 
     if (!window.Razorpay) {
       toast.error("Payment gateway not ready. Please refresh.");

@@ -45,7 +45,7 @@ export default function ShopSidebar({
     setCatsLoading(true);
     setCatsError(null);
     try {
-      const res = await axios.get("/api/admin/categories");
+      const res = await axios.get("/api/categories");
       const data = res.data.categories || res.data || [];
       setCategories(data);
     } catch (err: any) {
@@ -321,7 +321,7 @@ export default function ShopSidebar({
                         })}
                       </div>
                     ) : (
-                      <div className="text-sm text:white/60">No brands</div>
+                      <div className="text-sm text-white/60">No brands</div>
                     )}
                   </div>
                 )}
@@ -346,7 +346,7 @@ export default function ShopSidebar({
                   onSelectCategory?.("");
                   onSelectBike?.("");
                 }}
-                className="px-3 py-2 rounded-md border border:white/6 text-sm"
+                className="px-3 py-2 rounded-md border border-white/6 text-sm"
               >
                 Clear filters
               </button>

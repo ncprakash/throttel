@@ -2,8 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-
-
 export async function GET(request: NextRequest) {
   const bikeModel = request.nextUrl.searchParams.get("bikeModel");
 
@@ -11,44 +9,29 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Bike model is required" }, { status: 400 });
   }
 
-  // CLEAN THE SEARCH STRING - Remove whitespace and newlines
   const cleanedBikeModel = bikeModel.trim().replace(/\s+/g, " ");
 
-  console.log("🔍 Original search:", JSON.stringify(bikeModel));
-  console.log("✨ Cleaned search:", JSON.stringify(cleanedBikeModel));
-
   try {
-    // Get compatibility data with cleaned search
     const { data: compatData, error: compatError } = await supabase
       .from("product_compatibility")
-      .select("*")
+      .select("product_id, bike_model, bike_brand, year_from, year_to, notes")
       .ilike("bike_model", `%${cleanedBikeModel}%`);
 
-    console.log("📊 Compatibility found:", compatData?.length || 0);
-
     if (compatError) {
-      console.error("❌ Compatibility error:", compatError);
       return NextResponse.json({ error: compatError.message }, { status: 500 });
     }
 
     if (!compatData || compatData.length === 0) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: true,
-        products: [], 
+        products: [],
         count: 0,
         message: `No products found for "${cleanedBikeModel}"`,
-        debug: {
-          originalSearch: bikeModel,
-          cleanedSearch: cleanedBikeModel
-        }
       });
     }
 
-    // Get product IDs
-    const productIds = compatData.map((c: any) => c.product_id);
-    console.log("🆔 Product IDs:", productIds);
+    const productIds = compatData.map((c) => c.product_id);
 
-    // Fetch products with images
     const { data: productsData, error: productsError } = await supabase
       .from("products")
       .select(`
@@ -69,18 +52,15 @@ export async function GET(request: NextRequest) {
       .in("product_id", productIds)
       .eq("is_active", true);
 
-    console.log("📦 Products found:", productsData?.length || 0);
-
     if (productsError) {
-      console.error("❌ Products error:", productsError);
       return NextResponse.json({ error: productsError.message }, { status: 500 });
     }
 
-    // Format response
-    const formattedProducts = productsData?.map((product: any) => {
-      const compatibility = compatData.find((c: any) => c.product_id === product.product_id);
-      const primaryImage = product.product_images?.find((img: any) => img.is_primary) 
-        || product.product_images?.[0];
+    const formattedProducts = productsData?.map((product) => {
+      const compatibility = compatData.find((c) => c.product_id === product.product_id);
+      const primaryImage =
+        product.product_images?.find((img: { is_primary: boolean }) => img.is_primary) ||
+        product.product_images?.[0];
 
       return {
         id: product.product_id,
@@ -102,20 +82,12 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    console.log("✅ Final products:", formattedProducts?.length || 0);
-
-    return NextResponse.json({ 
-      success: true,
-      products: formattedProducts || [], 
-      count: formattedProducts?.length || 0,
-      searchedModel: cleanedBikeModel
-    });
-
-  } catch (error: any) {
-    console.error("💥 Error:", error);
-    return NextResponse.json({ 
-      error: error.message,
-      stack: error.stack 
-    }, { status: 500 });
+    return NextResponse.json(
+      { success: true, products: formattedProducts || [], count: formattedProducts?.length || 0, searchedModel: cleanedBikeModel },
+      { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } }
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Search failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -59,11 +59,12 @@ export default function ProductGrid({ products, viewMode }: ProductGridProps) {
       role="list"
       aria-label="Product list"
     >
-      {products.map((product) => (
+      {products.map((product, index) => (
         <ProductCard
           key={product.id}
           product={product}
           viewMode={viewMode}
+          index={index}
           isWishlisted={wishlist.includes(product.id)}
           onToggleWishlist={() => toggleWishlist(product.id)}
         />
@@ -201,11 +202,13 @@ const AddToCartBtn = ({
 function ProductCard({
   product,
   viewMode,
+  index,
   isWishlisted,
   onToggleWishlist,
 }: {
   product: Product;
   viewMode: "grid" | "list";
+  index: number;
   isWishlisted: boolean;
   onToggleWishlist: () => void;
 }) {
@@ -389,7 +392,7 @@ function ProductCard({
           }`}
           onLoad={() => setImageLoaded(true)}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          priority={false}
+          priority={index < 3}
         />
 
         <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
