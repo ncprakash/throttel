@@ -88,7 +88,7 @@ async function createShipRocketOrder(order: FullOrder, token: string): Promise<s
   const payload = {
     order_id: String(order.order_id),
     order_date: orderDate,
-    pickup_location: "wearhouse",
+    pickup_location: "Home-1",
     billing_customer_name: order.customer_name || "Customer",
     billing_last_name: "",
     billing_address: order.shipping_address || "N/A",
