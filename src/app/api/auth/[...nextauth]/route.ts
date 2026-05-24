@@ -1,6 +1,7 @@
 import NextAuth, { AuthOptions, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { supabase } from "@/lib/supabase";
 
@@ -18,6 +19,11 @@ export const authOptions: AuthOptions = {
   },
 
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -41,6 +47,11 @@ export const authOptions: AuthOptions = {
           throw new Error("Please verify your email before logging in");
         }
 
+        // Block Google-only accounts from credentials login
+        if (user.provider === "google" || !user.password_hash) {
+          throw new Error("This account uses Google Sign-In. Please use the Google button.");
+        }
+
         const isMatch = await bcrypt.compare(
           credentials.password,
           user.password_hash
@@ -59,13 +70,66 @@ export const authOptions: AuthOptions = {
   ],
 
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: User }) {
+    async signIn({ user, account }) {
+      // Only runs for OAuth providers (Google)
+      if (account?.provider === "google") {
+        const email = user.email!;
+        const googleId = account.providerAccountId;
+        const nameParts = (user.name || "").split(" ");
+        const firstName = nameParts[0] || "User";
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        // Look up existing user by email
+        const { data: existing } = await supabase
+          .from("users")
+          .select("user_id, provider, google_id, role")
+          .eq("email", email)
+          .maybeSingle();
+
+        if (!existing) {
+          // New user — create account (auto-verified via Google)
+          const { data: created, error } = await supabase
+            .from("users")
+            .insert({
+              email,
+              first_name: firstName,
+              last_name: lastName,
+              provider: "google",
+              google_id: googleId,
+              is_verified: true,
+              role: "user",
+            })
+            .select("user_id, role")
+            .single();
+
+          if (error || !created) return false;
+
+          user.id = created.user_id;
+          (user as AuthUser).role = created.role;
+        } else {
+          // Existing credentials user — link Google to their account
+          if (existing.provider === "credentials") {
+            await supabase
+              .from("users")
+              .update({ google_id: googleId })
+              .eq("user_id", existing.user_id);
+          }
+
+          user.id = existing.user_id;
+          (user as AuthUser).role = existing.role;
+        }
+      }
+      return true;
+    },
+
+    async jwt({ token, user, account }: { token: JWT; user?: User; account?: { provider?: string } | null }) {
       if (user) {
         token.id = (user as AuthUser).id;
         token.role = (user as AuthUser).role;
         token.phone = (user as AuthUser).phone ?? null;
         token.name = (user as AuthUser).name;
         token.email = (user as AuthUser).email;
+        token.provider = account?.provider ?? "credentials";
       }
       return token;
     },

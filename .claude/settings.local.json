@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(node -e \"const {z} = require\\('zod'\\); const r = z.string\\(\\).safeParse\\(1\\); console.log\\(JSON.stringify\\(r.error, null, 2\\)\\)\")",
-      "Bash(node -e \"const {z} = require\\('zod'\\); const r = z.string\\(\\).safeParse\\(1\\); const e = r.error; console.log\\(typeof e.issues, e.issues\\); console.log\\(e.message\\)\")"
+      "Bash(node -e \"const {z} = require\\('zod'\\); const r = z.string\\(\\).safeParse\\(1\\); const e = r.error; console.log\\(typeof e.issues, e.issues\\); console.log\\(e.message\\)\")",
+      "Bash(cd d:\\\\\\\\THrottle-project)",
+      "Bash(node -e ' *)"
     ]
   }
 }
