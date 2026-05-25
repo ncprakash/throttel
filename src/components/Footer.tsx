@@ -19,6 +19,7 @@ export default function Footer() {
       "Contact Us",
       "Shipping Info",
       "Returns",
+      "Return Policy",
       "Warranty",
       "Track Order",
       "FAQs",
@@ -119,7 +120,7 @@ export default function Footer() {
               {links.support.map((link) => (
                 <li key={link}>
                   <a
-                    href={`/support`}
+                    href={link === "Return Policy" ? "/return-policy" : "/support"}
                     className="text-white/60 hover:text-white text-sm font-light transition-colors"
                   >
                     {link}
