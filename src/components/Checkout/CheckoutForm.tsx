@@ -1,9 +1,13 @@
 // components/Checkout/CheckoutForm.tsx
 "use client";
 
+import Link from "next/link";
+
 type Props = {
   formValues: any;
   onChange: (values: any) => void;
+  agreedToTerms: boolean;
+  onTermsChange: (agreed: boolean) => void;
 };
 
 function normalizePhone(raw: string): string {
@@ -16,7 +20,7 @@ function isValidPhone(raw: string): boolean {
   return cleaned.length === 10 && /^[6-9]/.test(cleaned);
 }
 
-export default function CheckoutForm({ formValues, onChange }: Props) {
+export default function CheckoutForm({ formValues, onChange, agreedToTerms, onTermsChange }: Props) {
   const handleChange = (field: string, value: string) => {
     onChange({ ...formValues, [field]: value });
   };
@@ -125,6 +129,28 @@ export default function CheckoutForm({ formValues, onChange }: Props) {
           />
         </div>
       </div>
+
+      {/* Terms & Conditions agreement */}
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={agreedToTerms}
+          onChange={(e) => onTermsChange(e.target.checked)}
+          className="mt-1 h-4 w-4 shrink-0 accent-white cursor-pointer"
+        />
+        <span className={`text-sm leading-relaxed ${agreedToTerms ? "text-white/80" : "text-white/60"}`}>
+          I have read and agree to the{" "}
+          <Link
+            href="/terms"
+            target="_blank"
+            className="underline text-white hover:text-white/80 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Terms &amp; Conditions
+          </Link>
+          {" "}including the product usage responsibility, no-return policy, and all disclaimers.
+        </span>
+      </label>
     </div>
   );
 }

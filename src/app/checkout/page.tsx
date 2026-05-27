@@ -25,6 +25,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [selectedShipping, setSelectedShipping] =
     useState<ShippingOption>("normal");
 
@@ -197,6 +198,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!agreedToTerms) {
+      toast.error("Please read and accept the Terms & Conditions to continue");
+      return;
+    }
+
     if (cartItems.length === 0) {
       console.warn("[handlePlaceOrder] Cart is empty");
       toast.error("Cart is empty");
@@ -335,6 +341,8 @@ export default function CheckoutPage() {
                 <CheckoutForm
                   formValues={formValues}
                   onChange={setFormValues}
+                  agreedToTerms={agreedToTerms}
+                  onTermsChange={setAgreedToTerms}
                 />
               </div>
             </div>

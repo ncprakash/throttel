@@ -70,17 +70,45 @@ export default function TermsPage() {
           </div>
 
           <Section id="terms" title="Terms & Conditions">
-            <div className="space-y-4 text-sm">
+            <div className="space-y-5 text-sm">
               <p>
-                Lifetime warranty is applicable only at the discretion of TFC
-                and strictly for verified manufacturing defects. Mild steel
-                products are excluded from lifetime warranty coverage. Any
-                damage caused by usage, handling, modification, or installation
-                is not covered. All claims must include an unedited video
-                recorded before installation, and TFC reserves the right to
-                approve, reject, or request additional proof before honoring any
-                warranty
+                By purchasing any product from Throttle Forged Customs (TFC), the customer agrees to all
+                terms and conditions mentioned below. All products sold by TFC are aftermarket/custom
+                performance products intended for enthusiast and off-road/custom-use applications.
               </p>
+
+              <h3 className="font-semibold text-white mt-2">Product Usage Responsibility</h3>
+              <p>All TFC products are installed and used entirely at the customer&apos;s own responsibility. By purchasing and installing any TFC product, the customer understands and accepts that:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Vehicle behaviour may vary after modification</li>
+                <li>Performance characteristics may change</li>
+                <li>Sound levels, airflow, throttle response, mileage, and riding feel may differ from stock setup</li>
+                <li>Improper installation or misuse may lead to issues</li>
+              </ul>
+              <p>TFC shall not be held responsible for: vehicle damage, engine damage, water ingestion, warranty rejection, service centre disputes, mileage changes, ECU-related behaviour, fines or legal issues, installation errors by customer/mechanic, or negligence in maintenance.</p>
+
+              <h3 className="font-semibold text-white mt-2">Air Filter Cap Disclaimer</h3>
+              <p>TFC Stage 2 Air Filter Caps are designed to improve airflow and throttle response compared to stock setups. Customers acknowledge that:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Free-flow setups may expose the filter to slightly higher dust intake compared to fully closed stock systems</li>
+                <li>Regular cleaning and maintenance of the air filter is recommended</li>
+                <li>Direct pressure washing near the airbox area should be avoided</li>
+                <li>Deep water crossings or improper washing methods may allow water exposure</li>
+                <li>Usage during extreme conditions is at customer discretion</li>
+              </ul>
+              <p>Normal rain riding and regular riding conditions generally do not cause issues when maintained properly.</p>
+
+              <h3 className="font-semibold text-white mt-2">Installation</h3>
+              <p>Customers are advised to install products using experienced mechanics, ensure all bolts/fittings are tightened correctly, periodically inspect products after installation, and follow regular maintenance schedules. TFC is not responsible for damages caused by incorrect installation, improper fitment, modification by third parties, or accidents/misuse.</p>
+
+              <h3 className="font-semibold text-white mt-2">Product Finish &amp; Handmade Nature</h3>
+              <p>Certain products may contain minor machining marks, surface texture variations, hand-finished imperfections, or slight engraving variations. These are normal characteristics of custom-manufactured aftermarket products and are <strong>not considered defects</strong>.</p>
+
+              <h3 className="font-semibold text-white mt-2">Legal Disclaimer</h3>
+              <p>Certain aftermarket modifications may not comply with local regulations in some regions. Customers are solely responsible for understanding local laws, vehicle compliance, noise regulations, and insurance implications. TFC does not guarantee road legality in every jurisdiction.</p>
+
+              <h3 className="font-semibold text-white mt-2">Acceptance of Terms</h3>
+              <p>By placing an order with TFC, the customer confirms that they have read and understood all terms, accept all risks associated with aftermarket modifications, and agree to use products responsibly and maintain them properly.</p>
             </div>
           </Section>
 
@@ -144,99 +172,72 @@ export default function TermsPage() {
           <Section id="shipping" title="Shipping Policy">
             <div className="space-y-4 text-sm">
               <p>
-                We aim to dispatch orders quickly. Shipping terms vary by
-                product and destination — the summary below covers common cases.
+                We aim to dispatch orders quickly. Shipping timelines are estimated and may vary.
               </p>
 
               <h3 className="font-medium mt-2">Processing Time</h3>
               <p>
-                Orders are typically processed within 1–3 business days. Some
-                items (preorders, custom parts) may require longer; this will be
-                displayed on the product.
+                Orders are typically processed within 1–3 business days. Custom or pre-order items
+                may require additional time, which will be displayed on the product page.
               </p>
 
               <h3 className="font-medium mt-2">Delivery Estimates</h3>
               <ul className="list-disc pl-5 space-y-2">
-                <li>
-                  <strong>Domestic:</strong> 3–7 business days once dispatched
-                  (carrier dependent).
-                </li>
-                <li>
-                  <strong>International:</strong> 7–21 business days
-                  (customs/duties may add time).
-                </li>
+                <li><strong>Pan India:</strong> 3–7 business days once dispatched (carrier dependent).</li>
               </ul>
 
-              <h3 className="font-medium mt-2">Shipping Costs</h3>
-              <p>
-                Shipping costs depend on weight, destination and chosen carrier.
-                Free shipping promotions (if any) are clearly displayed at
-                checkout.
-              </p>
-
-              <h3 className="font-medium mt-2">Lost or Damaged Packages</h3>
-              <p>
-                If your package is lost or damaged in transit, contact support
-                with your order number. We will coordinate with the carrier and
-                either reship or refund per the investigation outcome.
-              </p>
+              <h3 className="font-medium mt-2">Delays</h3>
+              <p>Shipping timelines may vary due to:</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Courier delays</li>
+                <li>Weather conditions</li>
+                <li>Remote locations</li>
+                <li>Public holidays</li>
+              </ul>
+              <p>TFC is not responsible for courier delays after dispatch.</p>
             </div>
           </Section>
 
           <Section id="returns" title="Return & Refund Policy">
             <div className="space-y-4 text-sm">
-              <p>
-                We accept returns for eligible products within a specified
-                window. The rules below are general — some products (e.g.,
-                custom items) may be final-sale.
-              </p>
-
-              <h3 className="font-medium mt-2">Eligibility</h3>
+              <h3 className="font-medium mt-2">No Returns / No Refunds</h3>
+              <p>We do <strong>not</strong> provide returns or refunds for:</p>
               <ul className="list-disc pl-5 space-y-2">
-                <li>
-                  Returns accepted within 14 days of delivery for most items.
-                </li>
-                <li>
-                  Item must be unused, in original condition and packaging.
-                </li>
-                <li>
-                  Products marked as final-sale or non-returnable cannot be
-                  returned.
-                </li>
+                <li>Change of mind</li>
+                <li>Personal preference</li>
+                <li>Dissatisfaction with performance expectations</li>
+                <li>Compatibility misunderstandings after order confirmation</li>
+                <li>Custom-made or engraved products</li>
               </ul>
 
-              <h3 className="font-medium mt-2">How to Return</h3>
-              <ol className="list-decimal pl-5 space-y-2">
-                <li>
-                  Open a support ticket or email support with your order number.
-                </li>
-                <li>
-                  We will provide a return authorization and instructions.
-                </li>
-                <li>
-                  Ship the item to the provided return address — keep tracking
-                  info.
-                </li>
-                <li>
-                  Once we receive and inspect the item, we will issue a refund
-                  or exchange.
-                </li>
-              </ol>
-
-              <h3 className="font-medium mt-2">Refund Timing</h3>
+              <h3 className="font-medium mt-2">When We Do Help</h3>
+              <p>Returns/replacements are only applicable if:</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Wrong product was delivered</li>
+                <li>Product arrived physically damaged during shipping</li>
+              </ul>
               <p>
-                Refunds are processed within 7–14 business days after we receive
-                the returned item. The original shipping charges are not
-                refundable unless the return is due to our error.
+                Customers must report such issues <strong>within 48 hours of delivery</strong> with
+                proper unboxing video proof. Once verified, a replacement will be processed accordingly.
               </p>
+
+              <h3 className="font-medium mt-2">Warranty</h3>
+              <p>Warranty applies only to manufacturing defects where explicitly mentioned. Warranty does <strong>not</strong> cover:</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Wear and tear</li>
+                <li>Rust due to improper maintenance</li>
+                <li>Damage from crashes or misuse</li>
+                <li>Damage due to water exposure or improper washing</li>
+                <li>Damage caused during installation/removal</li>
+                <li>Consumable parts</li>
+              </ul>
             </div>
           </Section>
 
           <Section id="contact" title="Contact & Notice">
             <div className="space-y-4 text-sm">
               <p>
-                For questions about these policies or to request data access,
-                returns, or help with an order, contact:
+                For questions about these policies, returns, or help with an order, reach out to us:
               </p>
 
               <ul className="list-none pl-0 mt-2 space-y-2">
@@ -244,25 +245,27 @@ export default function TermsPage() {
                   <strong>Email:</strong>{" "}
                   <a
                     className="text-white/90 underline"
-                    href="mailto:support@throttel.example"
+                    href="mailto:Tforgedcustoms@gmail.com"
                   >
-                    support@throttel.example
+                    Tforgedcustoms@gmail.com
                   </a>
                 </li>
                 <li>
-                  <strong>Support Hours:</strong> Mon–Fri, 09:00–18:00 (local
-                  time)
-                </li>
-                <li>
-                  <strong>Address:</strong> 123 Example Street, City, Country
-                  (if needed)
+                  <strong>Instagram:</strong>{" "}
+                  <a
+                    className="text-white/90 underline"
+                    href="https://www.instagram.com/throttleforgedcustoms"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    @throttleforgedcustoms
+                  </a>
                 </li>
               </ul>
 
               <p className="text-xs text-[rgba(255,255,255,0.6)] mt-3">
-                These policies were last updated on{" "}
-                <strong>Nov 18, 2025</strong>. We may update them from time to
-                time; material changes will be posted on this page.
+                — Throttle Forged Customs (TFC). These policies were last updated on{" "}
+                <strong>May 2026</strong>.
               </p>
             </div>
           </Section>
