@@ -16,16 +16,16 @@ export default function Home() {
         </div>
 
         <div className="relative w-full bg-black z-10">
-          <AuthPage />
+          <DealerSection />
         </div>
 
         <div className="relative w-full bg-black z-10">
-          <DealerSection />
+          <AuthPage />
         </div>
       </div>
 
       {/* Footer sits flush at the bottom; pb-20 clears the fixed BottomNav */}
-      <div className="pb-20">
+      <div className="bg-black pb-20">
         <Footer />
       </div>
 

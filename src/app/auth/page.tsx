@@ -1,7 +1,6 @@
 // app/auth/page.tsx
 import { Suspense } from "react";
 import AuthClient from "./AuthClient";
-import Footer from "@/components/Footer";
 
 function AuthLoadingFallback() {
   return (
@@ -20,7 +19,7 @@ function AuthLoadingFallback() {
 
 export default function AuthPage() {
   return (
-    <section className="min-h-screen w-full bg-transparent text-white flex flex-col items-center justify-center px-4 sm:px-6 lg:px-12 py-16">
+    <section className="w-full bg-black text-white flex flex-col items-center justify-center px-4 sm:px-6 lg:px-12 py-16">
       
       {/* Auth Card */}
       <Suspense fallback={<AuthLoadingFallback />}>
@@ -32,10 +31,7 @@ export default function AuthPage() {
         Protected by industry-grade encryption
       </p>
 
-      {/* Footer */}
-      <div className="mt-10 w-full">
-        <Footer />
-      </div>
+
     </section>
   );
 }

@@ -372,7 +372,7 @@ export default function InterleavedScrollExperience() {
       <div className="relative z-10">
         <USPStrip />
       </div>
-      <div className="relative min-h-screen z-10">
+      <div className="relative z-10">
         <EditorialSection />
       </div>
       <div className="relative z-10">

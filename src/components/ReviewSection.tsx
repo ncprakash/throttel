@@ -1,4 +1,58 @@
 // components/ReviewsSection.tsx
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+function StatCounter({
+  target,
+  suffix = "",
+  decimals = 0,
+  duration = 1800,
+  label,
+}: {
+  target: number;
+  suffix?: string;
+  decimals?: number;
+  duration?: number;
+  label: string;
+}) {
+  const [value, setValue] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          const startTime = performance.now();
+          const tick = (now: number) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setValue(parseFloat((eased * target).toFixed(decimals)));
+            if (progress < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, decimals, duration]);
+
+  return (
+    <div className="text-center" ref={ref}>
+      <p className="text-4xl md:text-5xl font-black text-white mb-2">
+        {decimals > 0 ? value.toFixed(decimals) : Math.floor(value)}{suffix}
+      </p>
+      <p className="text-white/60 text-sm font-light">{label}</p>
+    </div>
+  );
+}
+
 export default function ReviewsSection() {
   const reviews = [
     {
@@ -7,7 +61,6 @@ export default function ReviewsSection() {
       rating: 5,
       text: 'I was initially skeptical, but the air filter cap really complements my existing setup. Throttle response feels smoother and the bike breathes better without any issues. Clean design and perfect fit',
       verified: true,
-     
     },
     {
       name: ' Rahul Sharma',
@@ -15,48 +68,42 @@ export default function ReviewsSection() {
       rating: 5,
       text: 'Installed the footpeg extenders on my Interceptor 650 and the difference was immediate. Long rides are way more comfortable now, especially for my pillion. Build quality feels solid and installation was straightforward. Totally worth it.',
       verified: true,
-     
     },
     {
       name: 'Suresh Iyer',
       bike: 'Royal Enfield Continental GT 650',
       rating: 5,
-      text: 'Quality machining and proper finishing—no rough edges or fitment problems. I’ve done a few highway rides after installing this and everything feels more refined. Happy to support a brand that actually focuses on rider experience.',
+      text: "Quality machining and proper finishing—no rough edges or fitment problems. I've done a few highway rides after installing this and everything feels more refined. Happy to support a brand that actually focuses on rider experience.",
       verified: true,
-      
     },
-      {
+    {
       name: 'Rahul Mehta',
       bike: 'Royal Enfield Continental GT 650',
       rating: 5,
       text: 'The footpeg extender solved the pillion comfort issue on my Interceptor 650 instantly. Leg angle is much more relaxed now and long rides are no longer tiring. Solid build and perfect fit.',
       verified: true,
-     
     },
     {
-      name:'Amit Verma',
-      bike:'Royal Enfield Himalayan 411',
-      rating:5,
-      text:'Installed the air filter cap on my Himalayan 411 along with the stock filter. Throttle response feels cleaner and the bike breathes better, especially in mid-range. Fit and finish are top-notch',
-      verified:true
-      
+      name: 'Amit Verma',
+      bike: 'Royal Enfield Himalayan 411',
+      rating: 5,
+      text: 'Installed the air filter cap on my Himalayan 411 along with the stock filter. Throttle response feels cleaner and the bike breathes better, especially in mid-range. Fit and finish are top-notch',
+      verified: true,
     },
     {
-      name:'Sandeep Rao',
-      bike:'Royal Enfield Scram 411',
-      rating:5,
-      text:'Using this air filter cap on my Scram 411 for daily rides. No tuning needed, no issues at all. The bike feels smoother and slightly more responsive, plus it looks much better than stock.',
-      verified:true
-
+      name: 'Sandeep Rao',
+      bike: 'Royal Enfield Scram 411',
+      rating: 5,
+      text: 'Using this air filter cap on my Scram 411 for daily rides. No tuning needed, no issues at all. The bike feels smoother and slightly more responsive, plus it looks much better than stock.',
+      verified: true,
     },
     {
-      name:'Aditya',
-      bike:'Royal Enfield Interceptor bear 650',
-      rating:5,
-      text:'Installed the air filter cap on my Interceptor bear 650 with a stock air filter. The bike feels more free-revving and throttle response is noticeably smoother, especially in city riding. Clean fit and proper OEM-like finish.',
-      verified:true
-
-    }
+      name: 'Aditya',
+      bike: 'Royal Enfield Interceptor bear 650',
+      rating: 5,
+      text: 'Installed the air filter cap on my Interceptor bear 650 with a stock air filter. The bike feels more free-revving and throttle response is noticeably smoother, especially in city riding. Clean fit and proper OEM-like finish.',
+      verified: true,
+    },
   ];
 
   return (
@@ -113,7 +160,6 @@ export default function ReviewsSection() {
                   )}
                 </div>
                 <p className="text-white/50 text-sm font-light">{review.bike}</p>
-              
               </div>
             </div>
           ))}
@@ -121,22 +167,10 @@ export default function ReviewsSection() {
 
         {/* Trust Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-16 border-t border-white/10">
-          <div className="text-center">
-            <p className="text-4xl md:text-5xl font-black text-white mb-2">4.9</p>
-            <p className="text-white/60 text-sm font-light">Average Rating</p>
-          </div>
-          <div className="text-center">
-            <p className="text-4xl md:text-5xl font-black text-white mb-2">1K+</p>
-            <p className="text-white/60 text-sm font-light">Reviews</p>
-          </div>
-          <div className="text-center">
-            <p className="text-4xl md:text-5xl font-black text-white mb-2">98%</p>
-            <p className="text-white/60 text-sm font-light">Satisfaction</p>
-          </div>
-          <div className="text-center">
-            <p className="text-4xl md:text-5xl font-black text-white mb-2">5K+</p>
-            <p className="text-white/60 text-sm font-light">Happy Riders</p>
-          </div>
+          <StatCounter target={4.9} decimals={1} suffix="" duration={1800} label="Average Rating" />
+          <StatCounter target={1} suffix="K+" duration={1400} label="Reviews" />
+          <StatCounter target={98} suffix="%" duration={1600} label="Satisfaction" />
+          <StatCounter target={5} suffix="K+" duration={1600} label="Happy Riders" />
         </div>
       </div>
     </section>
