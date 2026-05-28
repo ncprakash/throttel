@@ -1,11 +1,11 @@
 // app/page.tsx
 "use client";
 
-import Image from "next/image";
 import Footer from "../components/Footer";
-import BottomNav from "@/components/BottomNavbar"; // adjust path if your file is named BottomNavbar
+import BottomNav from "@/components/BottomNavbar";
 import AuthPage from "./auth/page";
 import InterleavedScrollExperience from "@/components/InterLeaved";
+import DealerSection from "@/components/DealerSection";
 
 
 const CONTENT_PAD_BOTTOM = 68; // px — match your BottomNav height if it's fixed
@@ -27,15 +27,18 @@ export default function Home() {
         <div className="relative w-full bg-black z-10">
           <AuthPage />
         </div>
+
+        {/* ---------- Dealer Section ---------- */}
+        <div className="relative w-full bg-black z-10">
+          <DealerSection />
+        </div>
       </div>
+
+      {/* ---------- Footer ---------- */}
+      <Footer />
 
       {/* ---------- BottomNav (fixed) ---------- */}
       <BottomNav />
-
-      {/* ---------- Footer ---------- */}
-      <footer className="relative w-full bg-black border-t border-white/10 z-10">
-       =
-      </footer>
     </main>
   );
 }
