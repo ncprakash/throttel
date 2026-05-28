@@ -7,37 +7,28 @@ import AuthPage from "./auth/page";
 import InterleavedScrollExperience from "@/components/InterLeaved";
 import DealerSection from "@/components/DealerSection";
 
-
-const CONTENT_PAD_BOTTOM = 68; // px — match your BottomNav height if it's fixed
-
 export default function Home() {
   return (
     <main className="min-h-screen bg-black text-white antialiased flex flex-col">
-      {/* Page content grows and leaves room for a fixed bottom nav */}
-      <div 
-        className="flex-1 w-full"
-        style={{ paddingBottom: `${CONTENT_PAD_BOTTOM}px` }}
-      >
-        {/* ---------- Hero & Scroll Experience ---------- */}
+      <div className="flex-1 w-full">
         <div className="relative w-full bg-black">
           <InterleavedScrollExperience />
         </div>
 
-        {/* ---------- Auth Section (below the scroll experience) ---------- */}
         <div className="relative w-full bg-black z-10">
           <AuthPage />
         </div>
 
-        {/* ---------- Dealer Section ---------- */}
         <div className="relative w-full bg-black z-10">
           <DealerSection />
         </div>
       </div>
 
-      {/* ---------- Footer ---------- */}
-      <Footer />
+      {/* Footer sits flush at the bottom; pb-20 clears the fixed BottomNav */}
+      <div className="pb-20">
+        <Footer />
+      </div>
 
-      {/* ---------- BottomNav (fixed) ---------- */}
       <BottomNav />
     </main>
   );
