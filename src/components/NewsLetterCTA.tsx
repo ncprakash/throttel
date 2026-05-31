@@ -40,14 +40,17 @@ export default function NewsletterCTA() {
   };
 
   return (
-    <section className="bg-black py-32 px-6 relative overflow-hidden">
-      {/* Background Accent */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/[0.02] rounded-full blur-3xl"></div>
+    <section className="bg-black py-32 px-6 relative overflow-hidden border-t border-white/10">
+      {/* Large typographic background element */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+        <span className="text-[22vw] font-black text-white/[0.022] leading-none tracking-tighter">
+          TFC
+        </span>
       </div>
 
-      <div className="max-w-4xl mx-auto text-center relative z-10">
-        <div className="inline-flex items-center space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/10 mb-8">
+      <div className="max-w-xl mx-auto text-center relative z-10">
+        {/* Badge */}
+        <div className="inline-flex items-center space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/10 mb-10">
           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
@@ -56,72 +59,65 @@ export default function NewsletterCTA() {
           </span>
         </div>
 
-        <h2 className="text-5xl md:text-6xl font-black text-white mb-6 tracking-tight">
+        <h2 className="text-5xl md:text-6xl font-black text-white mb-5 tracking-tight">
           The Throttle Club
         </h2>
-        <p className="text-white/60 text-lg md:text-xl font-light mb-12 max-w-2xl mx-auto leading-relaxed">
-          Get exclusive access to new releases, performance tips, pro rider insights, and special member-only offers
+        <p className="text-white/40 text-lg font-light mb-14 leading-relaxed">
+          Exclusive access to new releases, performance tips, pro rider
+          insights, and member-only offers
         </p>
 
         {!subscribed ? (
-          <form onSubmit={handleSubmit} className="max-w-md mx-auto mb-8">
-            <div className="flex flex-col sm:flex-row gap-4">
+          <form onSubmit={handleSubmit} className="mb-10">
+            {/* Underline-style input */}
+            <div className="relative flex items-center border-b border-white/15 pb-1 focus-within:border-white/50 transition-colors duration-300 mb-2">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="Enter your email address"
                 required
                 disabled={loading}
-                className="flex-1 bg-white/10 text-white border border-white/20 rounded-xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 font-light placeholder:text-white/40 backdrop-blur-xl"
+                className="flex-1 bg-transparent text-white text-base font-light py-4 focus:outline-none placeholder:text-white/20 disabled:opacity-50"
               />
-              <button 
+              <button
                 type="submit"
                 disabled={loading}
-                className="bg-white text-black px-8 py-4 rounded-xl font-semibold hover:bg-white/90 transition-all duration-300 hover:scale-105 whitespace-nowrap shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+                className="shrink-0 w-10 h-10 border border-white/20 flex items-center justify-center text-white/50 hover:text-white hover:border-white/50 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-label="Subscribe"
               >
-                {loading ? 'Joining...' : 'Join Now'}
+                {loading ? (
+                  <div className="w-3.5 h-3.5 border border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8h10M9 4l4 4-4 4" />
+                  </svg>
+                )}
               </button>
             </div>
             {error && (
-              <p className="text-red-400 text-sm mt-2 text-center">{error}</p>
+              <p className="text-white/40 text-xs mt-2 text-left">{error}</p>
             )}
           </form>
         ) : (
-          <div className="max-w-md mx-auto mb-8 py-4">
-            <div className="flex items-center justify-center space-x-3 text-green-400">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+          <div className="mb-10 py-6">
+            <div className="flex items-center justify-center space-x-3 text-white/70">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span className="font-semibold">Welcome to the club! Check your inbox.</span>
+              <span className="font-light text-sm">Welcome to the club. Check your inbox.</span>
             </div>
           </div>
         )}
 
-        <div className="flex flex-wrap justify-center gap-8 text-sm text-white/40 mb-8">
-          <div className="flex items-center space-x-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span className="font-light">No spam, ever</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span className="font-light">Unsubscribe anytime</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span className="font-light">Privacy protected</span>
-          </div>
+        {/* Trust badges — inline, refined */}
+        <div className="flex flex-wrap justify-center gap-6 text-[11px] text-white/20 font-light tracking-wider uppercase">
+          <span>No spam, ever</span>
+          <span className="text-white/10">·</span>
+          <span>Unsubscribe anytime</span>
+          <span className="text-white/10">·</span>
+          <span>Privacy protected</span>
         </div>
-
-        <p className="text-white/30 text-xs font-light">
-          By subscribing, you agree to our Privacy Policy and consent to receive updates from Throttle Forged Customs.
-        </p>
       </div>
     </section>
   );

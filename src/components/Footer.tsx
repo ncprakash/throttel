@@ -33,76 +33,56 @@ export default function Footer() {
     ],
   };
 
+  const socials = [
+    {
+      href: "https://www.instagram.com/throttleforgedcustoms?igsh=Z20weG54a2thNW85",
+      icon: <FaInstagram />,
+      label: "Instagram",
+    },
+    {
+      href: "https://www.facebook.com/share/1ChYDgBod4/?mibextid=wwXIfr",
+      icon: <FaFacebookF />,
+      label: "Facebook",
+    },
+    {
+      href: "https://youtube.com/@tfcustoms?si=fKFQ7A8Cwz77-o4J",
+      icon: <FaYoutube />,
+      label: "YouTube",
+    },
+    {
+      href: "mailto:Tforgedcustoms@gmail.com",
+      icon: <FaEnvelope />,
+      label: "Email",
+    },
+  ];
+
   return (
     <footer className="bg-black border-t border-white/10">
-      <div className="max-w-7xl mx-auto px-6 pt-20 pb-12">
-        {/* Main Footer */}
-        <div className="grid md:grid-cols-5 gap-12 mb-16">
-          {/* Brand */}
-          <div className="md:col-span-2">
-            <h2 className="text-3xl font-black text-white mb-4 tracking-tight">
-              THROTTLE
-              <span className="block text-white/30 text-xl font-light">
-                FORGED CUSTOMS
-              </span>
-            </h2>
 
-            <p className="text-white/60 text-sm font-light leading-relaxed mb-6 max-w-sm">
-              Premium performance parts for riders who demand excellence.
-              Precision-engineered components trusted by professionals
-              worldwide.
-            </p>
+      {/* Full-width brand display text */}
+      <div className="overflow-hidden py-10 border-b border-white/[0.04]">
+        <p className="text-[10vw] font-black text-white/[0.04] leading-none tracking-tighter whitespace-nowrap select-none pl-6">
+          THROTTLE FORGED CUSTOMS
+        </p>
+      </div>
 
-            {/* FINAL Social Icons */}
-            <div className="flex items-center space-x-4 mt-4">
-              {/* Instagram */}
-              <a
-                href="https://www.instagram.com/throttleforgedcustoms?igsh=Z20weG54a2thNW85"
-                target="_blank"
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all"
-              >
-                <FaInstagram className="text-white/70 text-lg" />
-              </a>
+      <div className="max-w-7xl mx-auto px-6 pt-14 pb-10">
 
-              {/* Facebook */}
-              <a
-                href="https://www.facebook.com/share/1ChYDgBod4/?mibextid=wwXIfr"
-                target="_blank"
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all"
-              >
-                <FaFacebookF className="text-white/70 text-lg" />
-              </a>
-
-              {/* YouTube */}
-              <a
-                href="https://youtube.com/@tfcustoms?si=fKFQ7A8Cwz77-o4J"
-                target="_blank"
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all"
-              >
-                <FaYoutube className="text-white/70 text-lg" />
-              </a>
-
-              {/* Mail */}
-              <a
-                href="mailto:Tforgedcustoms@gmail.com"
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all"
-              >
-                <FaEnvelope className="text-white/70 text-lg" />
-              </a>
-            </div>
-          </div>
+        {/* 4-column nav with top-border headers */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-10 mb-16">
 
           {/* Shop */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+            <div className="border-t border-white/15 pt-6 mb-5" />
+            <h3 className="text-white/40 font-light text-[10px] uppercase tracking-[0.35em] mb-5">
               Shop
             </h3>
             <ul className="space-y-3">
               {links.shop.map((link) => (
                 <li key={link}>
                   <a
-                    href={`/shop`}
-                    className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                    href="/shop"
+                    className="text-white/35 hover:text-white text-sm font-light transition-colors duration-200"
                   >
                     {link}
                   </a>
@@ -113,7 +93,8 @@ export default function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+            <div className="border-t border-white/15 pt-6 mb-5" />
+            <h3 className="text-white/40 font-light text-[10px] uppercase tracking-[0.35em] mb-5">
               Support
             </h3>
             <ul className="space-y-3">
@@ -121,7 +102,7 @@ export default function Footer() {
                 <li key={link}>
                   <a
                     href={link === "Return Policy" ? "/return-policy" : "/support"}
-                    className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                    className="text-white/35 hover:text-white text-sm font-light transition-colors duration-200"
                   >
                     {link}
                   </a>
@@ -130,19 +111,55 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Company + Legal */}
           <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+            <div className="border-t border-white/15 pt-6 mb-5" />
+            <h3 className="text-white/40 font-light text-[10px] uppercase tracking-[0.35em] mb-5">
               Company
             </h3>
             <ul className="space-y-3">
               {links.company.map((link) => (
                 <li key={link}>
                   <a
-                    href={`/about`}
-                    className="text-white/60 hover:text-white text-sm font-light transition-colors"
+                    href="/about"
+                    className="text-white/35 hover:text-white text-sm font-light transition-colors duration-200"
                   >
                     {link}
+                  </a>
+                </li>
+              ))}
+              <li className="pt-2">
+                <div className="w-8 h-px bg-white/10 mb-3" />
+              </li>
+              {links.legal.map((link) => (
+                <li key={link}>
+                  <a
+                    href="/terms"
+                    className="text-white/25 hover:text-white/70 text-sm font-light transition-colors duration-200"
+                  >
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Connect */}
+          <div>
+            <div className="border-t border-white/15 pt-6 mb-5" />
+            <h3 className="text-white/40 font-light text-[10px] uppercase tracking-[0.35em] mb-5">
+              Connect
+            </h3>
+            <ul className="space-y-4">
+              {socials.map((s) => (
+                <li key={s.label}>
+                  <a
+                    href={s.href}
+                    target={s.href.startsWith("mailto") ? undefined : "_blank"}
+                    className="flex items-center gap-3 text-white/35 hover:text-white text-sm font-light transition-colors duration-200"
+                  >
+                    <span className="text-base shrink-0">{s.icon}</span>
+                    {s.label}
                   </a>
                 </li>
               ))}
@@ -151,37 +168,28 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/10">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-white/40 text-sm font-light">
+        <div className="border-t border-white/8 pt-7">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-5">
+            <p className="text-white/20 text-xs font-light">
               © 2025 Throttle Forged Customs. All rights reserved.
             </p>
 
-            <div className="flex space-x-6">
-              <a
-                href="/terms"
-                className="text-white/40 hover:text-white text-sm font-light transition-colors"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="/terms"
-                className="text-white/40 hover:text-white text-sm font-light transition-colors"
-              >
-                Terms of Service
-              </a>
-              <a
-                href="/terms"
-                className="text-white/40 hover:text-white text-sm font-light transition-colors"
-              >
-                Cookie Policy
-              </a>
-              <a
-                href="/accessibility"
-                className="text-white/40 hover:text-white text-sm font-light transition-colors"
-              >
-                Accessibility
-              </a>
+            <p className="text-white/20 text-xs font-light tracking-widest uppercase">
+              Made in India &middot; Bangalore
+            </p>
+
+            <div className="flex items-center gap-2">
+              {socials.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target={s.href.startsWith("mailto") ? undefined : "_blank"}
+                  aria-label={s.label}
+                  className="w-8 h-8 border border-white/10 flex items-center justify-center text-white/35 hover:text-white hover:border-white/30 transition-all duration-300"
+                >
+                  <span className="text-sm">{s.icon}</span>
+                </a>
+              ))}
             </div>
           </div>
         </div>

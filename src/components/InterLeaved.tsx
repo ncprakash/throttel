@@ -110,7 +110,7 @@ export default function InterleavedScrollExperience() {
   if (hasAnimated) {
     return (
       <div className="relative bg-transparent">
-        {/* Static Background Image - replaced with <img> for iOS stability */}
+        {/* Static Background Image */}
         <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
           <Image
             src="/frames/render1.png"
@@ -123,9 +123,10 @@ export default function InterleavedScrollExperience() {
           <div className="absolute inset-0 bg-black/10" />
         </div>
 
-        {/* Hero Content - Immediately visible */}
-        <div className="relative h-screen flex items-center justify-center z-10">
+        {/* Hero Content — Immediately visible */}
+        <div className="relative h-screen flex flex-col items-center justify-center z-10">
           <div className="text-center px-6 max-w-5xl mx-auto opacity-100 translate-y-0">
+
             {/* Badge */}
             <div className="inline-flex items-center space-x-3 bg-white/10 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/20 mb-10 opacity-100 translate-y-0">
               <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
@@ -134,29 +135,52 @@ export default function InterleavedScrollExperience() {
               </span>
             </div>
 
-            {/* Main title */}
+            {/* Main title with layered depth */}
             <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black mb-8 tracking-tighter leading-[0.9]">
-              <span className="text-white opacity-100">THROTTLE</span>
-              <span className="block text-white/40 font-light text-3xl sm:text-4xl lg:text-5xl mt-3 tracking-tight opacity-100 translate-y-0">
+              <span className="relative inline-block">
+                {/* Ghost stroke layer for depth */}
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 text-transparent select-none pointer-events-none leading-none"
+                  style={{ WebkitTextStroke: "1px rgba(255,255,255,0.10)" }}
+                >
+                  THROTTLE
+                </span>
+                <span className="relative text-white opacity-100">THROTTLE</span>
+              </span>
+              <span className="block text-white/20 font-thin text-3xl sm:text-4xl lg:text-5xl mt-4 tracking-[0.35em] uppercase opacity-100 translate-y-0">
                 FORGED CUSTOMS
               </span>
             </h1>
 
             {/* Description */}
-            <p className="text-lg sm:text-xl lg:text-2xl text-white/80 mb-14 leading-relaxed max-w-3xl mx-auto font-light tracking-wide opacity-100 translate-y-0">
-              Precision-engineered performance parts for riders who demand
-              excellence
+            <p className="text-lg sm:text-xl lg:text-2xl text-white/70 mb-14 leading-relaxed max-w-3xl mx-auto font-light tracking-wide opacity-100 translate-y-0">
+              Precision-engineered performance parts for riders who demand excellence
             </p>
 
-            {/* CTA Button */}
+            {/* Single CTA Button */}
             <div className="opacity-100 translate-y-0">
               <button
                 onClick={handleExploreClick}
-                className="bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/20 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-2xl hover:shadow-white/10"
+                className="bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/20 hover:border-white/50 text-white px-10 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-[0_0_60px_rgba(255,255,255,0.15)]"
               >
                 Explore Performance Parts
               </button>
             </div>
+          </div>
+
+          {/* Scroll indicator */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 opacity-60">
+            <span className="text-white/50 text-[10px] tracking-[0.4em] uppercase font-light">Scroll</span>
+            <svg
+              className="w-4 h-4 text-white/40 animate-bounce"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
         </div>
 
@@ -183,7 +207,7 @@ export default function InterleavedScrollExperience() {
 
   return (
     <div className="relative bg-transparent">
-      {/* Static Background Image - replaced with <img> for iOS stability */}
+      {/* Static Background Image */}
       <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
         <Image
           src="/frames/render1.png"
@@ -194,15 +218,25 @@ export default function InterleavedScrollExperience() {
           loading="eager"
         />
 
-        {/* Reduced base tint - almost transparent */}
+        {/* Reduced base tint */}
         <div className="absolute inset-0 bg-black/10" />
 
-        {/* Animated gear and percentage overlay during initial sequence */}
+        {/* Loading overlay during initial sequence */}
         {stage < 4 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70">
-            {/* Gear icon */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80">
+
+            {/* Scanlines texture */}
             <div
-              className="relative z-20 transition-all duration-500 mb-8"
+              className="absolute inset-0 pointer-events-none z-0 opacity-[0.035]"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,1) 2px, rgba(255,255,255,1) 3px)",
+              }}
+            />
+
+            {/* TFC Monogram — replaces gear icon */}
+            <div
+              className="relative z-20 transition-all duration-500 mb-10"
               style={{
                 opacity: stage >= 1 ? 1 : 0,
                 transform: `scale(${
@@ -210,21 +244,27 @@ export default function InterleavedScrollExperience() {
                 }) rotate(${gearRotation}deg)`,
               }}
             >
-              <svg
-                width="80"
-                height="80"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.5"
-                className="opacity-80"
-              >
-                <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+              <svg width="92" height="92" viewBox="0 0 92 92" fill="none">
+                <circle cx="46" cy="46" r="44" stroke="white" strokeWidth="0.5" opacity="0.2" />
+                <circle cx="46" cy="46" r="36" stroke="white" strokeWidth="1" opacity="0.35" />
+                <circle cx="46" cy="46" r="28" stroke="white" strokeWidth="0.5" opacity="0.15" />
+                <text
+                  x="46"
+                  y="46"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill="white"
+                  fontSize="14"
+                  fontWeight="900"
+                  letterSpacing="5"
+                  fontFamily="system-ui, sans-serif"
+                >
+                  TFC
+                </text>
               </svg>
             </div>
 
-            {/* Percentage display */}
+            {/* Percentage display — unchanged */}
             <div
               className="relative z-20 text-center transition-all duration-300"
               style={{
@@ -243,9 +283,9 @@ export default function InterleavedScrollExperience() {
               </div>
 
               {/* Progress bar */}
-              <div className="w-48 sm:w-64 h-1 bg-white/20 rounded-full mt-6 mx-auto overflow-hidden">
+              <div className="w-48 sm:w-64 h-px bg-white/15 mt-6 mx-auto overflow-hidden">
                 <div
-                  className="h-full bg-white rounded-full transition-all duration-200 ease-out"
+                  className="h-full bg-white transition-all duration-200 ease-out"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
@@ -253,7 +293,7 @@ export default function InterleavedScrollExperience() {
               {/* RPM-style indicators */}
               <div className="flex justify-between w-48 sm:w-64 mx-auto mt-2">
                 {[0, 25, 50, 75, 100].map((mark) => (
-                  <div key={mark} className="text-xs text-white/50 font-mono">
+                  <div key={mark} className="text-xs text-white/30 font-mono">
                     {mark}
                   </div>
                 ))}
@@ -272,7 +312,7 @@ export default function InterleavedScrollExperience() {
           </div>
         )}
 
-        {/* Final background state - minimal tint */}
+        {/* Final background state */}
         {stage === 4 && (
           <div
             className="absolute inset-0"
@@ -284,13 +324,13 @@ export default function InterleavedScrollExperience() {
       </div>
 
       {/* Hero Content */}
-      <div className="relative h-screen flex items-center justify-center z-10">
+      <div className="relative h-screen flex flex-col items-center justify-center z-10">
         <div
           className={`text-center px-6 max-w-5xl mx-auto transition-all duration-1000 ${
             showHero ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
-          {/* Animated badge - Glassomorphic */}
+          {/* Badge */}
           <div
             className={`inline-flex items-center space-x-3 bg-white/10 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/20 mb-10 transition-all duration-700 delay-300 ${
               showHero ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
@@ -302,17 +342,27 @@ export default function InterleavedScrollExperience() {
             </span>
           </div>
 
-          {/* Main title with typewriter effect - Black & White Theme */}
+          {/* Main title with depth */}
           <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black mb-8 tracking-tighter leading-[0.9]">
-            <span
-              className={`text-white inline-block transition-all duration-500 delay-500 ${
-                textReveal ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              THROTTLE
+            <span className="relative inline-block">
+              {/* Ghost stroke layer */}
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 text-transparent select-none pointer-events-none leading-none"
+                style={{ WebkitTextStroke: "1px rgba(255,255,255,0.10)" }}
+              >
+                THROTTLE
+              </span>
+              <span
+                className={`relative text-white inline-block transition-all duration-500 delay-500 ${
+                  textReveal ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                THROTTLE
+              </span>
             </span>
             <span
-              className={`block text-white/40 font-light text-3xl sm:text-4xl lg:text-5xl mt-3 tracking-tight transition-all duration-500 delay-700 ${
+              className={`block text-white/20 font-thin text-3xl sm:text-4xl lg:text-5xl mt-4 tracking-[0.35em] uppercase transition-all duration-500 delay-700 ${
                 textReveal
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-2"
@@ -324,15 +374,14 @@ export default function InterleavedScrollExperience() {
 
           {/* Description */}
           <p
-            className={`text-lg sm:text-xl lg:text-2xl text-white/80 mb-14 leading-relaxed max-w-3xl mx-auto font-light tracking-wide transition-all duration-500 delay-900 ${
+            className={`text-lg sm:text-xl lg:text-2xl text-white/70 mb-14 leading-relaxed max-w-3xl mx-auto font-light tracking-wide transition-all duration-500 delay-900 ${
               showHero ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Precision-engineered performance parts for riders who demand
-            excellence
+            Precision-engineered performance parts for riders who demand excellence
           </p>
 
-          {/* CTA Button - Glassomorphic */}
+          {/* Single CTA Button */}
           <div
             className={`transition-all duration-500 delay-1000 ${
               showHero ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
@@ -340,25 +389,29 @@ export default function InterleavedScrollExperience() {
           >
             <button
               onClick={handleExploreClick}
-              className="bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/20 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-2xl hover:shadow-white/10"
+              className="bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/20 hover:border-white/50 text-white px-10 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-[0_0_60px_rgba(255,255,255,0.15)]"
             >
               Explore Performance Parts
             </button>
           </div>
+        </div>
 
-          {/* Secondary Glassomorphic Buttons */}
-          <div
-            className={`flex flex-col sm:flex-row gap-4 justify-center mt-8 transition-all duration-500 delay-1200 ${
-              showHero ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
+        {/* Scroll indicator */}
+        <div
+          className={`absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 transition-all duration-700 delay-[1400ms] ${
+            showHero ? "opacity-60" : "opacity-0"
+          }`}
+        >
+          <span className="text-white/50 text-[10px] tracking-[0.4em] uppercase font-light">Scroll</span>
+          <svg
+            className="w-4 h-4 text-white/40 animate-bounce"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden
           >
-            <button className="bg-white/5 backdrop-blur-lg hover:bg-white/10 border border-white/15 text-white/90 px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 transform hover:scale-105">
-              View Collections
-            </button>
-            <button className="bg-white/5 backdrop-blur-lg hover:bg-white/10 border border-white/15 text-white/90 px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 transform hover:scale-105">
-              Custom Builds
-            </button>
-          </div>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
       </div>
 

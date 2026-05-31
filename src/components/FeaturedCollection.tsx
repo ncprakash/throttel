@@ -110,144 +110,129 @@ export default function FeaturedCollections() {
   };
 
   return (
-    <section className="bg-white/0.02 py-32 px-6 border-y border-white/10">
+    <section className="bg-black py-28 px-6 border-y border-white/10">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-16">
-          <div>
-            <div className="inline-flex items-center space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/10 mb-6">
+
+        {/* Section header — editorial style */}
+        <div className="flex items-end justify-between mb-16 relative">
+          <div className="relative">
+            {/* Large editorial number */}
+            <span className="absolute -top-4 -left-1 text-[6rem] font-black text-white/[0.04] leading-none select-none pointer-events-none">
+              01
+            </span>
+            <div className="relative inline-flex items-center space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/10 mb-6">
               <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
               <span className="text-white/80 text-xs font-light tracking-[0.3em] uppercase">
                 Top Gear
               </span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight">
+            <h2 className="relative text-5xl md:text-6xl font-black text-white mb-4 tracking-tight">
               Featured Products
             </h2>
-            <p className="text-white/60 text-lg font-light max-w-xl">
-              Hand-picked performance items — tap a card to go to its product
-              page.
+            <p className="relative text-white/40 text-lg font-light max-w-xl">
+              Hand-picked performance items — tap a card to go to its product page.
             </p>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             <button
               onClick={() => scroll("left")}
-              className="w-12 h-12 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all duration-300 flex items-center justify-center group"
+              className="w-11 h-11 border border-white/10 hover:border-white/30 hover:bg-white/5 transition-all duration-300 flex items-center justify-center group"
               aria-label="scroll left"
             >
               <svg
-                className="w-5 h-5 text-white/60 group-hover:text-white transition-colors"
+                className="w-4 h-4 text-white/40 group-hover:text-white transition-colors"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               onClick={() => scroll("right")}
-              className="w-12 h-12 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 transition-all duration-300 flex items-center justify-center group"
+              className="w-11 h-11 border border-white/10 hover:border-white/30 hover:bg-white/5 transition-all duration-300 flex items-center justify-center group"
               aria-label="scroll right"
             >
               <svg
-                className="w-5 h-5 text-white/60 group-hover:text-white transition-colors"
+                className="w-4 h-4 text-white/40 group-hover:text-white transition-colors"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
         </div>
 
+        {/* Card carousel */}
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0"
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {products.map((p, idx) => (
             <article
               key={p.id}
-              className="flex-none w-[85%] md:w-[calc(33.333%-16px)] snap-center"
+              className="flex-none w-[85%] md:w-[calc(33.333%-12px)] snap-center"
               aria-roledescription="carouselitem"
             >
               <a
                 href={p.link}
-                className="group relative bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all duration-700 block h-full"
+                className="group relative bg-white/[0.025] border border-white/8 hover:border-white/18 transition-all duration-700 block overflow-hidden h-[420px] flex flex-col"
                 aria-label={`Open ${p.title} product page`}
               >
-                <div className="absolute top-6 right-6">
-                  <div className="bg-white text-black text-xs font-semibold px-3 py-1.5 rounded-full">
-                    {p.price}
-                  </div>
+                {/* Top gradient border — lights on hover */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10" />
+
+                {/* Product image — 60% of card height */}
+                <div className="relative w-full h-[252px] flex-shrink-0 overflow-hidden">
+                  <Image
+                    src={p.image}
+                    alt={p.title}
+                    fill
+                    className="object-cover group-hover:scale-[1.04] transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
                 </div>
 
-                <div className="space-y-6">
-                  <div className="w-full h-44 md:h-48 bg-white/6 rounded-xl overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
-                    <Image
-                      src={p.image}
-                      alt={p.title}
-                      width={1200}
-                      height={800}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-
+                {/* Content — 40% */}
+                <div className="flex-1 p-5 flex flex-col justify-between">
                   <div>
-                    <p className="text-white/40 text-xs uppercase tracking-wider mb-2 font-light">
+                    <p className="text-white/25 text-[9px] uppercase tracking-[0.35em] mb-2 font-light">
                       {p.subtitle}
                     </p>
-                    <h3 className="text-white text-2xl font-bold mb-2 group-hover:translate-x-1 transition-transform duration-700">
+                    <h3 className="text-white text-[17px] font-bold leading-tight group-hover:text-white/80 transition-colors duration-500">
                       {p.title}
                     </h3>
-                    <p className="text-white/60 text-sm font-light leading-relaxed mb-4">
-                      {p.description}
-                    </p>
-                    <div className="text-white/40 text-xs uppercase tracking-wider">
-                      View product
+                  </div>
+                  <div className="flex items-center justify-between mt-4">
+                    {/* Monospace price — bottom left */}
+                    <span className="text-white/70 font-mono text-sm tracking-wider">
+                      {p.price}
+                    </span>
+                    {/* Sliding arrow */}
+                    <div className="flex items-center gap-1.5 text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all duration-300">
+                      <span className="text-[10px] tracking-[0.25em] uppercase font-light">View</span>
+                      <span className="text-base leading-none">→</span>
                     </div>
                   </div>
-                </div>
-
-                <div className="absolute bottom-4 right-4 opacity-70 group-hover:opacity-100 transition-opacity duration-500">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
                 </div>
               </a>
             </article>
           ))}
         </div>
 
-        <div className="flex justify-center items-center space-x-2 mt-8 md:hidden">
+        {/* Mobile indicator — thin lines */}
+        <div className="flex justify-center items-center gap-2 mt-8 md:hidden">
           {products.map((_, idx) => (
             <button
               key={idx}
               onClick={() => scrollToIndex(idx)}
               aria-label={`Go to slide ${idx + 1}`}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                activeIndex === idx ? "w-8 bg-white" : "w-1.5 bg-white/30"
+              className={`h-px transition-all duration-300 ${
+                activeIndex === idx ? "w-8 bg-white" : "w-4 bg-white/15"
               }`}
             />
           ))}

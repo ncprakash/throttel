@@ -25,6 +25,16 @@
   .animation-delay-500 { animation-delay: 0.5s; }
   .animation-delay-700 { animation-delay: 0.7s; }
   .animation-delay-1000 { animation-delay: 1s; }
+
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .animate-marquee { animation: marquee 28s linear infinite; }
+
+  @keyframes scroll-fall {
+    0% { opacity: 0; transform: translateY(-100%); }
+    30%, 60% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(100%); }
+  }
+  .animate-scroll-fall { animation: scroll-fall 2.4s ease-in-out infinite; }
 }
 
 /* --------------------
