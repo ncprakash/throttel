@@ -43,7 +43,7 @@ export default function NewsletterCTA() {
     <section className="bg-black py-32 px-6 relative overflow-hidden border-t border-white/10">
       {/* Large typographic background element */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-        <span className="text-[22vw] font-black text-white/[0.022] leading-none tracking-tighter">
+        <span className="text-[22vw] font-black text-white/[0.022] leading-none tracking-tighter animate-slow-drift select-none">
           TFC
         </span>
       </div>

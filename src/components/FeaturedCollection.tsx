@@ -37,8 +37,22 @@ const formatINR = (value: number) =>
 
 export default function FeaturedCollections() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [products, setProducts] = useState<CardProduct[]>([]);
+  const [sectionVisible, setSectionVisible] = useState(false);
+
+  // Scroll-reveal observer
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setSectionVisible(true); },
+      { threshold: 0.08 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -110,7 +124,7 @@ export default function FeaturedCollections() {
   };
 
   return (
-    <section className="bg-black py-28 px-6 border-y border-white/10">
+    <section ref={sectionRef} className="bg-black py-28 px-6 border-y border-white/10">
       <div className="max-w-7xl mx-auto">
 
         {/* Section header — editorial style */}
@@ -177,6 +191,11 @@ export default function FeaturedCollections() {
               key={p.id}
               className="flex-none w-[85%] md:w-[calc(33.333%-12px)] snap-center"
               aria-roledescription="carouselitem"
+              style={{
+                opacity: sectionVisible ? 1 : 0,
+                transform: sectionVisible ? "translateY(0)" : "translateY(44px)",
+                transition: `opacity 0.7s ease ${idx * 70}ms, transform 0.7s cubic-bezier(0.22,1,0.36,1) ${idx * 70}ms`,
+              }}
             >
               <a
                 href={p.link}

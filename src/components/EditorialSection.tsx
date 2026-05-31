@@ -2,8 +2,23 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 export default function EditorialSection() {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setInView(true); },
+      { threshold: 0.12 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   const specs = [
     { label: "Track-tested", sub: "Street-ready" },
     { label: "Precision CNC machined", sub: "±0.01mm tolerance" },
@@ -16,30 +31,25 @@ export default function EditorialSection() {
       <div className="max-w-6xl mx-auto">
         {/* Badge */}
         <div className="inline-flex items-center space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/10 mb-20">
-          <svg
-            className="w-4 h-4 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
+          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
             />
           </svg>
-          <span className="text-white/80 text-xs font-light tracking-[0.3em] uppercase">
-            About
-          </span>
+          <span className="text-white/80 text-xs font-light tracking-[0.3em] uppercase">About</span>
         </div>
 
-        {/* Two-column layout */}
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+        {/* Two-column layout with slide-in animations */}
+        <div ref={gridRef} className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-start">
 
-          {/* Left: editorial text + quote */}
-          <div>
+          {/* Left: slides in from left */}
+          <div
+            style={{
+              opacity: inView ? 1 : 0,
+              transform: inView ? "translateX(0)" : "translateX(-52px)",
+              transition: "opacity 0.9s ease, transform 0.9s cubic-bezier(0.22,1,0.36,1)",
+            }}
+          >
             <h2 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-10 tracking-tight leading-[0.93]">
               Built for Riders,
               <br />
@@ -63,7 +73,6 @@ export default function EditorialSection() {
               help riders push limits safely and confidently.
             </p>
 
-            {/* Text link with underline animation */}
             <Link
               href="/about"
               className="group inline-flex items-center gap-3 text-white text-sm font-semibold uppercase tracking-[0.2em]"
@@ -74,23 +83,22 @@ export default function EditorialSection() {
               </span>
               <svg
                 className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden
+                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
           </div>
 
-          {/* Right: spec list */}
-          <div className="lg:pt-4">
+          {/* Right: slides in from right, with delay */}
+          <div
+            className="lg:pt-4"
+            style={{
+              opacity: inView ? 1 : 0,
+              transform: inView ? "translateX(0)" : "translateX(52px)",
+              transition: "opacity 0.9s ease 180ms, transform 0.9s cubic-bezier(0.22,1,0.36,1) 180ms",
+            }}
+          >
             <p className="text-white/20 text-[10px] uppercase tracking-[0.4em] font-light mb-6">
               Engineering Specs
             </p>
@@ -99,6 +107,11 @@ export default function EditorialSection() {
                 <li
                   key={i}
                   className="flex items-center justify-between py-7 group cursor-default"
+                  style={{
+                    opacity: inView ? 1 : 0,
+                    transform: inView ? "translateX(0)" : "translateX(20px)",
+                    transition: `opacity 0.6s ease ${300 + i * 100}ms, transform 0.6s ease ${300 + i * 100}ms`,
+                  }}
                 >
                   <div>
                     <p className="text-white font-semibold text-lg leading-none mb-1.5 group-hover:text-white/80 transition-colors">

@@ -35,6 +35,52 @@
     100% { opacity: 0; transform: translateY(100%); }
   }
   .animate-scroll-fall { animation: scroll-fall 2.4s ease-in-out infinite; }
+
+  /* ── Animation additions ── */
+
+  /* Film grain — shifts bg-position on each step to simulate noise */
+  @keyframes grain-shift {
+    0%, 100% { background-position: 0% 0%; }
+    20%  { background-position: 30% -20%; }
+    40%  { background-position: -25% 40%; }
+    60%  { background-position: 40% 10%; }
+    80%  { background-position: -10% -30%; }
+  }
+  .animate-grain { animation: grain-shift 0.5s steps(1) infinite; }
+
+  /* Badge shimmer — a streak that slides across */
+  @keyframes shimmer-slide {
+    0%   { transform: translateX(-150%) skewX(-12deg); }
+    100% { transform: translateX(450%) skewX(-12deg); }
+  }
+  .animate-shimmer-slide { animation: shimmer-slide 3.5s ease-in-out 1.2s infinite; }
+
+  /* One-time hero scan line */
+  @keyframes scan-down {
+    0%  { top: -2px; opacity: 0.7; }
+    80% { opacity: 0.25; }
+    100%{ top: 100%; opacity: 0; }
+  }
+  .animate-scan-down {
+    position: absolute;
+    left: 0; right: 0; height: 1px;
+    animation: scan-down 2.2s ease-in 0.4s forwards;
+  }
+
+  /* Slow drift for large decorative bg text */
+  @keyframes slow-drift {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    33% { transform: scale(1.012) rotate(0.35deg); }
+    66% { transform: scale(0.99) rotate(-0.35deg); }
+  }
+  .animate-slow-drift { animation: slow-drift 22s ease-in-out infinite; }
+
+  /* Stagger helper delays for scroll-reveal */
+  .stagger-1 { transition-delay: 80ms !important; }
+  .stagger-2 { transition-delay: 160ms !important; }
+  .stagger-3 { transition-delay: 240ms !important; }
+  .stagger-4 { transition-delay: 320ms !important; }
+  .stagger-5 { transition-delay: 400ms !important; }
 }
 
 /* --------------------

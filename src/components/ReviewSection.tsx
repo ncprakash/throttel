@@ -54,6 +54,20 @@ function StatCounter({
 }
 
 export default function ReviewsSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [sectionVisible, setSectionVisible] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setSectionVisible(true); },
+      { threshold: 0.06 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   const reviews = [
     {
       name: "Ankit Verma",
@@ -112,18 +126,14 @@ export default function ReviewsSection() {
 
         {/* Section header with RIDERS watermark */}
         <div className="text-center mb-20 relative">
-          {/* Watermark */}
           <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[7rem] md:text-[10rem] font-black text-white/[0.025] select-none pointer-events-none leading-none tracking-tighter whitespace-nowrap">
             RIDERS
           </span>
-
           <div className="inline-flex items-center space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/10 mb-6 relative z-10">
             <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
-            <span className="text-white/80 text-xs font-light tracking-[0.3em] uppercase">
-              Trusted Worldwide
-            </span>
+            <span className="text-white/80 text-xs font-light tracking-[0.3em] uppercase">Trusted Worldwide</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-black text-white mb-5 tracking-tight relative z-10">
             Rider Reviews
@@ -133,12 +143,17 @@ export default function ReviewsSection() {
           </p>
         </div>
 
-        {/* Masonry layout via CSS columns */}
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 mb-16">
+        {/* Masonry layout — staggered reveal */}
+        <div ref={sectionRef} className="columns-1 md:columns-2 lg:columns-3 gap-4 mb-16">
           {reviews.map((review, idx) => (
             <div
               key={idx}
-              className="break-inside-avoid mb-4 bg-white/[0.025] border border-white/8 hover:border-white/18 hover:bg-white/[0.04] transition-all duration-700 p-7"
+              className="break-inside-avoid mb-4 bg-white/[0.025] border border-white/8 hover:border-white/18 hover:bg-white/[0.04] transition-colors duration-700 p-7"
+              style={{
+                opacity: sectionVisible ? 1 : 0,
+                transform: sectionVisible ? "translateY(0)" : "translateY(36px)",
+                transition: `opacity 0.7s ease ${idx * 60}ms, transform 0.7s cubic-bezier(0.22,1,0.36,1) ${idx * 60}ms`,
+              }}
             >
               {/* Stars */}
               <div className="flex gap-0.5 mb-5">
@@ -149,12 +164,10 @@ export default function ReviewsSection() {
                 ))}
               </div>
 
-              {/* Review Text */}
               <p className="text-white/65 font-light leading-relaxed mb-6 text-[15px]">
                 &ldquo;{review.text}&rdquo;
               </p>
 
-              {/* Reviewer Info */}
               <div className="pt-5 border-t border-white/8 flex items-start justify-between gap-3">
                 <div>
                   <p className="text-white font-semibold text-sm leading-none mb-1.5">{review.name}</p>
