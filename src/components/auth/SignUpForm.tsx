@@ -36,9 +36,13 @@ export default function SignUpForm() {
         password: formData.password,
       });
 
+      const redirectUrl = `/verify?otpemail=${encodeURIComponent(formData.email)}`;
       if (response.data.ok) {
-        const redirectUrl = `/verify?otpemail=${encodeURIComponent(formData.email)}`;
         router.push(redirectUrl);
+      } else if (response.data.emailFailed) {
+        // Account was created but OTP email failed — go to verify so user can resend
+        setError("Account created! OTP email had a hiccup. Redirecting you to enter OTP — use 'Resend OTP' there.");
+        setTimeout(() => router.push(redirectUrl), 3000);
       } else {
         setError(response.data.error || "Registration failed");
       }

@@ -92,12 +92,14 @@ export async function POST(req: Request) {
           </div>
         `,
       });
-    } catch {
+    } catch (mailErr) {
+      console.error("[sign-up] sendMail failed:", mailErr);
       return NextResponse.json(
         {
-          ok: true,
-          message: "User created but email failed to send. Please contact support.",
+          ok: false,
+          error: "Account created but OTP email failed to send. Please use 'Resend OTP' on the next screen or contact support.",
           user_id: newUser.user_id,
+          emailFailed: true,
         },
         { status: 201 }
       );

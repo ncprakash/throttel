@@ -132,41 +132,21 @@ function OTPInput({ length = 6, onComplete, onResend, className = "" }: Props) {
     setSuccess(null);
 
     try {
-      // Try both possible endpoints based on your previous code
       const res = await fetch("/api/resend-otp", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
-      if (!res.ok) {
-        // Fallback to the other endpoint if first fails
-        const fallbackRes = await fetch("/api/resend-otp", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        });
-        const fallbackData = await fallbackRes.json();
-        if (!fallbackRes.ok || !fallbackData.ok) {
-          throw new Error(fallbackData.error || fallbackData.message || "Resend failed");
-        }
-        setSuccess("OTP resent successfully. Check your email.");
-        return;
-      }
-
       const data = await res.json();
-      if (data.ok || data.success) {
-        setSuccess("OTP resent successfully. Check your email.");
+      if (res.ok && data.ok) {
+        setSuccess("OTP resent successfully. Check your inbox (and spam folder).");
       } else {
         setError(data.error || data.message || "Failed to resend OTP");
       }
     } catch (err: any) {
       console.error("Resend OTP error:", err);
-      setError(err.message || "Failed to resend OTP. Please try again.");
+      setError("Failed to resend OTP. Please try again.");
     } finally {
       setLoading(false);
     }
