@@ -25,7 +25,7 @@ export default function Home() {
       </div>
 
       {/* Footer sits flush at the bottom; pb-20 clears the fixed BottomNav */}
-      <div className="bg-black pb-28">
+      <div className="relative z-10 bg-black pb-28">
         <Footer />
       </div>
 
