@@ -25,9 +25,8 @@ export default function CartPage() {
   useEffect(() => {
     fetchCartItems();
     fetchRecommendedProducts();
-    // Restore previously selected shipping option
     const saved = localStorage.getItem(
-      "shippingOption",
+      "shippingOption"
     ) as ShippingOption | null;
     if (saved && SHIPPING_OPTIONS[saved]) setSelectedShipping(saved);
   }, []);
@@ -37,7 +36,6 @@ export default function CartPage() {
     localStorage.setItem("shippingOption", option);
   };
 
-  // Fetch cart items from localStorage
   const fetchCartItems = () => {
     try {
       const storedCart = localStorage.getItem("cartItems");
@@ -68,7 +66,7 @@ export default function CartPage() {
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     try {
       const updatedItems = cartItems.map((item) =>
-        item.cart_item_id === itemId ? { ...item, quantity } : item,
+        item.cart_item_id === itemId ? { ...item, quantity } : item
       );
       setCartItems(updatedItems);
       localStorage.setItem("cartItems", JSON.stringify(updatedItems));
@@ -80,7 +78,7 @@ export default function CartPage() {
   const handleRemoveItem = (itemId: string) => {
     try {
       const filteredItems = cartItems.filter(
-        (item) => item.cart_item_id !== itemId,
+        (item) => item.cart_item_id !== itemId
       );
       setCartItems(filteredItems);
       localStorage.setItem("cartItems", JSON.stringify(filteredItems));
@@ -89,7 +87,6 @@ export default function CartPage() {
     }
   };
 
-  // Totals
   const subtotal = cartItems.reduce((sum, item) => {
     const price = item.product?.sale_price ?? item.product?.regular_price ?? 0;
     const variantPrice = item.variant?.additional_price || 0;
@@ -103,11 +100,11 @@ export default function CartPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-transparent flex items-center justify-center">
-        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
-            <p className="text-white">Loading cart...</p>
-          </div>
+        <div className="text-center">
+          <div className="w-12 h-12 border border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[10px] tracking-[0.4em] text-white/40 uppercase">
+            Loading cart
+          </p>
         </div>
       </div>
     );
@@ -116,23 +113,30 @@ export default function CartPage() {
   return (
     <>
       <div className="min-h-screen bg-transparent text-white pb-32">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-              Shopping Cart
-            </h1>
-            <p className="text-white/60">
-              {cartItems.length} {cartItems.length === 1 ? "item" : "items"} in
-              your cart
+        {/* Page header */}
+        <div className="border-b border-white/5">
+          <div className="max-w-7xl mx-auto px-4 py-12">
+            <p className="text-[10px] tracking-[0.4em] text-white/30 uppercase mb-3">
+              Your selection
             </p>
+            <div className="flex items-end gap-6">
+              <h1 className="text-5xl sm:text-7xl font-black tracking-[-0.04em] leading-none uppercase">
+                Cart
+              </h1>
+              <span className="text-xl text-white/30 mb-2">
+                {cartItems.length}{" "}
+                {cartItems.length === 1 ? "item" : "items"}
+              </span>
+            </div>
           </div>
+        </div>
 
+        <div className="max-w-7xl mx-auto px-4 py-10">
           {cartItems.length === 0 ? (
             <>
               <EmptyCart />
               {recommendedProducts.length > 0 && (
-                <div className="mt-8">
+                <div className="mt-10">
                   <RecommendedProducts products={recommendedProducts} />
                 </div>
               )}
@@ -151,10 +155,10 @@ export default function CartPage() {
                 ))}
 
                 {/* Shipping Selector */}
-                <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6">
-                  <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+                <div className="border border-white/8 rounded-2xl p-6 bg-white/[0.02]">
+                  <div className="flex items-center gap-2 mb-5">
                     <svg
-                      className="w-4 h-4 text-white/60"
+                      className="w-4 h-4 text-white/40"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -166,8 +170,10 @@ export default function CartPage() {
                         d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12h12l1-12"
                       />
                     </svg>
-                    Delivery Method
-                  </h3>
+                    <p className="text-[10px] tracking-[0.3em] text-white/40 uppercase">
+                      Delivery method
+                    </p>
+                  </div>
 
                   <div className="grid sm:grid-cols-2 gap-3">
                     {(
@@ -181,55 +187,44 @@ export default function CartPage() {
                         <button
                           key={key}
                           onClick={() => handleShippingChange(key)}
-                          className={`relative flex flex-col gap-1 p-4 rounded-xl border text-left transition-all duration-200
+                          className={`relative flex flex-col gap-1.5 p-5 rounded-xl border text-left transition-all duration-200
                             ${
                               isSelected
-                                ? "border-white bg-white/10 shadow-lg shadow-white/5"
-                                : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                                ? "border-white bg-white/8 shadow-lg shadow-white/5"
+                                : "border-white/8 bg-white/[0.02] hover:border-white/15"
                             }`}
                         >
                           {/* Radio indicator */}
                           <span
-                            className={`absolute top-3 right-3 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all
+                            className={`absolute top-4 right-4 w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center transition-all
                               ${
                                 isSelected
                                   ? "border-white bg-white"
-                                  : "border-white/30"
+                                  : "border-white/25"
                               }`}
                           >
                             {isSelected && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-black" />
+                              <span className="w-1 h-1 rounded-full bg-black" />
                             )}
                           </span>
 
-                          <span className="text-sm font-semibold text-white pr-6">
+                          <span className="text-sm font-bold text-white pr-6">
                             {option.label}
                           </span>
-                          <span className="text-xs text-white/50">
+                          <span className="text-xs text-white/40">
                             {option.description}
                           </span>
                           <span
-                            className={`text-sm font-bold mt-1 ${
-                              isSelected ? "text-white" : "text-white/70"
+                            className={`text-base font-black mt-1 ${
+                              isSelected ? "text-white" : "text-white/60"
                             }`}
                           >
                             ₹{option.price}
                           </span>
 
                           {key === "superfast" && (
-                            <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-amber-400">
-                              <svg
-                                className="w-3 h-3"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              Fastest
+                            <span className="mt-1 text-[10px] font-bold tracking-[0.2em] uppercase text-amber-400">
+                              ⚡ Fastest
                             </span>
                           )}
                         </button>
@@ -241,7 +236,7 @@ export default function CartPage() {
 
               {/* Summary */}
               <div className="lg:col-span-1">
-                <div className="lg:sticky lg:top-8 lg:self-start z-20 backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6">
+                <div className="lg:sticky lg:top-8 lg:self-start z-20 border border-white/8 rounded-2xl p-6 bg-white/[0.02] backdrop-blur-xl">
                   <CartSummary
                     subtotal={subtotal}
                     shipping={shipping}
@@ -251,12 +246,11 @@ export default function CartPage() {
                     itemCount={cartItems.length}
                   />
 
-                  <div className="mt-6 flex flex-col gap-3">
+                  <div className="mt-6">
                     <button
                       onClick={() => router.push("/shop")}
-                      className="w-full px-4 py-3 rounded-lg text-sm font-medium
-                               backdrop-blur-md bg-black/50 border border-white/10
-                               hover:bg-white/5 transition-all"
+                      className="w-full px-4 py-3 rounded-xl text-sm font-medium border border-white/8
+                               hover:bg-white/5 transition-colors text-white/70 hover:text-white"
                     >
                       Continue Shopping
                     </button>
@@ -267,7 +261,10 @@ export default function CartPage() {
           )}
 
           {cartItems.length > 0 && recommendedProducts.length > 0 && (
-            <div className="mt-10">
+            <div className="mt-16 pt-12 border-t border-white/5">
+              <p className="text-[10px] tracking-[0.4em] text-white/30 uppercase mb-6">
+                You might also like
+              </p>
               <RecommendedProducts products={recommendedProducts} />
             </div>
           )}

@@ -64,11 +64,16 @@ export default function OrderConfirmation() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center p-8">
-        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-12 text-center max-w-md mx-auto">
-          <div className="w-16 h-16 border-4 border-[rgba(255,255,255,0.16)] border-t-white rounded-full animate-spin mx-auto mb-6" />
-          <h2 className="text-2xl font-bold text-white mb-2">Order Confirmed!</h2>
-          <p className="text-white/70">Loading your order details...</p>
+      <div className="min-h-screen bg-black flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="relative w-20 h-20 mx-auto mb-8">
+            <div className="absolute inset-0 border border-green-500/15 rounded-full animate-ping" />
+            <div className="absolute inset-0 border border-green-500/25 rounded-full" />
+            <div className="absolute inset-2 border border-transparent border-t-white/30 rounded-full animate-spin" />
+          </div>
+          <p className="text-[10px] tracking-[0.4em] text-white/30 uppercase">
+            Loading order
+          </p>
         </div>
       </div>
     );
@@ -76,16 +81,21 @@ export default function OrderConfirmation() {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center p-8">
-        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-12 text-center max-w-md mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-4">Order Not Found</h1>
-          <p className="text-white/60 mb-2">
+      <div className="min-h-screen bg-black flex items-center justify-center p-8">
+        <div className="backdrop-blur-xl bg-white/[0.04] border border-white/8 rounded-3xl p-12 text-center max-w-md mx-auto">
+          <div className="text-[6rem] font-black text-white/5 mb-6 select-none leading-none">
+            404
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-3">
+            Order Not Found
+          </h1>
+          <p className="text-sm text-white/50 mb-2">
             {error || "The order you're looking for doesn't exist"}
           </p>
-          <p className="text-white/40 text-sm mb-8">Order ID: {orderId}</p>
+          <p className="text-xs text-white/30 mb-8 font-mono">#{orderId}</p>
           <button
             onClick={() => router.push("/shop")}
-            className="px-8 py-3 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition"
+            className="px-8 py-3.5 rounded-xl bg-white text-black text-sm font-bold hover:bg-white/90 transition-colors"
           >
             Continue Shopping
           </button>
@@ -95,54 +105,89 @@ export default function OrderConfirmation() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent text-white py-20 px-4">
+    <div className="min-h-screen bg-black text-white py-16 px-4">
       <div className="max-w-4xl mx-auto">
-
         {/* Success Header */}
-        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-3xl p-12 text-center mb-12">
-          <div className="w-28 h-28 bg-green-500/20 border-4 border-green-500/50 rounded-full flex items-center justify-center mx-auto mb-8">
-            <svg className="w-16 h-16 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="text-center mb-16">
+          {/* Pulsing ring checkmark */}
+          <div className="relative inline-flex items-center justify-center mb-10">
+            <div className="absolute w-40 h-40 rounded-full border border-green-500/10 animate-ping" />
+            <div className="absolute w-32 h-32 rounded-full border border-green-500/15" />
+            <div className="absolute w-24 h-24 rounded-full border border-green-500/20" />
+            <div className="w-16 h-16 bg-green-500/10 border-2 border-green-500/40 rounded-full flex items-center justify-center">
+              <svg
+                className="w-8 h-8 text-green-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
-            Thank You!
+
+          <p className="text-[10px] tracking-[0.5em] text-white/30 uppercase mb-4">
+            Payment confirmed
+          </p>
+          <h1 className="text-6xl sm:text-8xl font-black tracking-[-0.04em] leading-none uppercase mb-4">
+            Thank
+            <br />
+            <span className="text-white/30">You!</span>
           </h1>
-          <p className="text-xl md:text-2xl text-white/70 mb-2">Your order has been confirmed</p>
-          <p className="text-lg text-white/50">Order #{order.order_id.slice(-8).toUpperCase()}</p>
+          <p className="text-white/50 text-lg mb-2">
+            Your order has been confirmed
+          </p>
+          <p className="font-mono text-sm text-white/30">
+            #{order.order_id.slice(-8).toUpperCase()}
+          </p>
         </div>
 
         {/* Order Summary */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
-
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* Order Details */}
-          <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-2xl p-8">
-            <h3 className="text-2xl font-bold mb-6">Order Details</h3>
+          <div className="border border-white/8 rounded-2xl p-8 bg-white/[0.02]">
+            <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase mb-6">
+              Order details
+            </p>
             <div className="space-y-4 text-sm">
               <div className="flex justify-between">
-                <span className="text-white/70">Subtotal</span>
-                <span>₹{(order.subtotal ?? 0).toLocaleString()}</span>
+                <span className="text-white/50">Subtotal</span>
+                <span className="font-medium">
+                  ₹{(order.subtotal ?? 0).toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/70">Shipping</span>
-                <span>₹{(order.shipping_charges ?? 0).toLocaleString()}</span>
+                <span className="text-white/50">Shipping</span>
+                <span className="font-medium">
+                  ₹{(order.shipping_charges ?? 0).toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/70">Tax (18%)</span>
-                <span>₹{(order.tax_amount ?? 0).toLocaleString()}</span>
+                <span className="text-white/50">Tax (18%)</span>
+                <span className="font-medium">
+                  ₹{(order.tax_amount ?? 0).toLocaleString()}
+                </span>
               </div>
-              <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-4" />
-              <div className="flex justify-between text-xl font-bold">
-                <span>Total</span>
-                <span>₹{order.total_amount.toLocaleString()}</span>
+              <div className="h-px bg-white/5 my-2" />
+              <div className="flex justify-between">
+                <span className="font-bold text-base">Total</span>
+                <span className="font-black text-xl">
+                  ₹{order.total_amount.toLocaleString()}
+                </span>
               </div>
             </div>
 
-            {/* Order Items */}
             {order.order_items && order.order_items.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <h4 className="text-sm font-semibold text-white/70 mb-3">Items</h4>
-                <div className="space-y-2">
+              <div className="mt-8 pt-6 border-t border-white/5">
+                <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase mb-4">
+                  Items
+                </p>
+                <div className="space-y-3">
                   {Array.from(
                     new Map(
                       order.order_items.map((item) => [
@@ -152,10 +197,13 @@ export default function OrderConfirmation() {
                     ).values()
                   ).map((item, i) => (
                     <div key={i} className="flex justify-between text-sm">
-                      <span className="text-white/80">
-                        {item.product_name} × {item.quantity}
+                      <span className="text-white/70">
+                        {item.product_name}{" "}
+                        <span className="text-white/30">×{item.quantity}</span>
                       </span>
-                      <span>₹{item.total_price.toLocaleString()}</span>
+                      <span className="font-medium">
+                        ₹{item.total_price.toLocaleString()}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -164,29 +212,35 @@ export default function OrderConfirmation() {
           </div>
 
           {/* Payment & Status */}
-          <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-2xl p-8">
-            <h3 className="text-2xl font-bold mb-6">Payment Status</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.05)] rounded-xl">
-                <span className="text-white/70">Payment Method</span>
-                <span className="font-semibold">{order.payment_method.toUpperCase()}</span>
+          <div className="border border-white/8 rounded-2xl p-8 bg-white/[0.02]">
+            <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase mb-6">
+              Payment status
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-white/[0.03] rounded-xl border border-white/5">
+                <span className="text-sm text-white/50">Method</span>
+                <span className="text-sm font-bold tracking-wider">
+                  {order.payment_method.toUpperCase()}
+                </span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.05)] rounded-xl">
-                <span className="text-white/70">Order Status</span>
-                <span className="px-4 py-2 bg-green-500/20 text-green-400 rounded-full text-sm font-semibold border border-green-500/30">
+              <div className="flex items-center justify-between p-4 bg-white/[0.03] rounded-xl border border-white/5">
+                <span className="text-sm text-white/50">Status</span>
+                <span className="px-3 py-1 bg-green-500/15 text-green-400 rounded-full text-xs font-bold border border-green-500/25">
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>
               </div>
               {order.customer_name && (
-                <div className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.05)] rounded-xl">
-                  <span className="text-white/70">Customer</span>
-                  <span className="font-semibold">{order.customer_name}</span>
+                <div className="flex items-center justify-between p-4 bg-white/[0.03] rounded-xl border border-white/5">
+                  <span className="text-sm text-white/50">Customer</span>
+                  <span className="text-sm font-medium">
+                    {order.customer_name}
+                  </span>
                 </div>
               )}
               {order.shipping_address && (
-                <div className="p-4 bg-[rgba(255,255,255,0.05)] rounded-xl">
-                  <span className="text-white/70 text-sm block mb-1">Shipping Address</span>
-                  <span className="text-sm">{order.shipping_address}</span>
+                <div className="p-4 bg-white/[0.03] rounded-xl border border-white/5">
+                  <p className="text-xs text-white/30 mb-2">Shipping address</p>
+                  <p className="text-sm text-white/70">{order.shipping_address}</p>
                 </div>
               )}
             </div>
@@ -194,35 +248,62 @@ export default function OrderConfirmation() {
         </div>
 
         {/* ShipRocket Tracking */}
-        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)] rounded-2xl p-8 mb-8">
-          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+        <div className="border border-white/8 rounded-2xl p-8 bg-white/[0.02] mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <svg
+              className="w-4 h-4 text-white/40"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"
+              />
             </svg>
-            Shipment Tracking
-          </h3>
+            <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase">
+              Shipment tracking
+            </p>
+          </div>
 
           {order.shiprocket_order_id ? (
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="flex-1 p-4 bg-[rgba(255,255,255,0.05)] rounded-xl">
-                <p className="text-xs text-white/50 mb-1">ShipRocket Order ID</p>
-                <p className="font-mono font-semibold text-white text-lg">{order.shiprocket_order_id}</p>
+              <div className="flex-1 p-4 bg-white/[0.03] rounded-xl border border-white/5">
+                <p className="text-xs text-white/30 mb-1">
+                  ShipRocket Order ID
+                </p>
+                <p className="font-mono font-bold text-white">
+                  {order.shiprocket_order_id}
+                </p>
               </div>
               <a
                 href={`https://www.shiprocket.in/shipment-tracking/?id=${order.shiprocket_order_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all shadow-lg hover:shadow-blue-500/25 whitespace-nowrap"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white text-black text-sm font-bold hover:bg-white/90 transition-colors whitespace-nowrap"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                Track Shipment
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
                 </svg>
-                Track on ShipRocket
               </a>
             </div>
           ) : (
-            <p className="text-white/50 text-sm">
-              Tracking details will appear here once your shipment is dispatched. You will also receive a confirmation email.
+            <p className="text-sm text-white/40">
+              Tracking details will appear here once your shipment is
+              dispatched. You will also receive a confirmation email.
             </p>
           )}
         </div>
@@ -231,18 +312,17 @@ export default function OrderConfirmation() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => router.push("/orders")}
-            className="flex-1 sm:flex-none px-8 py-4 rounded-2xl bg-white text-black font-semibold text-lg hover:bg-white/90 transition-all shadow-xl hover:shadow-2xl"
+            className="flex-1 sm:flex-none px-10 py-4 rounded-xl bg-white text-black text-sm font-bold hover:bg-white/90 transition-colors"
           >
             Track Orders
           </button>
           <button
             onClick={() => router.push("/shop")}
-            className="flex-1 sm:flex-none px-8 py-4 rounded-2xl border-2 border-white/30 text-white font-semibold text-lg hover:bg-white/10 hover:border-white transition-all shadow-xl hover:shadow-2xl"
+            className="flex-1 sm:flex-none px-10 py-4 rounded-xl border border-white/15 text-sm font-semibold hover:bg-white/5 transition-colors"
           >
             Continue Shopping
           </button>
         </div>
-
       </div>
     </div>
   );

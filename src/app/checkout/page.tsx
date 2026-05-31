@@ -75,9 +75,8 @@ export default function CheckoutPage() {
       }
     };
 
-    // Restore the shipping option the user picked on the cart page
     const savedShipping = localStorage.getItem(
-      "shippingOption",
+      "shippingOption"
     ) as ShippingOption | null;
     if (savedShipping && SHIPPING_OPTIONS[savedShipping]) {
       setSelectedShipping(savedShipping);
@@ -86,7 +85,7 @@ export default function CheckoutPage() {
     loadCart();
   }, []);
 
-  // ── Totals (mirrors cart/page.tsx exactly) ──────────────────────────────
+  // Totals
   const subtotal = cartItems.reduce((sum, item) => {
     const price = item.product?.sale_price ?? item.product?.regular_price ?? 0;
     const variantPrice = item.variant?.additional_price || 0;
@@ -96,11 +95,9 @@ export default function CheckoutPage() {
   const shipping = SHIPPING_OPTIONS[selectedShipping].price;
   const tax = Math.round(subtotal * TAX_RATE);
   const total = subtotal + shipping + tax;
-  // ────────────────────────────────────────────────────────────────────────
 
   // Razorpay Payment Handler
   const handleRazorpayPayment = async (orderData: any) => {
-
     if (!window.Razorpay) {
       toast.error("Payment gateway not ready. Please refresh.");
       setPlacingOrder(false);
@@ -192,14 +189,19 @@ export default function CheckoutPage() {
     }
 
     const digits = formValues.customer_phone.replace(/\D/g, "");
-    const cleanedPhone = digits.length > 10 ? digits.replace(/^91/, "").slice(-10) : digits;
+    const cleanedPhone =
+      digits.length > 10
+        ? digits.replace(/^91/, "").slice(-10)
+        : digits;
     if (cleanedPhone.length !== 10 || !/^[6-9]/.test(cleanedPhone)) {
       toast.error("Enter a valid 10-digit Indian mobile number");
       return;
     }
 
     if (!agreedToTerms) {
-      toast.error("Please read and accept the Terms & Conditions to continue");
+      toast.error(
+        "Please read and accept the Terms & Conditions to continue"
+      );
       return;
     }
 
@@ -243,7 +245,6 @@ export default function CheckoutPage() {
 
       console.log("[handlePlaceOrder] Order payload prepared:", orderPayload);
 
-      // 1) Create main order + Razorpay order
       const response = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -259,7 +260,6 @@ export default function CheckoutPage() {
 
       console.log("✅ Order created successfully:", data);
 
-      // 3) Start Razorpay payment
       await handleRazorpayPayment({ ...data });
     } catch (error: any) {
       console.error("[handlePlaceOrder] Order failed:", error);
@@ -270,10 +270,12 @@ export default function CheckoutPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center p-8">
-        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-12 text-center">
-          <div className="w-16 h-16 border-4 border-[rgba(255,255,255,0.16)] border-t-white rounded-full animate-spin mx-auto mb-6" />
-          <p className="text-white text-xl">Preparing checkout...</p>
+      <div className="min-h-screen bg-black flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="w-12 h-12 border border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[10px] tracking-[0.4em] text-white/30 uppercase">
+            Preparing checkout
+          </p>
         </div>
       </div>
     );
@@ -281,17 +283,20 @@ export default function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center p-8">
-        <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-2xl p-12 text-center max-w-md mx-auto">
-          <h2 className="text-2xl font-bold text-white mb-4">
+      <div className="min-h-screen bg-black flex items-center justify-center p-8">
+        <div className="border border-white/8 rounded-3xl p-12 text-center max-w-md mx-auto bg-white/[0.02]">
+          <div className="text-[5rem] font-black text-white/5 leading-none mb-6 select-none">
+            ∅
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">
             Your cart is empty
           </h2>
-          <p className="text-white/60 mb-8">
+          <p className="text-sm text-white/50 mb-8">
             Add motorcycle accessories to continue
           </p>
           <button
             onClick={() => router.push("/shop")}
-            className="px-8 py-4 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition-all shadow-xl"
+            className="px-8 py-4 rounded-xl bg-white text-black text-sm font-bold hover:bg-white/90 transition-colors"
           >
             Continue Shopping
           </button>
@@ -317,27 +322,37 @@ export default function CheckoutPage() {
         }}
       />
 
-      <div className="min-h-screen bg-transparent text-white pb-32">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
-              Checkout
-            </h1>
-            <p className="text-xl text-white/60 mt-2">
-              Secure payment with Razorpay
+      <div className="min-h-screen bg-black text-white pb-32">
+        {/* Page header */}
+        <div className="border-b border-white/5">
+          <div className="max-w-7xl mx-auto px-4 py-12">
+            <p className="text-[10px] tracking-[0.4em] text-white/30 uppercase mb-3">
+              Secure payment
             </p>
+            <div className="flex items-end gap-6">
+              <h1 className="text-5xl sm:text-7xl font-black tracking-[-0.04em] leading-none uppercase">
+                Checkout
+              </h1>
+              <span className="text-sm text-white/30 mb-2 tracking-wide">
+                via Razorpay
+              </span>
+            </div>
             {session?.user && (
-              <p className="text-sm text-white/50 mt-2">
-                Logged in: {session.user.email}
+              <p className="text-xs text-white/30 mt-3">
+                {session.user.email}
               </p>
             )}
           </div>
+        </div>
 
-          <div className="grid lg:grid-cols-[1fr_420px] gap-8 items-start">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <div className="grid lg:grid-cols-[1fr_400px] gap-8 items-start">
             {/* Shipping Form */}
             <div className="space-y-6">
-              <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-3xl p-8">
-                <h2 className="text-2xl font-bold mb-6">Shipping & Contact</h2>
+              <div className="border border-white/8 rounded-2xl p-8 bg-white/[0.02]">
+                <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase mb-6">
+                  Shipping &amp; Contact
+                </p>
                 <CheckoutForm
                   formValues={formValues}
                   onChange={setFormValues}
@@ -360,10 +375,10 @@ export default function CheckoutPage() {
                 placingOrder={placingOrder}
               />
 
-              <div className="backdrop-blur-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] rounded-3xl p-8">
-                <h3 className="text-xl font-bold mb-6">
+              <div className="border border-white/8 rounded-2xl p-8 bg-white/[0.02]">
+                <p className="text-[10px] tracking-[0.3em] text-white/30 uppercase mb-6">
                   Order Items ({cartItems.length})
-                </h3>
+                </p>
                 <OrderReview items={cartItems} />
               </div>
             </div>
