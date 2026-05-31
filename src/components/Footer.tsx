@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef } from "react";
 import {
   FaInstagram,
   FaFacebookF,
@@ -6,6 +9,26 @@ import {
 } from "react-icons/fa";
 
 export default function Footer() {
+  const brandRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = brandRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    el.style.setProperty("--gx", `${x}%`);
+    el.style.setProperty("--gy", `${y}%`);
+  };
+
+  const handleMouseLeave = () => {
+    const el = brandRef.current;
+    if (!el) return;
+    // Move spotlight off-screen to the left so text returns to dim state
+    el.style.setProperty("--gx", "-40%");
+    el.style.setProperty("--gy", "50%");
+  };
+
   const links = {
     shop: [
       "Exhaust Systems",
@@ -59,9 +82,24 @@ export default function Footer() {
   return (
     <footer className="bg-black border-t border-white/10">
 
-      {/* Full-width brand display text */}
-      <div className="overflow-hidden py-10 border-b border-white/[0.04]">
-        <p className="text-[10vw] font-black text-white/[0.04] leading-none tracking-tighter whitespace-nowrap select-none pl-6">
+      {/* Full-width brand display — cursor spotlight via background-clip: text */}
+      <div
+        ref={brandRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="overflow-hidden py-10 border-b border-white/[0.04] cursor-crosshair"
+        style={{ "--gx": "-40%", "--gy": "50%" } as React.CSSProperties}
+      >
+        <p
+          className="text-[10vw] font-black leading-none tracking-tighter whitespace-nowrap pl-6 select-none"
+          style={{
+            background:
+              "radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.28) 22%, rgba(255,255,255,0.04) 52%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
           THROTTLE FORGED CUSTOMS
         </p>
       </div>

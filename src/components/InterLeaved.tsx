@@ -28,7 +28,7 @@ export default function InterleavedScrollExperience() {
 
   const handleExploreClick = () => { router.push("/shop"); };
 
-  // Parallax — track scroll position
+  // Scroll tracker for objectPosition parallax
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -100,47 +100,51 @@ export default function InterleavedScrollExperience() {
     sequence();
   }, []);
 
-  // Shared: parallax offset (capped so image never shows a gap)
-  const parallaxY = -Math.min(scrollY * 0.15, 100);
+  // objectPosition parallax — shifts which part of the image is visible,
+  // no wrapper zoom. Caps at 25% so the top of the image never fully disappears.
+  const objPos = Math.max(25, 50 - scrollY * 0.014);
 
   // ─── Render path 1: animation already shown ───────────────────────────────
   if (hasAnimated) {
     return (
       <div className="relative bg-transparent">
-        {/* Background with parallax */}
+        {/* Background — full natural size, objectPosition parallax */}
         <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
-          <div
-            className="absolute"
-            style={{ inset: "-20%", transform: `translateY(${parallaxY}px) translateZ(0)` }}
-          >
-            <Image
-              src="/frames/render1.png"
-              alt=""
-              fill
-              className="object-cover bg-image-stabilize subtle-zoom-onload"
-              loading="eager"
-            />
-          </div>
+          <Image
+            src="/frames/render1.png"
+            alt=""
+            fill
+            className="object-cover bg-image-stabilize"
+            style={{
+              objectPosition: `center ${objPos}%`,
+              transform: "translateZ(0)",
+            }}
+            loading="eager"
+          />
           {/* Film grain */}
           <div
             className="absolute inset-0 pointer-events-none z-10 opacity-[0.04] animate-grain"
             style={{ backgroundImage: GRAIN_BG, backgroundSize: "200px 200px" }}
           />
-          <div className="absolute inset-0 bg-black/10" />
+          {/* Gradient overlay — keeps top of image visible, darkens towards bottom */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/5 to-black/55" />
         </div>
 
         {/* Hero */}
         <div className="relative h-screen flex flex-col items-center justify-center z-10">
+          {/* Bottom blend gradient — smoothly dissolves hero into first content section */}
+          <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-t from-black via-black/65 to-transparent pointer-events-none z-0" />
+
           {/* Corner brackets */}
-          <div className="absolute top-8 left-8 w-10 h-10 border-t border-l border-white/15 opacity-60" />
-          <div className="absolute top-8 right-8 w-10 h-10 border-t border-r border-white/15 opacity-60" />
-          <div className="absolute bottom-16 left-8 w-10 h-10 border-b border-l border-white/15 opacity-60" />
-          <div className="absolute bottom-16 right-8 w-10 h-10 border-b border-r border-white/15 opacity-60" />
+          <div className="absolute top-8 left-8 w-10 h-10 border-t border-l border-white/15 opacity-60 z-10" />
+          <div className="absolute top-8 right-8 w-10 h-10 border-t border-r border-white/15 opacity-60 z-10" />
+          <div className="absolute bottom-16 left-8 w-10 h-10 border-b border-l border-white/15 opacity-60 z-10" />
+          <div className="absolute bottom-16 right-8 w-10 h-10 border-b border-r border-white/15 opacity-60 z-10" />
 
           {/* One-time scan line */}
           <div className="animate-scan-down bg-gradient-to-r from-transparent via-white/15 to-transparent z-20" />
 
-          <div className="text-center px-6 max-w-5xl mx-auto">
+          <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
             {/* Badge with shimmer */}
             <div className="relative inline-flex items-center space-x-3 bg-white/10 backdrop-blur-xl rounded-full px-5 py-2.5 border border-white/20 mb-10 overflow-hidden">
               <div
@@ -165,27 +169,25 @@ export default function InterleavedScrollExperience() {
                 </span>
                 <span className="relative text-white opacity-100">THROTTLE</span>
               </span>
-              <span className="block text-white/20 font-thin text-3xl sm:text-4xl lg:text-5xl mt-4 tracking-[0.35em] uppercase opacity-100 translate-y-0">
+              <span className="block text-white/20 font-thin text-3xl sm:text-4xl lg:text-5xl mt-4 tracking-[0.35em] uppercase opacity-100">
                 FORGED CUSTOMS
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl lg:text-2xl text-white/70 mb-14 leading-relaxed max-w-3xl mx-auto font-light tracking-wide opacity-100">
+            <p className="text-lg sm:text-xl lg:text-2xl text-white/70 mb-14 leading-relaxed max-w-3xl mx-auto font-light tracking-wide">
               Precision-engineered performance parts for riders who demand excellence
             </p>
 
-            <div className="opacity-100">
-              <button
-                onClick={handleExploreClick}
-                className="bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/20 hover:border-white/50 text-white px-10 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-[0_0_60px_rgba(255,255,255,0.15)]"
-              >
-                Explore Performance Parts
-              </button>
-            </div>
+            <button
+              onClick={handleExploreClick}
+              className="bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/20 hover:border-white/50 text-white px-10 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-[0_0_60px_rgba(255,255,255,0.15)]"
+            >
+              Explore Performance Parts
+            </button>
           </div>
 
           {/* Scroll indicator */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 opacity-60">
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 opacity-60 z-10">
             <span className="text-white/50 text-[10px] tracking-[0.4em] uppercase font-light">Scroll</span>
             <svg className="w-4 h-4 text-white/40 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
@@ -209,26 +211,26 @@ export default function InterleavedScrollExperience() {
   // ─── Render path 2: first visit with animation ────────────────────────────
   return (
     <div className="relative bg-transparent">
-      {/* Background with parallax */}
+      {/* Background — full natural size, objectPosition parallax */}
       <div className="fixed inset-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
-        <div
-          className="absolute"
-          style={{ inset: "-20%", transform: `translateY(${parallaxY}px) translateZ(0)` }}
-        >
-          <Image
-            src="/frames/render1.png"
-            alt=""
-            fill
-            className="object-cover bg-image-stabilize subtle-zoom-onload"
-            loading="eager"
-          />
-        </div>
+        <Image
+          src="/frames/render1.png"
+          alt=""
+          fill
+          className="object-cover bg-image-stabilize"
+          style={{
+            objectPosition: `center ${objPos}%`,
+            transform: "translateZ(0)",
+          }}
+          loading="eager"
+        />
         {/* Film grain */}
         <div
           className="absolute inset-0 pointer-events-none z-10 opacity-[0.04] animate-grain"
           style={{ backgroundImage: GRAIN_BG, backgroundSize: "200px 200px" }}
         />
-        <div className="absolute inset-0 bg-black/10" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/5 to-black/55" />
 
         {/* Loading overlay */}
         {stage < 4 && (
@@ -302,19 +304,18 @@ export default function InterleavedScrollExperience() {
             />
           </div>
         )}
-
-        {stage === 4 && (
-          <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.1)" }} />
-        )}
       </div>
 
       {/* Hero */}
       <div className="relative h-screen flex flex-col items-center justify-center z-10">
+        {/* Bottom blend gradient — smooth dissolve into FeaturedCollections */}
+        <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-t from-black via-black/65 to-transparent pointer-events-none z-0" />
+
         {/* Corner brackets — fade in with hero */}
-        <div className={`absolute top-8 left-8 w-10 h-10 border-t border-l border-white/15 transition-all duration-1000 delay-[900ms] ${showHero ? "opacity-60" : "opacity-0"}`} />
-        <div className={`absolute top-8 right-8 w-10 h-10 border-t border-r border-white/15 transition-all duration-1000 delay-[900ms] ${showHero ? "opacity-60" : "opacity-0"}`} />
-        <div className={`absolute bottom-16 left-8 w-10 h-10 border-b border-l border-white/15 transition-all duration-1000 delay-[900ms] ${showHero ? "opacity-60" : "opacity-0"}`} />
-        <div className={`absolute bottom-16 right-8 w-10 h-10 border-b border-r border-white/15 transition-all duration-1000 delay-[900ms] ${showHero ? "opacity-60" : "opacity-0"}`} />
+        <div className={`absolute top-8 left-8 w-10 h-10 border-t border-l border-white/15 transition-all duration-1000 delay-[900ms] z-10 ${showHero ? "opacity-60" : "opacity-0"}`} />
+        <div className={`absolute top-8 right-8 w-10 h-10 border-t border-r border-white/15 transition-all duration-1000 delay-[900ms] z-10 ${showHero ? "opacity-60" : "opacity-0"}`} />
+        <div className={`absolute bottom-16 left-8 w-10 h-10 border-b border-l border-white/15 transition-all duration-1000 delay-[900ms] z-10 ${showHero ? "opacity-60" : "opacity-0"}`} />
+        <div className={`absolute bottom-16 right-8 w-10 h-10 border-b border-r border-white/15 transition-all duration-1000 delay-[900ms] z-10 ${showHero ? "opacity-60" : "opacity-0"}`} />
 
         {/* One-time scan line */}
         {showHero && (
@@ -322,7 +323,7 @@ export default function InterleavedScrollExperience() {
         )}
 
         <div
-          className={`text-center px-6 max-w-5xl mx-auto transition-all duration-1000 ${
+          className={`relative z-10 text-center px-6 max-w-5xl mx-auto transition-all duration-1000 ${
             showHero ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
@@ -393,7 +394,7 @@ export default function InterleavedScrollExperience() {
 
         {/* Scroll indicator */}
         <div
-          className={`absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 transition-all duration-700 delay-[1400ms] ${
+          className={`absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 transition-all duration-700 delay-[1400ms] z-10 ${
             showHero ? "opacity-60" : "opacity-0"
           }`}
         >
