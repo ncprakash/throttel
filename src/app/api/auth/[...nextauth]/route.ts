@@ -27,19 +27,22 @@ export const authOptions: AuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Email or Phone", type: "text" },
         password: { label: "Password", type: "password" },
       },
 
       async authorize(credentials): Promise<AuthUser | null> {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
+          throw new Error("Email/phone and password are required");
         }
+
+        const identifier = credentials.email.trim();
+        const isEmail = identifier.includes("@");
 
         const { data: user } = await supabase
           .from("users")
           .select("*")
-          .eq("email", credentials.email)
+          .eq(isEmail ? "email" : "phone", identifier)
           .single();
 
         if (!user) throw new Error("User not found");

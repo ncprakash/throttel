@@ -27,10 +27,10 @@ export default function SignInForm() {
     setIsSubmitting(true);
 
     try {
-      const credentials =
-        formData.identifier.includes("@")
-          ? { email: formData.identifier.trim(), password: formData.password }
-          : { phone: formData.identifier.trim(), password: formData.password };
+      const credentials = {
+        email: formData.identifier.trim(),
+        password: formData.password,
+      };
 
       // NextAuth signIn
       const res = await signIn("credentials", {
