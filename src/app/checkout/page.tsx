@@ -232,9 +232,9 @@ export default function CheckoutPage() {
           product_name: item.product.name,
           variant_name: item.variant?.name || null,
           quantity: item.quantity,
-          unit_price: item.product.sale_price || item.product.regular_price,
+          unit_price: item.product.sale_price ?? item.product.regular_price,
           total_price:
-            (item.product.sale_price || item.product.regular_price) *
+            (item.product.sale_price ?? item.product.regular_price) *
             item.quantity,
         })),
         subtotal,

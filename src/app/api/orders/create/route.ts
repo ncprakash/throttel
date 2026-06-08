@@ -24,6 +24,36 @@ interface OrderItem {
   total_price: number;
 }
 
+async function fetchVerifiedPrices(items: OrderItem[]) {
+  const productIds = items
+    .map((i) => i.product_id)
+    .filter((id): id is string => !!id);
+
+  const { data: products } = await supabase
+    .from("products")
+    .select("product_id, regular_price, sale_price")
+    .in("product_id", productIds);
+
+  const priceMap = new Map(
+    (products ?? []).map((p) => [
+      p.product_id,
+      { regular_price: p.regular_price, sale_price: p.sale_price },
+    ])
+  );
+
+  return items.map((item) => {
+    const dbPrices = item.product_id ? priceMap.get(item.product_id) : null;
+    const verifiedUnit = dbPrices
+      ? (dbPrices.sale_price ?? dbPrices.regular_price)
+      : item.unit_price;
+    return {
+      ...item,
+      unit_price: verifiedUnit,
+      total_price: verifiedUnit * item.quantity,
+    };
+  });
+}
+
 async function createRazorpayAndItems(
   order: { order_id: string; order_number: string },
   items: OrderItem[],
@@ -31,20 +61,26 @@ async function createRazorpayAndItems(
   customer_name: string,
   customer_email: string
 ) {
+  const verifiedItems = await fetchVerifiedPrices(items);
+  const clientSubtotal = items.reduce((sum, i) => sum + i.unit_price * i.quantity, 0);
+  const verifiedSubtotal = verifiedItems.reduce((sum, i) => sum + i.total_price, 0);
+  const nonItemCharges = total_amount - clientSubtotal; // shipping + tax
+  const verifiedTotal = verifiedSubtotal + nonItemCharges;
+
   const razorpayOrder = await razorpay.orders.create({
-    amount: Math.round(total_amount * 100),
+    amount: Math.round(verifiedTotal * 100),
     currency: "INR",
     receipt: order.order_number,
     notes: { order_id: order.order_id, customer_name, customer_email },
   });
 
-  // Store razorpay_order_id so the webhook can look up this order later
+  // Store razorpay_order_id and corrected total so the DB matches what Razorpay charged
   await supabase
     .from("orders")
-    .update({ razorpay_order_id: razorpayOrder.id })
+    .update({ razorpay_order_id: razorpayOrder.id, total_amount: verifiedTotal, subtotal: verifiedSubtotal })
     .eq("order_id", order.order_id);
 
-  const orderItems = items.map((item) => ({
+  const orderItems = verifiedItems.map((item) => ({
     order_id: order.order_id,
     product_id: item.product_id || null,
     variant_id: item.variant_id || null,
