@@ -205,6 +205,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!/^\d{6}$/.test(formValues.shipping_postal_code)) {
+      toast.error("Enter a valid 6-digit pincode");
+      return;
+    }
+
     if (cartItems.length === 0) {
       console.warn("[handlePlaceOrder] Cart is empty");
       toast.error("Cart is empty");
