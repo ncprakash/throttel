@@ -31,15 +31,24 @@ async function fetchVerifiedPrices(items: OrderItem[]) {
 
   const { data: products } = await supabase
     .from("products")
-    .select("product_id, regular_price, sale_price")
+    .select("product_id, regular_price, sale_price, stock_quantity")
     .in("product_id", productIds);
 
   const priceMap = new Map(
     (products ?? []).map((p) => [
       p.product_id,
-      { regular_price: p.regular_price, sale_price: p.sale_price },
+      { regular_price: p.regular_price, sale_price: p.sale_price, stock_quantity: p.stock_quantity },
     ])
   );
+
+  // Block order if any item is out of stock
+  for (const item of items) {
+    if (!item.product_id) continue;
+    const db = priceMap.get(item.product_id);
+    if (db && db.stock_quantity <= 0) {
+      throw new Error(`"${item.product_name}" is out of stock`);
+    }
+  }
 
   return items.map((item) => {
     const dbPrices = item.product_id ? priceMap.get(item.product_id) : null;

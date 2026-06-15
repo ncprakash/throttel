@@ -15,6 +15,7 @@ export default function ProductActions({
   onAddToWishlist,
 }: ProductActionsProps) {
   const [quantity, setQuantity] = useState(1);
+  const outOfStock = maxQuantity <= 0;
 
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, Math.min(maxQuantity, prev + delta)));
@@ -28,48 +29,56 @@ export default function ProductActions({
           Quantity
         </label>
 
-        <div className="flex items-center gap-4">
-          <div
-            className="flex items-center rounded-xl border"
-            style={{
-              background: "rgba(255,255,255,0.02)",
-              borderColor: "rgba(255,255,255,0.06)",
-              backdropFilter: "blur(6px)",
-            }}
-          >
-            <button
-              onClick={() => handleQuantityChange(-1)}
-              disabled={quantity <= 1}
-              className="px-4 py-3 text-white text-xl disabled:opacity-30 flex items-center justify-center"
-              aria-label="decrease quantity"
-            >
-              <span className="leading-none select-none">−</span>
-            </button>
-
-            <span className="px-6 py-3 text-lg font-semibold text-white border-x border-[rgba(255,255,255,0.06)] text-center min-w-[56px]">
-              {quantity}
-            </span>
-
-            <button
-              onClick={() => handleQuantityChange(1)}
-              disabled={quantity >= maxQuantity}
-              className="px-4 py-3 text-white text-xl disabled:opacity-30 flex items-center justify-center"
-              aria-label="increase quantity"
-            >
-              <span className="leading-none select-none">+</span>
-            </button>
+        {outOfStock ? (
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/30 bg-red-500/10">
+            <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+            <span className="text-sm text-red-400 font-medium">Out of Stock</span>
           </div>
+        ) : (
+          <div className="flex items-center gap-4">
+            <div
+              className="flex items-center rounded-xl border"
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                borderColor: "rgba(255,255,255,0.06)",
+                backdropFilter: "blur(6px)",
+              }}
+            >
+              <button
+                onClick={() => handleQuantityChange(-1)}
+                disabled={quantity <= 1}
+                className="px-4 py-3 text-white text-xl disabled:opacity-30 flex items-center justify-center"
+                aria-label="decrease quantity"
+              >
+                <span className="leading-none select-none">−</span>
+              </button>
 
-          <span className="text-sm text-[rgba(255,255,255,0.6)]">
-            {maxQuantity} available
-          </span>
-        </div>
+              <span className="px-6 py-3 text-lg font-semibold text-white border-x border-[rgba(255,255,255,0.06)] text-center min-w-[56px]">
+                {quantity}
+              </span>
+
+              <button
+                onClick={() => handleQuantityChange(1)}
+                disabled={quantity >= maxQuantity}
+                className="px-4 py-3 text-white text-xl disabled:opacity-30 flex items-center justify-center"
+                aria-label="increase quantity"
+              >
+                <span className="leading-none select-none">+</span>
+              </button>
+            </div>
+
+            <span className="text-sm text-[rgba(255,255,255,0.6)]">
+              {maxQuantity} available
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Action Buttons */}
       <div className="space-y-3">
         {/* Add to Cart */}
         <button
+          disabled={outOfStock}
           onClick={() => {
             try {
               onAddToCart(quantity);
@@ -78,7 +87,7 @@ export default function ProductActions({
               toast.error("Could not add to cart");
             }
           }}
-          className="w-full py-3 rounded-xl font-semibold text-white border flex items-center justify-center gap-3"
+          className="w-full py-3 rounded-xl font-semibold text-white border flex items-center justify-center gap-3 disabled:opacity-40 disabled:cursor-not-allowed"
           style={{
             background: "rgba(255,255,255,0.05)",
             borderColor: "rgba(255,255,255,0.08)",

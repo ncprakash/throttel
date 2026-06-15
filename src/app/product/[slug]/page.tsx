@@ -64,6 +64,10 @@ const flattenJsonbArray = (array: any[]): Record<string, string> => {
 
   const handleAddToCart = (quantity: number) => {
     if (!product) return;
+    if (!product.stock_quantity || product.stock_quantity <= 0) {
+      toast.error("This product is out of stock");
+      return;
+    }
 
     // 1. Get existing cart from localStorage - USE SAME KEY AS CART PAGE
     let cart = [];
