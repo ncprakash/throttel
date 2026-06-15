@@ -112,7 +112,7 @@ const WishlistBtn = ({
 
 const StockIndicator = ({ stock }: { stock: number }) => {
   const isLowStock = stock <= 5 && stock > 0;
-  const isOutOfStock = stock === 0;
+  const isOutOfStock = !stock || stock <= 0;
 
   return (
     <div className="flex items-center gap-3 text-sm">
@@ -186,7 +186,7 @@ const AddToCartBtn = ({
 }) => (
   <button
     onClick={onClick}
-    disabled={stock === 0}
+    disabled={!stock || stock <= 0}
     className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold transition-all ${
       stock === 0
         ? "bg-white/6 text-white/40 cursor-not-allowed border border-white/8"
@@ -254,8 +254,8 @@ function ProductCard({
       return;
     }
 
-    if (product.stock === 0) {
-      toast.error("Item is out of stock");
+    if (!product.stock || product.stock <= 0) {
+      toast.error("This product is out of stock");
       return;
     }
 
