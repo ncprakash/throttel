@@ -105,7 +105,10 @@ export const authOptions: AuthOptions = {
             .select("user_id, role")
             .single();
 
-          if (error || !created) return false;
+          if (error || !created) {
+            console.error("[NextAuth] Google sign-in: Supabase insert failed", error);
+            return false;
+          }
 
           user.id = created.user_id;
           (user as AuthUser).role = created.role;

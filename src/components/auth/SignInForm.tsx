@@ -2,7 +2,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import FormInput from "./FormInput";
@@ -10,7 +10,6 @@ import SubmitButton from "./SubmitButton";
 import AlertMessage from "./AlertMessage";
 
 export default function SignInForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     identifier: "", // email or phone
@@ -57,7 +56,7 @@ export default function SignInForm() {
           }
         }
         
-        router.push(redirectUrl);
+        window.location.href = redirectUrl;
       }
     } catch (err) {
       setError("An unexpected error occurred");

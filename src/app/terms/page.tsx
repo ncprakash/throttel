@@ -63,6 +63,7 @@ export default function TermsPage() {
     { id: "privacy", label: "Privacy Policy" },
     { id: "shipping", label: "Shipping Policy" },
     { id: "returns", label: "Return & Refund Policy" },
+    { id: "collaboration", label: "Creator Collaboration Policy" },
     { id: "contact", label: "Contact" },
   ];
 
@@ -397,6 +398,126 @@ export default function TermsPage() {
             </div>
           </Section>
 
+          <Section id="collaboration" title="Content Creator Collaboration Policy">
+            <div className="space-y-4">
+              <p>
+                By accepting a product from Throttle Forged Customs (TFC) under a
+                collaboration, the creator acknowledges and agrees to the following
+                terms and conditions.
+              </p>
+
+              <h3 className="font-semibold text-white/90 mt-4">
+                1. Acceptance of Collaboration
+              </h3>
+              <p>
+                Acceptance of a product confirms that the creator has agreed to the
+                collaboration terms, deliverables, and timeline discussed before
+                dispatch.
+              </p>
+
+              <h3 className="font-semibold text-white/90 mt-4">2. Deliverables</h3>
+              <p>
+                The creator must complete and publish the agreed deliverables, which
+                may include:
+              </p>
+              <ul className="space-y-1.5 pl-4">
+                {[
+                  "Instagram Reels",
+                  "Collaborative Posts",
+                  "Product Reviews",
+                  "Installation Videos",
+                  "Stories",
+                  "Any additional content mutually agreed upon before dispatch",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="w-1 h-1 bg-white/30 rounded-full mt-2 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <h3 className="font-semibold text-white/90 mt-4">3. Timeline</h3>
+              <p>
+                All agreed deliverables must be completed within{" "}
+                <strong className="text-white/90">20 calendar days</strong> from the
+                date the product is marked as delivered, unless a different timeline
+                has been agreed to in writing by TFC.
+              </p>
+
+              <h3 className="font-semibold text-white/90 mt-4">4. Communication</h3>
+              <p>
+                If additional time is genuinely required, the creator must inform TFC
+                before the agreed deadline. Any extension is granted solely at
+                TFC&apos;s discretion.
+              </p>
+
+              <h3 className="font-semibold text-white/90 mt-4">
+                5. Failure to Complete Deliverables
+              </h3>
+              <p>
+                If the agreed deliverables are not completed within the agreed
+                timeline and no written extension has been approved, TFC reserves the
+                right to cancel the collaboration.
+              </p>
+              <p>
+                In such cases, the creator must, within{" "}
+                <strong className="text-white/90">7 days</strong> of receiving notice
+                from TFC:
+              </p>
+              <ul className="space-y-1.5 pl-4">
+                {[
+                  "Return the product in its original condition, or",
+                  "Pay the full retail value of the product.",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="w-1 h-1 bg-white/30 rounded-full mt-2 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <h3 className="font-semibold text-white/90 mt-4">
+                6. Product Ownership
+              </h3>
+              <p>
+                Products provided for collaboration remain part of the agreed
+                promotional arrangement until all collaboration obligations have been
+                fulfilled. Failure to complete the agreed obligations does not entitle
+                the creator to retain the product without fulfilling the agreed terms
+                or resolving the matter with TFC.
+              </p>
+
+              <h3 className="font-semibold text-white/90 mt-4">7. Non-Compliance</h3>
+              <p>If the creator fails to:</p>
+              <ul className="space-y-1.5 pl-4">
+                {[
+                  "Complete the agreed deliverables,",
+                  "Return the product when requested, or",
+                  "Refund the product value within the specified period,",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="w-1 h-1 bg-white/30 rounded-full mt-2 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p>
+                TFC reserves the right to pursue appropriate remedies, which may
+                include recovery of the product value and, where appropriate,
+                reporting the matter to relevant platforms or authorities, and taking
+                any other lawful action available.
+              </p>
+
+              <h3 className="font-semibold text-white/90 mt-4">8. Mutual Respect</h3>
+              <p>
+                TFC values honest reviews and authentic opinions. We never require
+                creators to provide positive reviews. Our only expectation is that the
+                agreed content is created and delivered within the mutually agreed
+                timeline.
+              </p>
+            </div>
+          </Section>
+
           <Section id="contact" title="Contact & Notice">
             <div className="space-y-4">
               <p>
@@ -427,11 +548,6 @@ export default function TermsPage() {
                   </a>
                 </div>
               </div>
-              <p className="text-xs text-white/30 pt-4 border-t border-white/5">
-                — Throttle Forged Customs (TFC). These policies were last
-                updated on{" "}
-                <strong className="text-white/50">May 2026</strong>.
-              </p>
             </div>
           </Section>
         </div>
