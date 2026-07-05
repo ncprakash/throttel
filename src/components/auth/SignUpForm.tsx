@@ -2,7 +2,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import axios from "axios";
 import FormInput from "./FormInput";
@@ -11,6 +11,7 @@ import AlertMessage from "./AlertMessage";
 
 export default function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -134,7 +135,7 @@ export default function SignUpForm() {
 
       <button
         type="button"
-        onClick={() => signIn("google", { callbackUrl: "/profile" })}
+        onClick={() => signIn("google", { callbackUrl: searchParams.get("callbackUrl") || "/profile" })}
         className="flex items-center justify-center gap-3 w-full border border-white/20 bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-3 px-4 rounded-lg transition-all duration-200"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">

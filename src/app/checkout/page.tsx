@@ -46,7 +46,7 @@ export default function CheckoutPage() {
 
     if (!session?.user) {
       toast.error("Please sign in to continue");
-      router.push("/auth");
+      router.push("/auth?callbackUrl=%2Fcheckout");
       return;
     }
 
@@ -216,12 +216,18 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!session?.user?.id) {
+      toast.error("Session expired. Please sign in again.");
+      router.push("/auth?callbackUrl=%2Fcheckout");
+      return;
+    }
+
     setPlacingOrder(true);
     console.log("[handlePlaceOrder] PlacingOrder set to true");
 
     try {
       const orderPayload = {
-        user_id: session!.user.id,
+        user_id: session.user.id,
         customer_name: formValues.customer_name,
         customer_email: formValues.customer_email,
         customer_phone: formValues.customer_phone,

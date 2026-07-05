@@ -30,10 +30,10 @@ export async function middleware(request: NextRequest) {
     });
 
     if (!token) {
-      return NextResponse.redirect(new URL("/auth", request.url));
+      const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
+      return NextResponse.redirect(new URL(`/auth?callbackUrl=${callbackUrl}`, request.url));
     }
   }
-  
 
   return NextResponse.next();
 }
@@ -44,6 +44,6 @@ export const config = {
     "/profile/:path*",
     "/dashboard/:path*",
     "/orders/:path*",
-    "/checkout",
+    "/checkout/:path*",
   ],
 };
